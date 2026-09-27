@@ -6,7 +6,7 @@
 [![No Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen?style=flat)](.)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple?style=flat)](LICENSE)
 
-> **An interactive, self-contained web application for learning Agentic AI, LangChain, RAG, and LangGraph** — built from the complete course curriculum by [Akarsh Vyas](https://www.youtube.com/@SheryiansAI) at Sheryians AI School.
+> **An interactive, self-contained web application for learning Agentic AI, LangChain, RAG, and LangGraph** — covering core concepts, live simulators, and hands-on projects.
 
 ---
 
@@ -96,14 +96,6 @@ Then open `http://localhost:8080` in your browser.
 | **All** | Knowledge Check | 🧠 15-question quiz with explanations |
 
 ---
-
-## 🎓 Course Reference
-
-| Resource | Link |
-|---|---|
-| **Course Video** | [Complete Agentic AI Course with LangGraph](https://www.youtube.com/watch?v=ytsHs-KZHVI) |
-| **Instructor** | [Akarsh Vyas — Sheryians AI School](https://www.youtube.com/@SheryiansAI) |
-| **GitHub (Course Code)** | [AkarshVyas/Agentic-AI-youtube](https://github.com/AkarshVyas/Agentic-AI-youtube) |
 
 ---
 
