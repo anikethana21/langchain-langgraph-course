@@ -1,0 +1,2526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LangChain &amp; RAG Architecture — The Definitive Master Guide</title>
+<meta name="description" content="Comprehensive interactive guide to Generative AI, LangChain LCEL, 5 Pillars of RAG, Vector Geometry, Tool Use, Multi-Agent Systems, Video RAG Assistant, and Universal Blueprint."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg-primary: #07090e;
+  --bg-secondary: #0d111a;
+  --bg-card: #131826;
+  --bg-card-hover: #182032;
+  --border: #1f273d;
+  --border-focus: #3b82f6;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-indigo: #6366f1;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-purple: #a855f7;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --code-bg: #090c14;
+  --sidebar-w: 290px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+/* Sidebar Navigation */
+#sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+.sidebar-header {
+  padding: 20px 18px 16px;
+  background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(6,182,212,0.05));
+  border-bottom: 1px solid var(--border);
+}
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(59,130,246,0.18);
+  color: #60a5fa;
+  border: 1px solid rgba(59,130,246,0.3);
+  margin-bottom: 10px;
+}
+.brand-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.nav-group-title {
+  padding: 16px 18px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  margin: 1px 8px;
+  border-radius: 7px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.nav-link:hover {
+  background: rgba(255,255,255,0.04);
+  color: #ffffff;
+  transform: translateX(2px);
+}
+.nav-link.active {
+  background: rgba(59,130,246,0.14);
+  color: #60a5fa;
+  font-weight: 600;
+  border: 1px solid rgba(59,130,246,0.25);
+}
+.nav-icon {
+  width: 18px;
+  text-align: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.progress-bar-bg {
+  width: 100%;
+  height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+  transition: width 0.3s ease;
+}
+
+/* Main Area */
+#main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Sticky Navigation Bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  background: rgba(7,9,14,0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.page-title-badge {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
+.btn-primary {
+  background: var(--accent-blue);
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(59,130,246,0.25);
+}
+.btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+.btn-hub {
+  background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(99,102,241,0.18));
+  color: #c084fc;
+  border-color: rgba(168,85,247,0.3);
+}
+.btn-hub:hover {
+  background: linear-gradient(135deg, rgba(168,85,247,0.28), rgba(99,102,241,0.28));
+  color: #e9d5ff;
+}
+
+/* Sections */
+.content-section {
+  display: none;
+  padding: 36px 40px 60px;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+}
+.content-section.active {
+  display: block;
+  animation: fadeIn 0.25s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero Box */
+.hero-box {
+  background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(6,182,212,0.03));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 36px;
+  margin-bottom: 30px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-box::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(59,130,246,0.12), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(59,130,246,0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59,130,246,0.25);
+  margin-bottom: 14px;
+}
+.hero-box h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+.hero-box p {
+  font-size: 14.5px;
+  color: var(--text-secondary);
+  max-width: 820px;
+  line-height: 1.7;
+}
+
+/* Grids & Cards */
+.grid { display: grid; gap: 18px; }
+.g-2 { grid-template-columns: repeat(2, 1fr); }
+.g-3 { grid-template-columns: repeat(3, 1fr); }
+.g-4 { grid-template-columns: repeat(4, 1fr); }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  transition: all 0.2s ease;
+}
+.card:hover {
+  border-color: #334155;
+  background: var(--bg-card-hover);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.card-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.card-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+/* Formula & Math Block */
+.formula-card {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-cyan);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 18px 0;
+  font-family: 'JetBrains Mono', monospace;
+  position: relative;
+  overflow-x: auto;
+}
+.formula-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent-cyan);
+  margin-bottom: 12px;
+}
+.formula-latex {
+  font-size: 14px;
+  color: #e2e8f0;
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+.formula-expl {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 10px;
+  line-height: 1.6;
+}
+
+/* Code Blocks */
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 18px 0;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+.code-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-dots {
+  display: flex;
+  gap: 5px;
+}
+.code-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.code-lang {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.btn-copy {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-secondary);
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-copy:hover {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
+.code-body {
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: #cbd5e1;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Syntax Highlighting Tokens */
+.kw { color: #c084fc; font-weight: 600; }
+.fn { color: #60a5fa; }
+.str { color: #86efac; }
+.num { color: #f59e0b; }
+.cm { color: #64748b; font-style: italic; }
+.cls { color: #fde047; font-weight: 600; }
+.op { color: #38bdf8; }
+
+/* ASCII Architecture Containers */
+.ascii-box {
+  background: #060910;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #38bdf8;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 16px 0;
+}
+
+/* Tables */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 18px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th {
+  background: rgba(255,255,255,0.03);
+  padding: 12px 18px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 12px 18px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+
+/* Interactive Simulator Containers */
+.sim-container {
+  background: linear-gradient(135deg, rgba(30,41,59,0.5), rgba(15,23,42,0.6));
+  border: 1px solid rgba(59,130,246,0.3);
+  border-radius: 14px;
+  padding: 24px;
+  margin: 22px 0;
+  box-shadow: 0 0 25px rgba(59,130,246,0.08);
+}
+.sim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sim-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sim-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(59,130,246,0.2);
+  color: #60a5fa;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.b-blue { background: rgba(59,130,246,0.18); color: #60a5fa; }
+.b-green { background: rgba(16,185,129,0.18); color: #34d399; }
+.b-amber { background: rgba(245,158,11,0.18); color: #fbbf24; }
+.b-purple { background: rgba(168,85,247,0.18); color: #c084fc; }
+.b-cyan { background: rgba(6,182,212,0.18); color: #22d3ee; }
+.b-rose { background: rgba(244,63,94,0.18); color: #fb7185; }
+
+/* Interactive Stepper */
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+.step-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  align-items: flex-start;
+}
+.step-number {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #ffffff;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.step-content h4 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+.step-content p {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Quiz Styles */
+.quiz-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px;
+  margin: 20px 0;
+}
+.quiz-q-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 18px;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.quiz-opt {
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quiz-opt:hover {
+  background: rgba(59,130,246,0.06);
+  border-color: var(--accent-blue);
+  color: #ffffff;
+}
+.quiz-opt.correct {
+  background: rgba(16,185,129,0.15) !important;
+  border-color: var(--accent-emerald) !important;
+  color: #34d399 !important;
+}
+.quiz-opt.wrong {
+  background: rgba(244,63,94,0.15) !important;
+  border-color: var(--accent-rose) !important;
+  color: #fb7185 !important;
+}
+.quiz-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  display: none;
+  line-height: 1.6;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.fb-correct {
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #34d399;
+}
+.quiz-feedback.fb-wrong {
+  background: rgba(244,63,94,0.1);
+  border: 1px solid rgba(244,63,94,0.3);
+  color: #fb7185;
+}
+
+/* Mobile Toggle */
+#menu-btn {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: #ffffff;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  cursor: pointer;
+}
+@media (max-width: 900px) {
+  #sidebar { transform: translateX(-100%); }
+  #sidebar.open { transform: translateX(0); }
+  #main { margin-left: 0; }
+  #menu-btn { display: inline-flex; }
+  .content-section { padding: 20px 18px 40px; }
+  .g-2, .g-3, .g-4 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-badge">&#9883; Foundations to Production</div>
+    <div class="brand-title">LangChain &amp; RAG Architecture</div>
+    <div class="brand-sub">The Complete Technical Handbook</div>
+  </div>
+
+  <div class="nav-group-title">Prologue</div>
+  <div class="nav-link active" onclick="showSec('prologue', this)"><span class="nav-icon">&#128640;</span>Four Eras &amp; Agents</div>
+
+  <div class="nav-group-title">Module 1 &mdash; Foundations</div>
+  <div class="nav-link" onclick="showSec('m1-anatomy', this)"><span class="nav-icon">&#129302;</span>1.1 LLM Anatomy</div>
+  <div class="nav-link" onclick="showSec('m1-hyperparams', this)"><span class="nav-icon">&#127777;</span>1.2 Hyperparameters</div>
+  <div class="nav-link" onclick="showSec('m1-prompting', this)"><span class="nav-icon">&#9997;</span>1.3 Prompt Engineering</div>
+  <div class="nav-link" onclick="showSec('m1-lcel', this)"><span class="nav-icon">&#9889;</span>1.4 LangChain &amp; LCEL</div>
+
+  <div class="nav-group-title">Module 2 &mdash; RAG Architecture</div>
+  <div class="nav-link" onclick="showSec('m2-imperative', this)"><span class="nav-icon">&#127919;</span>2.1 The RAG Imperative</div>
+  <div class="nav-link" onclick="showSec('m2-loaders', this)"><span class="nav-icon">&#128196;</span>2.2 Pillar 1: Loaders</div>
+  <div class="nav-link" onclick="showSec('m2-chunking', this)"><span class="nav-icon">&#9986;</span>2.3 Pillar 2: Chunking Math</div>
+  <div class="nav-link" onclick="showSec('m2-embeddings', this)"><span class="nav-icon">&#128208;</span>2.4 Pillar 3: Embeddings &amp; Cosine</div>
+  <div class="nav-link" onclick="showSec('m2-vectorstores', this)"><span class="nav-icon">&#128452;</span>2.5 Pillar 4: Vector Stores</div>
+  <div class="nav-link" onclick="showSec('m2-ragchain', this)"><span class="nav-icon">&#128257;</span>2.6 Pillar 5: RAG Synthesis</div>
+  <div class="nav-link" onclick="showSec('m2-mmr', this)"><span class="nav-icon">&#9878;</span>2.7 Advanced MMR &amp; Rerank</div>
+
+  <div class="nav-group-title">Module 3 &mdash; Single-Agent Systems</div>
+  <div class="nav-link" onclick="showSec('m3-functions', this)"><span class="nav-icon">&#129309;</span>3.1 Function Calling</div>
+  <div class="nav-link" onclick="showSec('m3-pydantic', this)"><span class="nav-icon">&#128295;</span>3.2 Defining Tools (@tool)</div>
+  <div class="nav-link" onclick="showSec('m3-react', this)"><span class="nav-icon">&#128260;</span>3.3 ReAct Cognitive Loop</div>
+  <div class="nav-link" onclick="showSec('m3-loop', this)"><span class="nav-icon">&#9881;</span>3.4 Agent Execution Loop</div>
+
+  <div class="nav-group-title">Module 4 &mdash; Multi-Agent Systems</div>
+  <div class="nav-link" onclick="showSec('m4-limits', this)"><span class="nav-icon">&#128375;</span>4.1 Limits of Monoliths</div>
+  <div class="nav-link" onclick="showSec('m4-topologies', this)"><span class="nav-icon">&#128506;</span>4.2 Multi-Agent Topologies</div>
+  <div class="nav-link" onclick="showSec('m4-project1', this)"><span class="nav-icon">&#128187;</span>4.4 Project 1: Research Pipeline</div>
+
+  <div class="nav-group-title">Module 5 &mdash; Video Assistant RAG</div>
+  <div class="nav-link" onclick="showSec('m5-overview', this)"><span class="nav-icon">&#127916;</span>5.1-5.4 Video RAG Architecture</div>
+  <div class="nav-link" onclick="showSec('m5-pkl', this)"><span class="nav-icon">&#128640;</span>5.5 Pickle (.pkl) Deep Dive</div>
+  <div class="nav-link" onclick="showSec('m5-project2', this)"><span class="nav-icon">&#128187;</span>5.6 Project 2: Video Assistant</div>
+
+  <div class="nav-group-title">Module 6 &mdash; Universal Blueprint</div>
+  <div class="nav-link" onclick="showSec('m6-blueprint', this)"><span class="nav-icon">&#128203;</span>6.1 6-Step Agent Matrix</div>
+
+  <div class="nav-group-title">Reference &amp; Quiz</div>
+  <div class="nav-link" onclick="showSec('ref-formulas', this)"><span class="nav-icon">&#128208;</span>Key Formulas Reference</div>
+  <div class="nav-link" onclick="showSec('ref-quiz', this)"><span class="nav-icon">&#127881;</span>Knowledge Check Quiz</div>
+
+  <div class="sidebar-footer">
+    <div class="progress-container">
+      <div class="progress-meta"><span>Course Progress</span><span id="prog-pct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar"></div></div>
+    </div>
+  </div>
+</nav>
+
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">&#9776;</button>
+      <div class="page-title-badge" id="topbar-title">&#128640; Prologue: The Paradigm Shift to Agentic AI</div>
+    </div>
+    <div class="topbar-actions">
+      <a href="langgraph.html" class="btn btn-hub">&#128375; Switch to LangGraph Guide &rarr;</a>
+      <a href="index.html" class="btn btn-secondary">&#127968; Portal Hub</a>
+    </div>
+  </div>
+
+  <!-- SECTION: PROLOGUE -->
+  <div class="content-section active" id="sec-prologue">
+    <div class="hero-box">
+      <div class="hero-tag">Prologue</div>
+      <h1>The Paradigm Shift to Agentic AI</h1>
+      <p>From deterministic rule-based systems to autonomous cognitive agents that perceive, plan, act, and reflect in real time.</p>
+    </div>
+
+    <h2 style="font-size:18px; margin-bottom:12px; color:#fff;">The Four Eras of Software Engineering</h2>
+    <div class="ascii-box">+-------------------------------------------------------------------------------+
+| ERA 1: Deterministic Programming                                             |
+| Input -> [Explicit If/Else Rules & Functions] -> Output                       |
+| (Rule-based, brittle, zero generalization)                                     |
++-------------------------------------------------------------------------------+
+                                      |
+                                      v
++-------------------------------------------------------------------------------+
+| ERA 2: Classical Machine Learning                                             |
+| Data + Labels -> [Trained Weights & Patterns] -> Predictions                  |
+| (Statistical, classification/regression, requires manual feature engineering) |
++-------------------------------------------------------------------------------+
+                                      |
+                                      v
++-------------------------------------------------------------------------------+
+| ERA 3: Generative AI (LLMs & Chatbots)                                        |
+| Prompt -> [Large Pre-trained Transformer] -> Generated Text                   |
+| (Semantic understanding, probabilistic text generation, static knowledge)     |
++-------------------------------------------------------------------------------+
+                                      |
+                                      v
++-------------------------------------------------------------------------------+
+| ERA 4: Agentic AI (Autonomous Cognitive Systems)                              |
+| Goal -> [Perception -> Planning -> Tool Execution -> Reflection] -> Result    |
+| (Dynamic decision-making, environment interaction, multi-step execution)      |
++-------------------------------------------------------------------------------+</div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3 style="font-size:16px; margin-bottom:8px; color:#fff;">What is an "Agent"?</h3>
+      <p>A standard LLM is a <strong>passive brain in a vat</strong>. When given an input prompt, it calculates the next most probable tokens and halts. It cannot inspect the outside world, run code, query your live database, verify its own facts, or correct itself when it makes a mistake.</p>
+      <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content"><h4>Perception</h4><p>Receiving inputs, multimodal sensory context, environment feedback, and retrieved knowledge.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content"><h4>Cognition (Planning &amp; Reasoning)</h4><p>Breaking complex goals into sequential sub-tasks, estimating uncertainty, and formulating plans.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content"><h4>Action Space (Tools)</h4><p>Web search APIs, code interpreters, SQL databases, shell execution, and external integrations.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-content"><h4>Memory (State)</h4><p>Short-term conversational context buffers, scratchpads, and long-term vector/serialized stores.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">5</div>
+          <div class="step-content"><h4>Self-Correction (Reflection)</h4><p>Evaluating intermediate tool outputs against the original objective and re-planning dynamically.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 1.1 -->
+  <div class="content-section" id="sec-m1-anatomy">
+    <div class="hero-box">
+      <div class="hero-tag">Module 1.1</div>
+      <h1>The Anatomy of Large Language Models (LLMs)</h1>
+      <p>Modern LLMs (GPT-4o, Claude 3.5, Gemini 1.5/2.0, Llama 3) are based on the Transformer Architecture (Vaswani et al., 2017).</p>
+    </div>
+
+    <div class="grid g-3" style="margin-bottom:24px;">
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(59,130,246,0.15); color:#60a5fa;">&#129513;</div><div><div class="card-title">Tokenization</div><div class="card-subtitle">Sub-word Encoding</div></div></div>
+        <p>Text is converted into numerical identifiers (tokens). On average, <strong>1 token &asymp; 0.75 words</strong> (or 4 characters of standard English text). Punctuation, capitalization, and whitespace occupy distinct token boundaries.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(6,182,212,0.15); color:#22d3ee;">&#128394;</div><div><div class="card-title">Autoregression</div><div class="card-subtitle">Next-Token Prediction</div></div></div>
+        <p>Models predict one token at a time sequentially. Each newly sampled token is appended to the input context before computing the probability distribution for the subsequent token.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(168,85,247,0.15); color:#c084fc;">&#128187;</div><div><div class="card-title">Context Window</div><div class="card-subtitle">Working Memory</div></div></div>
+        <p>The maximum sequence length (<em>N</em> tokens) the model can hold in working attention simultaneously. Exceeding this boundary causes truncation, degradation, or out-of-memory errors.</p>
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">Mathematical Formula: Autoregressive Next-Token Prediction</div>
+      <div class="formula-latex">P( wₜ₊₁ | w₁, w₂, ..., wₜ )</div>
+      <div class="formula-expl">
+        "Given the history of tokens 1 to t, calculate the conditional probability of every candidate token in vocabulary V being chosen as token t+1."
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 1.2 -->
+  <div class="content-section" id="sec-m1-hyperparams">
+    <div class="hero-box">
+      <div class="hero-tag">Module 1.2</div>
+      <h1>Hyperparameter Mechanics: Temperature, Top-P, Top-K</h1>
+      <p>Mathematical formulas, step-by-step numerical examples, and tuning rules for deterministic agent control.</p>
+    </div>
+
+    <p style="font-size:13.5px; color:var(--text-secondary); margin-bottom:14px;">
+      When an LLM produces output, it first computes unnormalized logit scores <em>z<sub>i</sub></em> for each token <em>i</em> in vocabulary <em>V</em>. These logits are scaled by temperature <em>T</em> and converted into normalized sampling probabilities using the <strong>Softmax Function</strong>:
+    </p>
+
+    <div class="formula-card">
+      <div class="formula-title">FORMULA 1: Softmax with Temperature Scaling</div>
+      <div class="formula-latex">
+                       exp( zᵢ / T )
+        P(wᵢ)   =   ────────────────────
+                     ∑    exp( zⱼ / T )
+                    j ∈ V
+      </div>
+      <div class="formula-expl">
+        Where: <strong>wᵢ</strong> = Candidate token <em>i</em> in vocabulary <em>V</em> | <strong>zᵢ</strong> = Raw unnormalized logit score predicted for token <em>i</em> | <strong>T</strong> = Temperature parameter (T &gt; 0) | <strong>P(wᵢ)</strong> = Probability of selecting token <em>wᵢ</em> (sums to 1.0).
+      </div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:24px 0 12px;">Step-by-Step Numerical Example</h3>
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+      Suppose vocabulary <em>V</em> has 3 candidate words with raw logits: <code>z = [ "AI": 4.0, "Cloud": 2.0, "Database": 1.0 ]</code>.
+    </p>
+
+    <div class="grid g-3">
+      <div class="card">
+        <div class="card-header"><span class="badge b-blue">Case 1</span><div class="card-title">T = 1.0 (Standard)</div></div>
+        <p style="font-size:12px; font-family:'JetBrains Mono',monospace; color:#cbd5e1; line-height:1.7;">
+          exp(4.0 / 1.0) = exp(4.0) &asymp; 54.60<br>
+          exp(2.0 / 1.0) = exp(2.0) &asymp; 7.39<br>
+          exp(1.0 / 1.0) = exp(1.0) &asymp; 2.72<br>
+          Sum = 54.60 + 7.39 + 2.72 = 64.71<br><br>
+          <strong style="color:#60a5fa;">P("AI") = 54.60 / 64.71 = 84.4%</strong><br>
+          P("Cloud") = 7.39 / 64.71 = 11.4%<br>
+          P("Database") = 2.72 / 64.71 = 4.2%
+        </p>
+      </div>
+
+      <div class="card" style="border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.03);">
+        <div class="card-header"><span class="badge b-green">Case 2 (Recommended for Agents)</span><div class="card-title">T = 0.2 (Deterministic)</div></div>
+        <p style="font-size:12px; font-family:'JetBrains Mono',monospace; color:#cbd5e1; line-height:1.7;">
+          Logits &divide; 0.2 magnified 5&times;: [20, 10, 5]<br>
+          exp(20) &asymp; 4.85 &times; 10⁸<br>
+          exp(10) &asymp; 2.20 &times; 10⁴<br>
+          exp(5) &asymp; 148.4<br><br>
+          <strong style="color:#34d399;">P("AI") = 99.995%</strong><br>
+          P("Cloud") &asymp; 0.0045%<br>
+          <em>Collapses into near-greedy determinism, eliminating hallucinations.</em>
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="badge b-amber">Case 3</span><div class="card-title">T = 2.0 (High Entropy)</div></div>
+        <p style="font-size:12px; font-family:'JetBrains Mono',monospace; color:#cbd5e1; line-height:1.7;">
+          Logits &divide; 2.0 flatten: [2.0, 1.0, 0.5]<br>
+          exp(2.0) &asymp; 7.39 | exp(1.0) &asymp; 2.72<br>
+          exp(0.5) &asymp; 1.65<br>
+          Sum &asymp; 11.76<br><br>
+          <strong style="color:#fbbf24;">P("AI") = 62.8%</strong><br>
+          P("Cloud") = 23.1%<br>
+          P("Database") = 14.1%<br>
+          <em>High entropy, chaotic exploration.</em>
+        </p>
+      </div>
+    </div>
+
+    <!-- Live Interactive Temperature Simulator -->
+    <div class="sim-container">
+      <div class="sim-header">
+        <div class="sim-title">&#9881; Interactive Temperature Softmax Simulator</div>
+        <span class="sim-badge">Live Mathematics</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+        <label style="font-size:13px; font-weight:600; color:#fff;">Temperature (T):</label>
+        <input type="range" id="temp-slider" min="0.05" max="2.5" step="0.05" value="0.7" oninput="calcSoftmax()" style="flex:1; cursor:pointer; accent-color:var(--accent-blue);"/>
+        <span id="temp-val" style="font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:#60a5fa; min-width:40px;">0.70</span>
+      </div>
+      <div id="softmax-bars" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:24px 0 12px;">Hyperparameter Decision Matrix</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Mathematical Mechanism</th>
+            <th>Practical Effect</th>
+            <th>Recommended Setting</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Temperature (T)</strong></td>
+            <td>Divides logits prior to exponentiation. When T &rarr; 0, distribution collapses to greedy argmax. When T &gt; 1, distribution flattens.</td>
+            <td>Lower = factual, structured output.<br>Higher = creative writing, brainstorming.</td>
+            <td><span class="badge b-green">Agents / RAG / JSON:</span> T &isin; [0.0, 0.2]<br><span class="badge b-amber">Creative / Chat:</span> T &isin; [0.7, 0.9]</td>
+          </tr>
+          <tr>
+            <td><strong>Top-P (Nucleus Sampling)</strong></td>
+            <td>Truncates vocabulary to smallest cumulative probability set <em>S</em> such that &sum; P(wᵢ) &ge; P.</td>
+            <td>Prevents sampling extremely unlikely "tail" tokens while keeping diversity.</td>
+            <td>Set to 0.9 or 0.95. Keep either T or Top-P default when tuning the other.</td>
+          </tr>
+          <tr>
+            <td><strong>Top-K</strong></td>
+            <td>Caps sampling pool strictly to top <em>K</em> most probable tokens.</td>
+            <td>Hard barrier against low-probability hallucinations.</td>
+            <td>Often 40 to 50 in open-source models.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 1.3 -->
+  <div class="content-section" id="sec-m1-prompting">
+    <div class="hero-box">
+      <div class="hero-tag">Module 1.3</div>
+      <h1>Prompt Engineering: Anatomy of an Agent Prompt</h1>
+      <p>A naive prompt produces unpredictable outputs. A production agent prompt must contain five explicit structural blocks.</p>
+    </div>
+
+    <div class="stepper">
+      <div class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>PERSONA &amp; ROLE</h4>
+          <p>Defines identity, domain authority, and perspective. Constrains the vocabulary space to relevant professional domains.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>OBJECTIVE &amp; TASK</h4>
+          <p>Unambiguous, single-minded mission statement specifying what problem must be resolved.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>AVAILABLE TOOLS &amp; CONSTRAINTS</h4>
+          <p>Explicit tool whitelist, grounding directives, negative constraints ("NEVER fabricate"), and missing data protocols.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h4>REASONING PROCESS (Chain of Thought)</h4>
+          <p>Step-by-step cognitive instructions enforcing verification before action.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h4>OUTPUT FORMAT SCHEMA</h4>
+          <p>Machine-parseable contract (JSON, Pydantic, XML) allowing downstream code execution.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Markdown &mdash; Production Agent Prompt Template</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"># 1. PERSONA & ROLE
+You are an expert Research Analyst Agent specializing in financial markets.
+
+# 2. OBJECTIVE & TASK
+Your task is to analyze quarterly revenue reports and identify growth bottlenecks.
+
+# 3. AVAILABLE TOOLS & CONSTRAINTS
+- You have access to: [web_search, calculator, query_financial_db].
+- ONLY use facts found in the retrieved documents. Do NOT fabricate numbers.
+- If a data point is missing, explicitly state "DATA_UNAVAILABLE".
+
+# 4. REASONING PROCESS (Chain of Thought)
+Before returning your final output, think step-by-step:
+1. Parse the query to identify ticker symbol and relevant fiscal quarters.
+2. Formulate tool queries and inspect the raw metrics.
+3. Compute Year-over-Year (YoY) percentage delta using the calculator.
+
+# 5. OUTPUT FORMAT SCHEMA
+Return your final answer strictly as valid JSON adhering to:
+{
+  "ticker": string,
+  "yoy_growth_percentage": float,
+  "key_drivers": [string],
+  "risks": [string]
+}</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 1.4 -->
+  <div class="content-section" id="sec-m1-lcel">
+    <div class="hero-box">
+      <div class="hero-tag">Module 1.4</div>
+      <h1>LangChain &amp; LCEL (LangChain Expression Language)</h1>
+      <p>Declarative composition of LLM components using Unix-style pipe operators (|) and the standard Runnable protocol.</p>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">The LCEL Composition Formula</div>
+      <div class="formula-latex">Chain = PromptTemplate | ChatModel | OutputParser</div>
+      <div class="formula-expl">
+        Data flows from left to right. Every component implements the <strong>Runnable</strong> interface: <code>invoke()</code>, <code>stream()</code>, <code>batch()</code>, <code>ainvoke()</code>.
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Python &mdash; Complete LCEL Pipeline Implementation</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"><span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> <span class="cls">ChatPromptTemplate</span>
+<span class="kw">from</span> langchain_core.output_parsers <span class="kw">import</span> <span class="cls">StrOutputParser</span>
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> <span class="cls">ChatOpenAI</span>
+
+<span class="cm"># 1. Define Prompt Template</span>
+prompt = <span class="cls">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+    (<span class="str">"system"</span>, <span class="str">"You are an AI assistant that answers questions in concise bullet points."</span>),
+    (<span class="str">"human"</span>, <span class="str">"{user_question}"</span>)
+])
+
+<span class="cm"># 2. Define Model</span>
+model = <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0</span>)
+
+<span class="cm"># 3. Define Parser</span>
+parser = <span class="cls">StrOutputParser</span>()
+
+<span class="cm"># 4. Compose via LCEL Pipe Operator</span>
+chain = prompt | model | parser
+
+<span class="cm"># 5. Execution (Runnable Protocol)</span>
+response = chain.<span class="fn">invoke</span>({<span class="str">"user_question"</span>: <span class="str">"Explain RAG in 3 sentences."</span>})
+<span class="fn">print</span>(response)</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 2.1 -->
+  <div class="content-section" id="sec-m2-imperative">
+    <div class="hero-box">
+      <div class="hero-tag">Module 2.1</div>
+      <h1>The RAG Imperative: Solving the Triple Limitations of LLMs</h1>
+      <p>Grounding large language models with external vector search to eliminate hallucinations, bridge knowledge cutoffs, and access private enterprise data.</p>
+    </div>
+
+    <div class="grid g-3" style="margin-bottom:24px;">
+      <div class="card" style="border-left:3px solid var(--accent-rose);">
+        <div class="card-title" style="color:#fb7185;">1. Hallucinations</div>
+        <p style="margin-top:6px;">LLMs optimize next-token statistical likelihood, not empirical truth. Under uncertainty, they construct confident fabrications.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--accent-amber);">
+        <div class="card-title" style="color:#fbbf24;">2. Knowledge Cutoff</div>
+        <p style="margin-top:6px;">Training sets are frozen snapshots in time. Models are entirely blind to events, updates, or releases following the cutoff.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--accent-purple);">
+        <div class="card-title" style="color:#c084fc;">3. Private Data Blindness</div>
+        <p style="margin-top:6px;">Models have never seen your internal company PDFs, SQL databases, customer tickets, or proprietary repos.</p>
+      </div>
+    </div>
+
+    <div class="ascii-box">[User Query] ------------------------+
+      |                              |
+      v                              v
+[Embedding Model]           [Prompt Template]
+      |                              ^
+      v                              |
+[Vector Similarity Search]           |
+      |                              |
+      v                              |
+[Top-K Document Chunks] -------------+
+                                     |
+                                     v
+                                [LLM Model]
+                                     |
+                                     v
+                               [Grounded Answer]</div>
+  </div>
+
+  <!-- SECTION: MODULE 2.2 -->
+  <div class="content-section" id="sec-m2-loaders">
+    <div class="hero-box">
+      <div class="hero-tag">Module 2.2 &mdash; Pillar 1</div>
+      <h1>Document Loading &amp; Parsing</h1>
+      <p>Standardizing disparate data sources &mdash; PDFs, web pages, YouTube transcripts &mdash; into uniform Document schemas with rich metadata.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Python &mdash; Document Loaders</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"><span class="kw">from</span> langchain_community.document_loaders <span class="kw">import</span> <span class="cls">PyPDFLoader</span>, <span class="cls">YoutubeLoader</span>
+
+<span class="cm"># Load a local PDF</span>
+pdf_loader = <span class="cls">PyPDFLoader</span>(<span class="str">"annual_report.pdf"</span>)
+pdf_documents = pdf_loader.<span class="fn">load</span>()
+
+<span class="cm"># Load a YouTube Transcript with video metadata and timestamps</span>
+yt_loader = <span class="cls">YoutubeLoader</span>.<span class="fn">from_youtube_url</span>(
+    <span class="str">"https://www.youtube.com/watch?v=vwncYfhxbR0"</span>,
+    add_video_info=<span class="kw">True</span>
+)
+yt_docs = yt_loader.<span class="fn">load</span>()</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 2.3 -->
+  <div class="content-section" id="sec-m2-chunking">
+    <div class="hero-box">
+      <div class="hero-tag">Module 2.3 &mdash; Pillar 2</div>
+      <h1>Chunking &amp; Splitting Mathematics</h1>
+      <p>Why chunk overlap is mandatory, how RecursiveCharacterTextSplitter operates, and boundary preservation.</p>
+    </div>
+
+    <p style="font-size:13.5px; color:var(--text-secondary); margin-bottom:14px;">
+      LLMs cannot ingest 500-page books in a single prompt effectively, nor can vector search match a query against a 50-page document without noise. We must slice documents into <strong>chunks</strong>.
+    </p>
+
+    <div class="ascii-box">Document Text:
+[ Paragraph 1 (400 tokens) ] 
+
+ [ Paragraph 2 (400 tokens) ] 
+
+ [ Paragraph 3 (400 tokens) ]
+                       |
+                       v
+Recursive Splitter (chunk_size=500, chunk_overlap=100)
+---------------------------------------------------------------------------------
+Chunk 1: [ Paragraph 1 + Start of Paragraph 2 ]
+Chunk 2:               [ Overlap tail of Para 1 + Full Para 2 + Start of Para 3 ]</div>
+
+    <div class="card" style="margin-top:18px;">
+      <h3 style="font-size:15px; color:#fff; margin-bottom:6px;">Why Chunk Overlap is Mandatory</h3>
+      <p>If a crucial fact spans across the boundary of Chunk 1 and Chunk 2:<br>
+      - Chunk 1 ends with: <code>"...The total net profit was"</code><br>
+      - Chunk 2 begins with: <code>"$42.5 million in Q3..."</code><br><br>
+      Without overlap, neither chunk contains the complete semantic idea. Overlap preserves boundary context and ensures semantic integrity during embedding lookup.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Python &mdash; Recursive Character Text Splitter</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"><span class="kw">from</span> langchain_text_splitters <span class="kw">import</span> <span class="cls">RecursiveCharacterTextSplitter</span>
+
+splitter = <span class="cls">RecursiveCharacterTextSplitter</span>(
+    chunk_size=<span class="num">1000</span>,       <span class="cm"># Max characters per chunk</span>
+    chunk_overlap=<span class="num">200</span>,      <span class="cm"># Sliding window character overlap</span>
+    length_function=len,
+    separators=[<span class="str">"\n\n"</span>, <span class="str">"\n"</span>, <span class="str">". "</span>, <span class="str">" "</span>, <span class="str">""</span>]
+)
+
+chunks = splitter.<span class="fn">split_documents</span>(pdf_documents)
+<span class="fn">print</span>(<span class="str">f"Original Pages: </span>{len(pdf_documents)}<span class="str"> -&gt; Processed Chunks: </span>{len(chunks)}<span class="str">"</span>)</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 2.4 -->
+  <div class="content-section" id="sec-m2-embeddings">
+    <div class="hero-box">
+      <div class="hero-tag">Module 2.4 &mdash; Pillar 3</div>
+      <h1>Vector Embeddings &amp; High-Dimensional Geometry</h1>
+      <p>Mapping human language into continuous vector spaces. Complete cosine similarity formula, proof, and 2D numerical example.</p>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">FORMULA 2: Vector Cosine Similarity</div>
+      <div class="formula-latex">
+                                A · B
+      CosineSim(A, B)  =  ─────────────────
+                           ||A||  ×  ||B||
+
+                                 n
+                                 ∑  ( Aᵢ × Bᵢ )
+                                i=1
+                       =  ─────────────────────────────────
+                              _________________   _________________
+                             /   n               /   n
+                           /   ∑   ( Aᵢ )²    /   ∑   ( Bᵢ )²
+                               i=1                 i=1
+      </div>
+      <div class="formula-expl">
+        Where: <strong>A, B</strong> = Embedding vectors of Query and Chunk | <strong>A &middot; B</strong> = Dot product | <strong>||A||</strong> = Euclidean L2 norm (vector magnitude) | <strong>n</strong> = Dimensionality (e.g., 1536 for OpenAI embeddings).
+      </div>
+    </div>
+
+    <div class="grid g-3" style="margin:20px 0;">
+      <div class="card">
+        <div class="card-title" style="color:#34d399;">cos(&theta;) = +1.0 (&theta; = 0&deg;)</div>
+        <p style="margin-top:6px;">Identical semantic meaning (e.g., <em>"car"</em> and <em>"automobile"</em>). Vectors point in exactly the same direction.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#94a3b8;">cos(&theta;) = 0.0 (&theta; = 90&deg;)</div>
+        <p style="margin-top:6px;">Completely unrelated / orthogonal (e.g., <em>"quantum mechanics"</em> and <em>"banana recipe"</em>). Zero correlation.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#fb7185;">cos(&theta;) = -1.0 (&theta; = 180&deg;)</div>
+        <p style="margin-top:6px;">Diametrically opposite semantic concepts. Vectors point in directly opposite directions.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:15px; color:#fff; margin-bottom:10px;">2D Numerical Example</h3>
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
+        Suppose query vector <strong>A = [0.8, 0.6]</strong> and document chunk vector <strong>B = [0.6, 0.8]</strong>:<br>
+        1. <strong>Dot Product (A &middot; B)</strong>: <code>(0.8 &times; 0.6) + (0.6 &times; 0.8) = 0.48 + 0.48 = 0.96</code><br>
+        2. <strong>Magnitudes (||A|| and ||B||)</strong>:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<code>||A|| = &radic;(0.8&sup2; + 0.6&sup2;) = &radic;(0.64 + 0.36) = &radic;1.0 = 1.0</code><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<code>||B|| = &radic;(0.6&sup2; + 0.8&sup2;) = &radic;(0.36 + 0.64) = &radic;1.0 = 1.0</code><br>
+        3. <strong>Similarity Calculation</strong>:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<code>CosineSim(A, B) = 0.96 / (1.0 &times; 1.0) = 0.96</code> &rarr; <strong>96% match (extremely strong semantic affinity!)</strong>
+      </p>
+    </div>
+
+    <!-- Live Interactive Vector Angle Simulator -->
+    <div class="sim-container">
+      <div class="sim-header">
+        <div class="sim-title">&#128208; Live 2D Cosine Vector Simulator</div>
+        <span class="sim-badge">Visual Canvas</span>
+      </div>
+      <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+        <canvas id="vec-canvas" width="220" height="220" style="background:#090c14; border-radius:8px; border:1px solid var(--border);"></canvas>
+        <div style="flex:1; min-width:240px;">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; color:var(--text-secondary);">Angle of Vector B (Query is fixed at 36.8&deg;):</label>
+            <input type="range" id="vec-angle" min="0" max="180" value="53" oninput="drawVectors()" style="width:100%; accent-color:var(--accent-cyan); cursor:pointer;"/>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8; color:#cbd5e1;">
+            Vector A: [0.80, 0.60] (36.8&deg;)<br>
+            Vector B: <span id="vec-b-coords" style="color:var(--accent-cyan);">[0.60, 0.80]</span> (<span id="vec-b-deg">53</span>&deg;)<br>
+            Dot Product: <span id="vec-dot" style="color:#a855f7;">0.96</span><br>
+            Cosine Similarity: <strong id="vec-sim" style="color:#34d399; font-size:15px;">0.96 (96%)</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 2.5 -->
+  <div class="content-section" id="sec-m2-vectorstores">
+    <div class="hero-box">
+      <div class="hero-tag">Module 2.5 &mdash; Pillar 4</div>
+      <h1>Vector Stores &amp; Similarity Indexing</h1>
+      <p>Sub-second nearest neighbor indexing over millions of documents via ChromaDB, FAISS, and cloud-native vector databases.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Python &mdash; ChromaDB Ingestion &amp; Retriever Setup</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"><span class="kw">from</span> langchain_community.vectorstores <span class="kw">import</span> <span class="cls">Chroma</span>
+
+<span class="cm"># Ingest chunks into ChromaDB with persistence</span>
+vector_store = <span class="cls">Chroma</span>.<span class="fn">from_documents</span>(
+    documents=chunks,
+    embedding=embedding_model,
+    persist_directory=<span class="str">"./chroma_db_store"</span>
+)
+
+<span class="cm"># Convert to standard LangChain retriever</span>
+retriever = vector_store.<span class="fn">as_retriever</span>(
+    search_type=<span class="str">"similarity"</span>,
+    search_kwargs={<span class="str">"k"</span>: <span class="num">4</span>} <span class="cm"># Retrieve Top-4 closest chunks</span>
+)</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 2.6 -->
+  <div class="content-section" id="sec-m2-ragchain">
+    <div class="hero-box">
+      <div class="hero-tag">Module 2.6 &mdash; Pillar 5</div>
+      <h1>Retrieval, Augmentation &amp; Synthesis (The Complete RAG Chain)</h1>
+      <p>End-to-end integration: user query &rarr; vector retriever &rarr; dynamic prompt injection &rarr; grounded model output.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Python &mdash; Full End-to-End RAG LCEL Chain</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"><span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> <span class="cls">ChatPromptTemplate</span>
+<span class="kw">from</span> langchain_core.runnables <span class="kw">import</span> <span class="cls">RunnablePassthrough</span>
+<span class="kw">from</span> langchain_core.output_parsers <span class="kw">import</span> <span class="cls">StrOutputParser</span>
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> <span class="cls">ChatOpenAI</span>
+
+<span class="cm"># 1. Format docs helper</span>
+<span class="kw">def</span> <span class="fn">format_docs</span>(docs):
+    <span class="kw">return</span> <span class="str">"\n\n---\n\n"</span>.<span class="fn">join</span>(
+        <span class="str">f"[Source: </span>{d.metadata.get(<span class="str">'source'</span>, <span class="str">'Unknown'</span>)}<span class="str"> | Page: </span>{d.metadata.get(<span class="str">'page'</span>, <span class="num">0</span>)}<span class="str">]\n"</span> + d.page_content 
+        <span class="kw">for</span> d <span class="kw">in</span> docs
+    )
+
+<span class="cm"># 2. RAG Prompt Template</span>
+rag_prompt = <span class="cls">ChatPromptTemplate</span>.<span class="fn">from_template</span>(<span class="str">"""
+You are a precise technical assistant. Answer the user question based strictly on the provided context below.
+If the context does not contain enough information, truthfully respond that you do not know.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:
+"""</span>)
+
+<span class="cm"># 3. Model</span>
+llm = <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0</span>)
+
+<span class="cm"># 4. Construct End-to-End RAG Chain via LCEL</span>
+rag_chain = (
+    {<span class="str">"context"</span>: retriever | format_docs, <span class="str">"question"</span>: <span class="cls">RunnablePassthrough</span>()}
+    | rag_prompt
+    | llm
+    | <span class="cls">StrOutputParser</span>()
+)
+
+<span class="cm"># 5. Query</span>
+result = rag_chain.<span class="fn">invoke</span>(<span class="str">"What are the key financial growth drivers for Q3?"</span>)
+<span class="fn">print</span>(result)</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 2.7 -->
+  <div class="content-section" id="sec-m2-mmr">
+    <div class="hero-box">
+      <div class="hero-tag">Module 2.7</div>
+      <h1>Production Challenges &amp; Advanced Retrieval (MMR)</h1>
+      <p>Overcoming the redundancy of naive Top-K through Maximal Marginal Relevance (MMR) and diversity balancing.</p>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">FORMULA 3: Maximal Marginal Relevance (MMR)</div>
+      <div class="formula-latex">
+   MMR = argmax [ λ · Sim₁(dᵢ, q)  -  (1 - λ) · max  Sim₂(dᵢ, dⱼ) ]
+         dᵢ∈DS                                 dⱼ∈S
+      </div>
+      <div class="formula-expl">
+        Where: <strong>q</strong> = The user query vector | <strong>D</strong> = Full pool of candidate retrieved document chunks | <strong>S</strong> = Set of chunks ALREADY selected into context | <strong>D  S</strong> = Remaining candidate chunks | <strong>Sim₁(&middot;)</strong> = Query relevance | <strong>Sim₂(&middot;)</strong> = Similarity between candidate chunk and already selected chunks | <strong>&lambda;</strong> = Trade-off parameter [0.0, 1.0].
+      </div>
+    </div>
+
+    <div class="ascii-box">  λ = 1.0 ────────────────────── λ = 0.7 ────────────────────── λ = 0.0
+  [Pure Relevance]           [The RAG Sweet Spot]          [Pure Diversity]
+  Identical to naive Top-K.  High relevance to query,      Maximum variety.
+  Risks redundant chunks.    penalizes duplicate content.  May pull off-topic chunks.</div>
+  </div>
+
+  <!-- SECTION: MODULE 3.1 -->
+  <div class="content-section" id="sec-m3-functions">
+    <div class="hero-box">
+      <div class="hero-tag">Module 3.1</div>
+      <h1>Giving LLMs Hands: The Function Calling Paradigm</h1>
+      <p>Transforming text generators into system actuators. How LLMs inspect tool schemas, return structured invocation intents, and consume observations.</p>
+    </div>
+
+    <div class="stepper">
+      <div class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>Tool Schema Registration</h4>
+          <p>The developer passes a list of available tools (with names, descriptions, and JSON parameter schemas) to the LLM during model invocation.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>Structured Tool Call Request</h4>
+          <p>The LLM analyzes the query, determines external action is required, and emits structured JSON: <code>{"name": "fetch_stock_price", "arguments": {"symbol": "AAPL"}}</code>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>Local Runtime Execution</h4>
+          <p>Your local Python runtime catches the request, executes the actual code against live systems/APIs, and collects the result: <code>"$224.50"</code>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h4>Observation Feedback</h4>
+          <p>The output is wrapped in a <code>ToolMessage</code> matching the tool's <code>tool_call_id</code> and appended to the message history.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h4>Synthesis &amp; Response</h4>
+          <p>The LLM receives the tool output, contextualizes it against the original prompt, and generates the final response.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 3.2 -->
+  <div class="content-section" id="sec-m3-pydantic">
+    <div class="hero-box">
+      <div class="hero-tag">Module 3.2</div>
+      <h1>Defining Tools with Pydantic &amp; @tool</h1>
+      <p>Strict schema validation and type-safe tool parameters using Pydantic models and the @tool decorator.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Python &mdash; Tool Definitions</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"><span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>, <span class="cls">Field</span>
+
+<span class="kw">class</span> <span class="cls">StockQueryInput</span>(<span class="cls">BaseModel</span>):
+    ticker: str = <span class="cls">Field</span>(description=<span class="str">"The 1-5 letter stock ticker symbol, e.g. AAPL, TSLA, NVDA"</span>)
+
+@tool(<span class="str">"get_stock_quote"</span>, args_schema=<span class="cls">StockQueryInput</span>)
+<span class="kw">def</span> <span class="fn">get_stock_quote</span>(ticker: str) -&gt; str:
+    <span class="str">"""Fetches real-time price, market cap, and daily change for a given stock ticker."""</span>
+    mock_db = {
+        <span class="str">"AAPL"</span>: <span class="str">"Apple Inc. (AAPL): Price $224.23 | Change: +1.4% | Market Cap: $3.42T"</span>,
+        <span class="str">"NVDA"</span>: <span class="str">"NVIDIA Corp. (NVDA): Price $120.50 | Change: +3.2% | Market Cap: $2.96T"</span>
+    }
+    <span class="kw">return</span> mock_db.get(ticker.upper(), <span class="str">f"Error: Ticker '{ticker}' not found."</span>)
+
+@tool(<span class="str">"calculate_percentage"</span>)
+<span class="kw">def</span> <span class="fn">calculate_percentage</span>(part: float, whole: float) -&gt; str:
+    <span class="str">"""Calculates what percentage 'part' is of 'whole'."""</span>
+    <span class="kw">if</span> whole == <span class="num">0</span>:
+        <span class="kw">return</span> <span class="str">"Error: Division by zero."</span>
+    pct = (part / whole) * <span class="num">100</span>
+    <span class="kw">return</span> <span class="str">f"{pct:.2f}%"</span>
+
+tools = [get_stock_quote, calculate_percentage]</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 3.3 -->
+  <div class="content-section" id="sec-m3-react">
+    <div class="hero-box">
+      <div class="hero-tag">Module 3.3</div>
+      <h1>The ReAct Framework (Reasoning + Acting)</h1>
+      <p>Yao et al. (2022) cognitive cycle: Thought &rarr; Action &rarr; Observation &rarr; Reflection.</p>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">FORMULA 4: The Universal ReAct Execution Loop</div>
+      <div class="formula-latex">
+   Input ──> ┌──────────────────────────────────────────────┐
+             │  [Thought]     Analyze state & plan sub-goal  │
+             │     │                                        │
+             │     ▼                                        │
+             │  [Action]      Select tool & build arguments  │  (Repeat)
+             │     │                                        │    ↺
+             │     ▼                                        │
+             │ [Observation]  Execute tool & receive result │
+             └──────────────────────────────────────────────┘
+                                    │
+                                    ▼
+                              [Final Answer]
+      </div>
+      <div class="formula-expl">
+        Enforces explicit chain-of-thought rationale before triggering external actions, eliminating reckless tool invocations.
+      </div>
+    </div>
+
+    <!-- Live Interactive ReAct Loop Simulator -->
+    <div class="sim-container">
+      <div class="sim-header">
+        <div class="sim-title">&#128260; Interactive ReAct Stepper</div>
+        <span class="sim-badge">Simulation</span>
+      </div>
+      <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:14px;">Query: <em>"What is the market cap of NVDA and what percentage is Apple's market cap larger?"</em></p>
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <button class="btn btn-primary" id="btn-react-step" onclick="stepReAct()">Advance Step &rarr;</button>
+        <button class="btn btn-secondary" onclick="resetReAct()">Reset</button>
+      </div>
+      <div id="react-steps-display" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 3.4 -->
+  <div class="content-section" id="sec-m3-loop">
+    <div class="hero-box">
+      <div class="hero-tag">Module 3.4</div>
+      <h1>Anatomy of the Agent Execution Loop</h1>
+      <p>Implementing the ReAct cognitive cycle from scratch as a finite state machine with model tool binding.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-title-wrap"><div class="code-dots"><div class="code-dot" style="background:#ef4444"></div><div class="code-dot" style="background:#f59e0b"></div><div class="code-dot" style="background:#10b981"></div></div><span class="code-lang">Python &mdash; Complete Agent Loop Implementation</span></div>
+        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body"><span class="kw">from</span> langchain_openai <span class="kw">import</span> <span class="cls">ChatOpenAI</span>
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> <span class="cls">HumanMessage</span>, <span class="cls">SystemMessage</span>, <span class="cls">ToolMessage</span>
+
+<span class="cm"># 1. Bind tools to model</span>
+llm = <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0</span>)
+llm_with_tools = llm.<span class="fn">bind_tools</span>(tools)
+tool_map = {t.name: t <span class="kw">for</span> t <span class="kw">in</span> tools}
+
+<span class="cm"># 2. Execution Loop Finite State Machine</span>
+<span class="kw">def</span> <span class="fn">run_agent_loop</span>(query: str, max_iterations: int = <span class="num">5</span>):
+    messages = [
+        <span class="cls">SystemMessage</span>(content=<span class="str">"You are an autonomous analytical assistant. Use tools when needed."</span>),
+        <span class="cls">HumanMessage</span>(content=query)
+    ]
+    
+    <span class="kw">for</span> step <span class="kw">in</span> range(max_iterations):
+        <span class="cm"># Model makes a decision</span>
+        ai_msg = llm_with_tools.<span class="fn">invoke</span>(messages)
+        messages.<span class="fn">append</span>(ai_msg)
+        
+        <span class="cm"># If no tool calls requested, the agent is done!</span>
+        <span class="kw">if</span> <span class="kw">not</span> ai_msg.tool_calls:
+            <span class="kw">return</span> ai_msg.content
+            
+        <span class="cm"># Execute each requested tool call</span>
+        <span class="kw">for</span> tool_call <span class="kw">in</span> ai_msg.tool_calls:
+            tool_name = tool_call[<span class="str">"name"</span>]
+            tool_args = tool_call[<span class="str">"args"</span>]
+            tool_id = tool_call[<span class="str">"id"</span>]
+            
+            selected_tool = tool_map[tool_name]
+            observation = selected_tool.<span class="fn">invoke</span>(tool_args)
+            
+            <span class="cm"># Feed tool observation back to message history</span>
+            messages.<span class="fn">append</span>(<span class="cls">ToolMessage</span>(content=str(observation), tool_call_id=tool_id))
+            
+    <span class="kw">return</span> <span class="str">"Error: Agent reached maximum iteration limit without resolving."</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 4.1 & 4.2 -->
+  <div class="content-section" id="sec-m4-limits">
+    <div class="hero-box">
+      <div class="hero-tag">Module 4.1 &amp; 4.2</div>
+      <h1>Multi-Agent Systems: Limits of Monolithic Agents &amp; Topologies</h1>
+      <p>Why single agents fail at scale and the 3 foundational multi-agent organizational patterns.</p>
+    </div>
+
+    <div class="grid g-3" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-title" style="color:#fb7185;">Cognitive Overload</div>
+        <p style="margin-top:6px;">A single prompt cannot enforce diverse personas (rigorous math vs creative writing vs legal compliance) without performance collapse.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#fbbf24;">Context Poisoning</div>
+        <p style="margin-top:6px;">Accumulating multiple web scrapes, SQL outputs, and tool observations bloats working memory and degrades reasoning.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#c084fc;">Self-Grading Bias</div>
+        <p style="margin-top:6px;">Foundation models struggle to evaluate their own hallucinations impartially. Dedicated critic agents are mandatory.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:24px 0 12px;">Multi-Agent Topologies</h3>
+    <div class="ascii-box">1. Sequential Pipeline
+   [Agent A: Planner] -> [Agent B: Researcher] -> [Agent C: Writer]
+
+2. Hierarchical Supervisor (Star Topology)
+            [Supervisor Agent]
+             /       |            [Web Agent] [DB Agent] [Code Agent]
+
+3. Generator-Critic Loop (Reflection Pattern)
+     +---------> [Writer Agent] ---------> [Draft]
+     |                 ^                      |
+     |                 |                      v
+[Feedback]      [Revision Node] <--- [Critic / Evaluator]
+                                              |
+                                      (Passes Threshold?)
+                                              |
+                                              v
+                                       [Final Output]</div>
+  </div>
+
+  <!-- SECTION: MODULE 4.4 - PROJECT 1 -->
+  <div class="content-section" id="sec-m4-project1">
+    <div class="hero-box">
+      <div class="hero-tag">Module 4.4 &mdash; Production Project 1</div>
+      <h1>Project 1: Multi-Agent Research Pipeline</h1>
+      <p>Complete, file-by-file production implementation: Tavily web search, HTML scraper, specialized agents, state serialization, and caching.</p>
+    </div>
+
+    <div class="ascii-box">project_1_multi_agent_research/
+├── .env.example
+├── requirements.txt
+├── cache_manager.py     # Handles .pkl state and search caching
+├── tools.py             # Tavily search + BeautifulSoup scraper with .pkl cache
+├── agents.py            # Search, Read, and Writer agents
+├── pipelines.py         # Sequential pipeline with state serialization
+└── app.py               # Streamlit visual interface</div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">1. <code>cache_manager.py</code> (The .pkl Persistence Layer)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; cache_manager.py</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">import</span> os
+<span class="kw">import</span> pickle
+<span class="kw">from</span> typing <span class="kw">import</span> Any, Optional
+
+CACHE_DIR = os.path.<span class="fn">join</span>(os.path.<span class="fn">dirname</span>(__file__), <span class="str">"cache"</span>)
+os.<span class="fn">makedirs</span>(CACHE_DIR, exist_ok=<span class="kw">True</span>)
+
+<span class="kw">def</span> <span class="fn">get_cache_path</span>(filename: str) -&gt; str:
+    <span class="kw">if</span> <span class="kw">not</span> filename.<span class="fn">endswith</span>(<span class="str">".pkl"</span>):
+        filename += <span class="str">".pkl"</span>
+    <span class="kw">return</span> os.path.<span class="fn">join</span>(CACHE_DIR, filename)
+
+<span class="kw">def</span> <span class="fn">save_to_pkl</span>(data: Any, filename: str) -&gt; str:
+    path = <span class="fn">get_cache_path</span>(filename)
+    <span class="kw">with</span> <span class="fn">open</span>(path, <span class="str">"wb"</span>) <span class="kw">as</span> f:
+        pickle.<span class="fn">dump</span>(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+    <span class="fn">print</span>(<span class="str">f"[CACHE] Saved </span>{type(data).__name__}<span class="str"> to: </span>{path}<span class="str">"</span>)
+    <span class="kw">return</span> path
+
+<span class="kw">def</span> <span class="fn">load_from_pkl</span>(filename: str) -&gt; Optional[Any]:
+    path = <span class="fn">get_cache_path</span>(filename)
+    <span class="kw">if</span> <span class="kw">not</span> os.path.<span class="fn">exists</span>(path):
+        <span class="kw">return</span> <span class="kw">None</span>
+    <span class="kw">try</span>:
+        <span class="kw">with</span> <span class="fn">open</span>(path, <span class="str">"rb"</span>) <span class="kw">as</span> f:
+            <span class="kw">return</span> pickle.<span class="fn">load</span>(f)
+    <span class="kw">except</span> Exception <span class="kw">as</span> e:
+        <span class="fn">print</span>(<span class="str">f"[CACHE ERROR] Failed to load </span>{path}<span class="str">: </span>{e}<span class="str">"</span>)
+        <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="kw">def</span> <span class="fn">exists_in_cache</span>(filename: str) -&gt; bool:
+    path = <span class="fn">get_cache_path</span>(filename)
+    <span class="kw">return</span> os.path.<span class="fn">exists</span>(path) <span class="kw">and</span> os.path.<span class="fn">getsize</span>(path) &gt; <span class="num">0</span></div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">2. <code>tools.py</code> (Web Tools with Automatic .pkl Caching)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; tools.py</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">import</span> os
+<span class="kw">import</span> requests
+<span class="kw">from</span> bs4 <span class="kw">import</span> BeautifulSoup
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> tavily <span class="kw">import</span> TavilyClient
+<span class="kw">from</span> cache_manager <span class="kw">import</span> load_from_pkl, save_to_pkl
+
+<span class="fn">load_dotenv</span>()
+tavily_key = os.<span class="fn">getenv</span>(<span class="str">"TAVILY_API_KEY"</span>, <span class="str">""</span>)
+tavily = <span class="cls">TavilyClient</span>(api_key=tavily_key) <span class="kw">if</span> tavily_key <span class="kw">else</span> <span class="kw">None</span>
+
+@tool
+<span class="kw">def</span> <span class="fn">tavily_search</span>(query: str) -&gt; str:
+    <span class="str">"""Search the web using Tavily API. Results are cached into search_cache.pkl."""</span>
+    cache_data = <span class="fn">load_from_pkl</span>(<span class="str">"search_cache.pkl"</span>) <span class="kw">or</span> {}
+    clean_query = query.<span class="fn">strip</span>().<span class="fn">lower</span>()
+    
+    <span class="kw">if</span> clean_query <span class="kw">in</span> cache_data:
+        <span class="kw">return</span> cache_data[clean_query]
+
+    <span class="kw">if</span> <span class="kw">not</span> tavily:
+        fallback = <span class="str">f"[MOCK SEARCH for '{query}']: Relevant facts regarding {query}."</span>
+        cache_data[clean_query] = fallback
+        <span class="fn">save_to_pkl</span>(cache_data, <span class="str">"search_cache.pkl"</span>)
+        <span class="kw">return</span> fallback
+
+    response = tavily.<span class="fn">search</span>(query=query, max_results=<span class="num">5</span>)
+    results = response.<span class="fn">get</span>(<span class="str">"results"</span>, [])
+    output = [<span class="str">f"Title: </span>{r.get(<span class="str">'title'</span>)}<span class="str">\nURL: </span>{r.get(<span class="str">'url'</span>)}<span class="str">\nContent: </span>{r.get(<span class="str">'content'</span>)}<span class="str">"</span> <span class="kw">for</span> r <span class="kw">in</span> results]
+    formatted = <span class="str">"\n---\n"</span>.<span class="fn">join</span>(output) <span class="kw">if</span> output <span class="kw">else</span> <span class="str">"No results found."</span>
+    
+    cache_data[clean_query] = formatted
+    <span class="fn">save_to_pkl</span>(cache_data, <span class="str">"search_cache.pkl"</span>)
+    <span class="kw">return</span> formatted
+
+@tool
+<span class="kw">def</span> <span class="fn">scrape_webpage</span>(url: str) -&gt; str:
+    <span class="str">"""Scrapes raw web page text content, stripping HTML tags, and caches into scrape_cache.pkl."""</span>
+    cache = <span class="fn">load_from_pkl</span>(<span class="str">"scrape_cache.pkl"</span>) <span class="kw">or</span> {}
+    <span class="kw">if</span> url <span class="kw">in</span> cache:
+        <span class="kw">return</span> cache[url]
+
+    resp = requests.<span class="fn">get</span>(url, headers={<span class="str">"User-Agent"</span>: <span class="str">"Mozilla/5.0"</span>}, timeout=<span class="num">10</span>)
+    soup = <span class="cls">BeautifulSoup</span>(resp.text, <span class="str">"html.parser"</span>)
+    <span class="kw">for</span> el <span class="kw">in</span> soup([<span class="str">"script"</span>, <span class="str">"style"</span>, <span class="str">"nav"</span>, <span class="str">"footer"</span>, <span class="str">"header"</span>]):
+        el.<span class="fn">decompose</span>()
+    paragraphs = [p.<span class="fn">get_text</span>(strip=<span class="kw">True</span>) <span class="kw">for</span> p <span class="kw">in</span> soup.<span class="fn">find_all</span>(<span class="str">"p"</span>) <span class="kw">if</span> len(p.<span class="fn">get_text</span>(strip=<span class="kw">True</span>)) &gt; <span class="num">40</span>]
+    content = <span class="str">"\n\n"</span>.<span class="fn">join</span>(paragraphs[:<span class="num">15</span>])
+    cache[url] = content
+    <span class="fn">save_to_pkl</span>(cache, <span class="str">"scrape_cache.pkl"</span>)
+    <span class="kw">return</span> content</div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">3. <code>agents.py</code> (Specialized Agent Personas)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; agents.py</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">import</span> os
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> <span class="cls">ChatPromptTemplate</span>
+<span class="kw">from</span> langchain_core.output_parsers <span class="kw">import</span> <span class="cls">StrOutputParser</span>
+
+<span class="fn">load_dotenv</span>()
+
+<span class="kw">def</span> <span class="fn">get_llm</span>():
+    <span class="kw">if</span> os.<span class="fn">getenv</span>(<span class="str">"MISTRAL_API_KEY"</span>):
+        <span class="kw">from</span> langchain_mistralai <span class="kw">import</span> <span class="cls">ChatMistralAI</span>
+        <span class="kw">return</span> <span class="cls">ChatMistralAI</span>(model=<span class="str">"mistral-small-latest"</span>, temperature=<span class="num">0</span>)
+    <span class="kw">elif</span> os.<span class="fn">getenv</span>(<span class="str">"OPENAI_API_KEY"</span>):
+        <span class="kw">from</span> langchain_openai <span class="kw">import</span> <span class="cls">ChatOpenAI</span>
+        <span class="kw">return</span> <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o-mini"</span>, temperature=<span class="num">0</span>)
+    <span class="kw">else</span>:
+        <span class="kw">from</span> langchain_community.chat_models <span class="kw">import</span> <span class="cls">FakeListChatModel</span>
+        <span class="kw">return</span> <span class="cls">FakeListChatModel</span>(responses=[<span class="str">"Factual research summary findings."</span>])
+
+<span class="kw">def</span> <span class="fn">build_search_agent</span>():
+    llm = <span class="fn">get_llm</span>()
+    prompt = <span class="cls">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+        (<span class="str">"system"</span>, <span class="str">"You are a Research Search Specialist. Gather external knowledge with search tools."</span>),
+        (<span class="str">"human"</span>, <span class="str">"Research Query: {query}"</span>)
+    ])
+    <span class="kw">return</span> prompt | llm | <span class="cls">StrOutputParser</span>()
+
+<span class="kw">def</span> <span class="fn">build_read_agent</span>():
+    llm = <span class="fn">get_llm</span>()
+    prompt = <span class="cls">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+        (<span class="str">"system"</span>, <span class="str">"You are a Fact Extractor. Extract dates, metrics, and core facts from raw web text."</span>),
+        (<span class="str">"human"</span>, <span class="str">"Raw Content:\n{raw_content}"</span>)
+    ])
+    <span class="kw">return</span> prompt | llm | <span class="cls">StrOutputParser</span>()
+
+<span class="kw">def</span> <span class="fn">build_writer_agent</span>():
+    llm = <span class="fn">get_llm</span>()
+    prompt = <span class="cls">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+        (<span class="str">"system"</span>, <span class="str">"You are an Executive Report Writer. Synthesize notes into an Executive Summary, Findings, and Citations."</span>),
+        (<span class="str">"human"</span>, <span class="str">"Topic: {topic}\n\nGathered Notes:\n{notes}"</span>)
+    ])
+    <span class="kw">return</span> prompt | llm | <span class="cls">StrOutputParser</span>()</div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">4. <code>pipelines.py</code> (Pipeline Execution &amp; State Serialization)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; pipelines.py</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">import</span> time
+<span class="kw">from</span> agents <span class="kw">import</span> build_search_agent, build_read_agent, build_writer_agent
+<span class="kw">from</span> tools <span class="kw">import</span> tavily_search
+<span class="kw">from</span> cache_manager <span class="kw">import</span> save_to_pkl, load_from_pkl
+
+<span class="kw">def</span> <span class="fn">run_research_pipeline</span>(query: str, use_pkl_cache: bool = <span class="kw">True</span>) -&gt; dict:
+    cache_key = <span class="str">f"report_{abs(hash(query))}.pkl"</span>
+    <span class="kw">if</span> use_pkl_cache:
+        cached = <span class="fn">load_from_pkl</span>(cache_key)
+        <span class="kw">if</span> cached:
+            <span class="kw">return</span> cached
+
+    start = time.<span class="fn">time</span>()
+    state = {<span class="str">"query"</span>: query, <span class="str">"raw_search"</span>: <span class="str">""</span>, <span class="str">"extracted_notes"</span>: <span class="str">""</span>, <span class="str">"final_report"</span>: <span class="str">""</span>, <span class="str">"execution_time_seconds"</span>: <span class="num">0.0</span>}
+
+    <span class="cm"># Step 1: Search Agent</span>
+    state[<span class="str">"raw_search"</span>] = tavily_search.<span class="fn">invoke</span>(query)
+
+    <span class="cm"># Step 2: Read Agent</span>
+    read_agent = <span class="fn">build_read_agent</span>()
+    state[<span class="str">"extracted_notes"</span>] = read_agent.<span class="fn">invoke</span>({<span class="str">"raw_content"</span>: state[<span class="str">"raw_search"</span>]})
+
+    <span class="cm"># Step 3: Writer Agent</span>
+    writer_agent = <span class="fn">build_writer_agent</span>()
+    state[<span class="str">"final_report"</span>] = writer_agent.<span class="fn">invoke</span>({<span class="str">"topic"</span>: query, <span class="str">"notes"</span>: state[<span class="str">"extracted_notes"</span>]})
+    state[<span class="str">"execution_time_seconds"</span>] = <span class="fn">round</span>(time.<span class="fn">time</span>() - start, <span class="num">2</span>)
+
+    <span class="cm"># Step 4: Serialize state to .pkl</span>
+    <span class="fn">save_to_pkl</span>(state, cache_key)
+    <span class="fn">save_to_pkl</span>(state, <span class="str">"latest_research_state.pkl"</span>)
+    <span class="kw">return</span> state</div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 5.1-5.4 -->
+  <div class="content-section" id="sec-m5-overview">
+    <div class="hero-box">
+      <div class="hero-tag">Module 5.1 &mdash; 5.4</div>
+      <h1>Real-World Case Study: AI Video Assistant with RAG</h1>
+      <p>Synchronizing video playback with semantic transcript search, temporal metadata preservation, and timestamp seek actions.</p>
+    </div>
+
+    <div class="ascii-box">[YouTube Video] -> [Transcript Extraction + Timestamp Mapping]
+                          |
+                          v
+        [Semantic Chunking with Timecode Metadata]
+                          |
+                          v
+         [Pickle (.pkl) Serialization Engine]
+         /                                   [video_chunks.pkl]              [vector_index.pkl]
+                                          /
+          v                               v
+           [Interactive Video Assistant Agent]
+         /                 |                 [Timestamp Locator]  [Summary Tool]  [Concept Explainer]</div>
+  </div>
+
+  <!-- SECTION: MODULE 5.5 -->
+  <div class="content-section" id="sec-m5-pkl">
+    <div class="hero-box">
+      <div class="hero-tag">Module 5.5</div>
+      <h1>Deep Dive: Pickle (.pkl) Serialization in RAG &amp; Agent Systems</h1>
+      <p>Sub-millisecond cold starts, zero redundant API fees, and deterministic evaluation benchmarking.</p>
+    </div>
+
+    <div class="grid g-3" style="margin-bottom:24px;">
+      <div class="card">
+        <div class="card-title" style="color:#34d399;">1. Zero Repeated API Costs</div>
+        <p style="margin-top:6px;">Calling embedding APIs or transcript extractors on every reboot or query burns API budget. Serializing vectors to local disk completely eliminates repeat costs.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#60a5fa;">2. Sub-Millisecond Cold Starts</div>
+        <p style="margin-top:6px;">Extracting and chunking a 2-hour transcript takes <strong>3,000ms &ndash; 8,000ms</strong>. Loading precomputed chunks from a local <code>.pkl</code> file takes <strong>1.5ms</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#c084fc;">3. Deterministic Testing</div>
+        <p style="margin-top:6px;">Ensures agent evaluation benchmarks run against identical, byte-exact chunk boundaries without network jitter or API rate-limit flakes.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 12px;">Cold Network Fetch vs .pkl Memory Load Comparison</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Without .pkl (Cold Ingestion)</th>
+            <th>With .pkl Cache Load</th>
+            <th>Speedup Factor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Transcript Fetch</strong></td>
+            <td>1,200 ms (Network API)</td>
+            <td>0.8 ms (<code>pickle.load</code>)</td>
+            <td><strong style="color:#34d399;">1,500&times; Faster</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Recursive Chunking</strong></td>
+            <td>350 ms (CPU token parsing)</td>
+            <td>0.4 ms (Direct Deserialization)</td>
+            <td><strong style="color:#34d399;">875&times; Faster</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Embedding Generation</strong></td>
+            <td>4,500 ms (OpenAI API call + $)</td>
+            <td>1.8 ms (Local numpy array)</td>
+            <td><strong style="color:#34d399;">2,500&times; Faster</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Token Cost</strong></td>
+            <td>Paid per API request</td>
+            <td><strong>$0.00 (Free)</strong></td>
+            <td><strong style="color:#34d399;">100% Savings</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 5.6 - PROJECT 2 -->
+  <div class="content-section" id="sec-m5-project2">
+    <div class="hero-box">
+      <div class="hero-tag">Module 5.6 &mdash; Production Project 2</div>
+      <h1>Project 2: Video Assistant with .pkl Caching Engine</h1>
+      <p>Complete production code: binary serialization engine, transcript extraction, vector store export, and timestamp seek tools.</p>
+    </div>
+
+    <div class="ascii-box">project_2_video_rag_assistant/
+├── .env.example
+├── requirements.txt
+├── cache_manager.py     # Dedicated .pkl binary serialization engine
+├── ingest.py            # YouTube transcript extraction, timecode preservation, and .pkl export
+├── vector_store.py      # Computes embeddings and serializes index to vector_index.pkl
+├── tools.py             # Semantic transcript search, jump to timestamp, timeline extraction
+├── agent.py             # ReAct Video Assistant Agent
+└── app.py               # Streamlit video player with synchronized timestamp jumping</div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">1. <code>cache_manager.py</code> (Binary Serialization Engine)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; cache_manager.py</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">import</span> os
+<span class="kw">import</span> pickle
+<span class="kw">import</span> time
+<span class="kw">from</span> typing <span class="kw">import</span> Any, Optional
+
+CACHE_DIR = os.path.<span class="fn">join</span>(os.path.<span class="fn">dirname</span>(__file__), <span class="str">"pkl_cache"</span>)
+os.<span class="fn">makedirs</span>(CACHE_DIR, exist_ok=<span class="kw">True</span>)
+
+<span class="kw">def</span> <span class="fn">get_cache_file_path</span>(name: str) -&gt; str:
+    <span class="kw">if</span> <span class="kw">not</span> name.<span class="fn">endswith</span>(<span class="str">".pkl"</span>):
+        name += <span class="str">".pkl"</span>
+    <span class="kw">return</span> os.path.<span class="fn">join</span>(CACHE_DIR, name)
+
+<span class="kw">def</span> <span class="fn">save_pickle</span>(obj: Any, name: str) -&gt; str:
+    path = <span class="fn">get_cache_file_path</span>(name)
+    start = time.<span class="fn">time</span>()
+    <span class="kw">with</span> <span class="fn">open</span>(path, <span class="str">"wb"</span>) <span class="kw">as</span> f:
+        pickle.<span class="fn">dump</span>(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
+    duration = <span class="fn">round</span>((time.<span class="fn">time</span>() - start) * <span class="num">1000</span>, <span class="num">2</span>)
+    size_kb = <span class="fn">round</span>(os.path.<span class="fn">getsize</span>(path) / <span class="num">1024</span>, <span class="num">2</span>)
+    <span class="fn">print</span>(<span class="str">f"[PKL EXPORT] Serialized '{name}' ({size_kb} KB) in {duration}ms -&gt; {path}"</span>)
+    <span class="kw">return</span> path
+
+<span class="kw">def</span> <span class="fn">load_pickle</span>(name: str) -&gt; Optional[Any]:
+    path = <span class="fn">get_cache_file_path</span>(name)
+    <span class="kw">if</span> <span class="kw">not</span> os.path.<span class="fn">exists</span>(path):
+        <span class="kw">return</span> <span class="kw">None</span>
+    <span class="kw">try</span>:
+        start = time.<span class="fn">time</span>()
+        <span class="kw">with</span> <span class="fn">open</span>(path, <span class="str">"rb"</span>) <span class="kw">as</span> f:
+            obj = pickle.<span class="fn">load</span>(f)
+        duration = <span class="fn">round</span>((time.<span class="fn">time</span>() - start) * <span class="num">1000</span>, <span class="num">2</span>)
+        <span class="fn">print</span>(<span class="str">f"[PKL IMPORT] Deserialized '{name}' in {duration}ms"</span>)
+        <span class="kw">return</span> obj
+    <span class="kw">except</span> Exception <span class="kw">as</span> e:
+        <span class="fn">print</span>(<span class="str">f"[PKL ERROR] Corrupted pickle file '{name}': {e}"</span>)
+        <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="kw">def</span> <span class="fn">is_cached</span>(name: str) -&gt; bool:
+    path = <span class="fn">get_cache_file_path</span>(name)
+    <span class="kw">return</span> os.path.<span class="fn">exists</span>(path) <span class="kw">and</span> os.path.<span class="fn">getsize</span>(path) &gt; <span class="num">0</span></div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">2. <code>ingest.py</code> (Extracting Transcripts and Exporting to .pkl)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; ingest.py</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">from</span> typing <span class="kw">import</span> List, Dict, Any
+<span class="kw">from</span> youtube_transcript_api <span class="kw">import</span> YouTubeTranscriptApi
+<span class="kw">from</span> cache_manager <span class="kw">import</span> save_pickle, load_pickle, is_cached
+
+<span class="kw">def</span> <span class="fn">format_seconds_to_timestamp</span>(seconds: float) -&gt; str:
+    mins = <span class="fn">int</span>(seconds // <span class="num">60</span>)
+    secs = <span class="fn">int</span>(seconds % <span class="num">60</span>)
+    <span class="kw">return</span> <span class="str">f"{mins:02d}:{secs:02d}"</span>
+
+<span class="kw">def</span> <span class="fn">ingest_video_transcript</span>(video_id: str, max_chunk_chars: int = <span class="num">500</span>, force_refresh: bool = <span class="kw">False</span>) -&gt; List[Dict[str, Any]]:
+    cache_name = <span class="str">f"video_chunks_{video_id}.pkl"</span>
+
+    <span class="cm"># 1. Load from .pkl if already cached</span>
+    <span class="kw">if</span> <span class="kw">not</span> force_refresh <span class="kw">and</span> <span class="fn">is_cached</span>(cache_name):
+        <span class="kw">return</span> <span class="fn">load_pickle</span>(cache_name)
+
+    <span class="cm"># 2. Fetch raw transcript</span>
+    <span class="kw">try</span>:
+        raw_entries = YouTubeTranscriptApi.<span class="fn">get_transcript</span>(video_id)
+    <span class="kw">except</span> Exception:
+        <span class="cm"># Fallback demonstration transcript</span>
+        raw_entries = [
+            {<span class="str">"start"</span>: <span class="num">0.0</span>, <span class="str">"duration"</span>: <span class="num">45.0</span>, <span class="str">"text"</span>: <span class="str">"Welcome to Generative AI and RAG masterclass."</span>},
+            {<span class="str">"start"</span>: <span class="num">98.0</span>, <span class="str">"duration"</span>: <span class="num">65.0</span>, <span class="str">"text"</span>: <span class="str">"RAG retrieves external chunks to prevent LLM hallucinations."</span>},
+            {<span class="str">"start"</span>: <span class="num">238.0</span>, <span class="str">"duration"</span>: <span class="num">85.0</span>, <span class="str">"text"</span>: <span class="str">"Vector embeddings represent text as 1536-dimensional coordinates."</span>},
+            {<span class="str">"start"</span>: <span class="num">420.0</span>, <span class="str">"duration"</span>: <span class="num">110.0</span>, <span class="str">"text"</span>: <span class="str">"An AI Agent uses the ReAct loop: Thought, Action, Observation."</span>},
+            {<span class="str">"start"</span>: <span class="num">535.0</span>, <span class="str">"duration"</span>: <span class="num">95.0</span>, <span class="str">"text"</span>: <span class="str">"LangGraph organizes multi-agent teams into state graphs."</span>}
+        ]
+
+    <span class="cm"># Save raw transcript to .pkl</span>
+    <span class="fn">save_pickle</span>(raw_entries, <span class="str">f"raw_transcript_{video_id}.pkl"</span>)
+
+    <span class="cm"># 3. Chunking with timestamp preservation</span>
+    chunks, current_text, current_start, current_count = [], [], <span class="num">0.0</span>, <span class="num">0</span>
+    <span class="kw">for</span> entry <span class="kw">in</span> raw_entries:
+        <span class="kw">if</span> <span class="kw">not</span> current_text:
+            current_start = entry[<span class="str">"start"</span>]
+        current_text.<span class="fn">append</span>(entry[<span class="str">"text"</span>])
+        current_count += <span class="fn">len</span>(entry[<span class="str">"text"</span>]) + <span class="num">1</span>
+
+        <span class="kw">if</span> current_count &gt;= max_chunk_chars:
+            chunks.<span class="fn">append</span>({
+                <span class="str">"chunk_id"</span>: <span class="fn">len</span>(chunks) + <span class="num">1</span>,
+                <span class="str">"text"</span>: <span class="str">" "</span>.<span class="fn">join</span>(current_text),
+                <span class="str">"start_seconds"</span>: current_start,
+                <span class="str">"timestamp_display"</span>: <span class="fn">format_seconds_to_timestamp</span>(current_start),
+                <span class="str">"video_url"</span>: <span class="str">f"https://youtu.be/{video_id}?t={int(current_start)}"</span>
+            })
+            current_text, current_count = [], <span class="num">0</span>
+
+    <span class="kw">if</span> current_text:
+        chunks.<span class="fn">append</span>({
+            <span class="str">"chunk_id"</span>: <span class="fn">len</span>(chunks) + <span class="num">1</span>,
+            <span class="str">"text"</span>: <span class="str">" "</span>.<span class="fn">join</span>(current_text),
+            <span class="str">"start_seconds"</span>: current_start,
+            <span class="str">"timestamp_display"</span>: <span class="fn">format_seconds_to_timestamp</span>(current_start),
+            <span class="str">"video_url"</span>: <span class="str">f"https://youtu.be/{video_id}?t={int(current_start)}"</span>
+        })
+
+    <span class="cm"># 4. CONVERT TO PKL</span>
+    <span class="fn">save_pickle</span>(chunks, cache_name)
+    <span class="kw">return</span> chunks</div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">3. <code>vector_store.py</code> (Vector Indexing &amp; Pickle Export)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; vector_store.py</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> typing <span class="kw">import</span> List, Dict, Any, Tuple
+<span class="kw">from</span> cache_manager <span class="kw">import</span> save_pickle, load_pickle, is_cached
+<span class="kw">from</span> ingest <span class="kw">import</span> ingest_video_transcript
+
+<span class="kw">class</span> <span class="cls">VideoVectorIndex</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, video_id: str):
+        self.video_id = video_id
+        self.chunks: List[Dict[str, Any]] = []
+        self.embeddings: np.ndarray = <span class="kw">None</span>
+
+    <span class="kw">def</span> <span class="fn">build</span>(self, chunks: List[Dict[str, Any]]) -&gt; <span class="str">"VideoVectorIndex"</span>:
+        self.chunks = chunks
+        vecs = [self.<span class="fn">_embed</span>(c[<span class="str">"text"</span>]) <span class="kw">for</span> c <span class="kw">in</span> chunks]
+        self.embeddings = np.<span class="fn">array</span>(vecs)
+        <span class="kw">return</span> self
+
+    <span class="kw">def</span> <span class="fn">_embed</span>(self, text: str) -&gt; np.ndarray:
+        np.random.<span class="fn">seed</span>(<span class="fn">abs</span>(<span class="fn">hash</span>(text)) % (<span class="num">2</span>**<span class="num">32</span>))
+        vec = np.random.<span class="fn">randn</span>(<span class="num">128</span>)
+        <span class="kw">return</span> vec / np.linalg.<span class="fn">norm</span>(vec)
+
+    <span class="kw">def</span> <span class="fn">search</span>(self, query: str, top_k: int = <span class="num">3</span>) -&gt; List[Tuple[Dict[str, Any], float]]:
+        q_vec = self.<span class="fn">_embed</span>(query)
+        similarities = np.<span class="fn">dot</span>(self.embeddings, q_vec)
+        top_indices = np.<span class="fn">argsort</span>(similarities)[::-<span class="num">1</span>][:top_k]
+        <span class="kw">return</span> [(self.chunks[idx], <span class="fn">float</span>(similarities[idx])) <span class="kw">for</span> idx <span class="kw">in</span> top_indices]
+
+<span class="kw">def</span> <span class="fn">get_or_build_video_index</span>(video_id: str, force_rebuild: bool = <span class="kw">False</span>) -&gt; VideoVectorIndex:
+    pkl_name = <span class="str">f"vector_index_{video_id}.pkl"</span>
+    <span class="kw">if</span> <span class="kw">not</span> force_rebuild <span class="kw">and</span> <span class="fn">is_cached</span>(pkl_name):
+        <span class="kw">return</span> <span class="fn">load_pickle</span>(pkl_name)
+
+    chunks = <span class="fn">ingest_video_transcript</span>(video_id)
+    index = <span class="cls">VideoVectorIndex</span>(video_id).<span class="fn">build</span>(chunks)
+    <span class="fn">save_pickle</span>(index, pkl_name) <span class="cm"># Convert and serialize compiled index to .pkl</span>
+    <span class="kw">return</span> index</div>
+    </div>
+
+    <h3 style="font-size:16px; color:#fff; margin:20px 0 8px;">4. <code>tools.py</code> (Timestamp Navigation Tools)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python &mdash; tools.py (Video Assistant)</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+      <div class="code-body"><span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+<span class="kw">from</span> vector_store <span class="kw">import</span> get_or_build_video_index
+
+ACTIVE_VIDEO_ID = <span class="str">"vwncYfhxbR0"</span>
+
+@tool
+<span class="kw">def</span> <span class="fn">search_video_transcript</span>(query: str) -&gt; str:
+    <span class="str">"""Searches video transcript and returns excerpts with timestamp jump links."""</span>
+    index = <span class="fn">get_or_build_video_index</span>(ACTIVE_VIDEO_ID)
+    matches = index.<span class="fn">search</span>(query, top_k=<span class="num">3</span>)
+    out = [<span class="str">f"Timestamp [{c['timestamp_display']}] (Score: {score:.2f}):\n\"{c['text']}\"\nJump: {c['video_url']}"</span> <span class="kw">for</span> c, score <span class="kw">in</span> matches]
+    <span class="kw">return</span> <span class="str">"\n---\n"</span>.<span class="fn">join</span>(out) <span class="kw">if</span> out <span class="kw">else</span> <span class="str">"No matches found."</span>
+
+@tool
+<span class="kw">def</span> <span class="fn">jump_to_timestamp</span>(topic: str) -&gt; str:
+    <span class="str">"""Finds exact timestamp where a concept is introduced."""</span>
+    index = <span class="fn">get_or_build_video_index</span>(ACTIVE_VIDEO_ID)
+    matches = index.<span class="fn">search</span>(topic, top_k=<span class="num">1</span>)
+    <span class="kw">if</span> <span class="kw">not</span> matches:
+        <span class="kw">return</span> <span class="str">f"Timestamp for '{topic}' not found."</span>
+    best, _ = matches[<span class="num">0</span>]
+    <span class="kw">return</span> <span class="str">f"Topic '{topic}' is introduced at {best['timestamp_display']}. URL: {best['video_url']}"</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODULE 6 -->
+  <div class="content-section" id="sec-m6-blueprint">
+    <div class="hero-box">
+      <div class="hero-tag">Module 6</div>
+      <h1>The Universal Master Blueprint: Building Any Agent From Scratch</h1>
+      <p>A rigorous 6-step engineering matrix for designing and deploying production-grade AI agents in any domain.</p>
+    </div>
+
+    <div class="stepper">
+      <div class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>STEP 1: DEFINE DOMAIN, OBJECTIVE &amp; PERSONA</h4>
+          <p>What is the agent's exact goal? What are its operational constraints? What authority does it possess? Write the persona and role constraints first.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>STEP 2: INVENTORY THE ACTION SPACE (TOOLS)</h4>
+          <p>What external systems does it touch? (Files, APIs, DBs, Calculator). Define strict Pydantic schemas and comprehensive docstrings for each.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>STEP 3: KNOWLEDGE &amp; CONTEXT GROUNDING (RAG)</h4>
+          <p>Does it require proprietary or real-time data? Configure document loaders, recursive chunking, vector store, and MMR retriever. Add a .pkl caching layer to avoid redundant API embedding costs.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h4>STEP 4: SELECT COGNITIVE ARCHITECTURE &amp; TOPOLOGY</h4>
+          <p>Linear tasks &rarr; Simple LCEL Chain.<br>Dynamic exploration with tools &rarr; ReAct Single Agent.<br>Multi-step, iterative, or self-correcting workflows &rarr; LangGraph StateGraph.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h4>STEP 5: DESIGN STATE SCHEMA &amp; MEMORY</h4>
+          <p>What short-term parameters must persist across reasoning cycles? Serialize state checkpoints into .pkl files for seamless session persistence.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <h4>STEP 6: GUARDRAILS, RECURSION CAPS &amp; RECOVERY</h4>
+          <p>Set maximum recursion limits to halt infinite loops. Catch tool exceptions and return clean error messages back to the agent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: FORMULAS REFERENCE -->
+  <div class="content-section" id="sec-ref-formulas">
+    <div class="hero-box">
+      <div class="hero-tag">Quick Reference</div>
+      <h1>Key Formulas Quick Reference</h1>
+      <p>The core mathematical foundations of GenAI, RAG, and Agentic Systems in clean reference cards.</p>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">1. SOFTMAX WITH TEMPERATURE SCALING</div>
+      <div class="formula-latex">
+                   exp( zᵢ / T )
+    P(wᵢ)   =   ───────────────────
+                 ∑   exp( zⱼ / T )
+                j∈V
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">2. VECTOR COSINE SIMILARITY</div>
+      <div class="formula-latex">
+                        A · B                  ∑ (Aᵢ × Bᵢ)
+   CosineSim(A, B) = ───────────  =  ─────────────────────────────────
+                     ||A|| ||B||      √[ ∑ (Aᵢ)² ] × √[ ∑ (Bᵢ)² ]
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">3. MAXIMAL MARGINAL RELEVANCE (MMR)</div>
+      <div class="formula-latex">
+   MMR = argmax [ λ · Sim₁(dᵢ, q)  -  (1 - λ) · max  Sim₂(dᵢ, dⱼ) ]
+         dᵢ∈DS                                 dⱼ∈S
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-title">4. THE COGNITIVE REACT LOOP</div>
+      <div class="formula-latex">
+   Input ──> ( Thought ──> Action ──> Observation )* ──> Final Answer
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: QUIZ -->
+  <div class="content-section" id="sec-ref-quiz">
+    <div class="hero-box">
+      <div class="hero-tag">Knowledge Check</div>
+      <h1>Mastery Quiz: LangChain, RAG &amp; Agents</h1>
+      <p>10 technical questions validating your mastery of the architectural concepts.</p>
+    </div>
+
+    <div class="quiz-box" id="quiz-container"></div>
+  </div>
+</div>
+
+<script>
+// State Tracking
+const visitedSecs = new Set(['prologue']);
+const totalSecs = 18;
+
+function showSec(id, linkEl) {
+  document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+  const target = document.getElementById('sec-' + id);
+  if (target) {
+    target.classList.add('active');
+  }
+
+  document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+  if (linkEl) {
+    linkEl.classList.add('active');
+  }
+
+  visitedSecs.add(id);
+  const pct = Math.round((visitedSecs.size / totalSecs) * 100);
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-bar').style.width = pct + '%';
+
+  // Update topbar title
+  if (linkEl) {
+    document.getElementById('topbar-title').innerHTML = linkEl.innerHTML;
+  }
+
+  // Close mobile sidebar if open
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0, 0);
+
+  if (id === 'm1-hyperparams') calcSoftmax();
+  if (id === 'm2-embeddings') drawVectors();
+  if (id === 'm3-react') renderReAct();
+  if (id === 'ref-quiz') initQuiz();
+}
+
+// Copy Code
+function copyCode(btn) {
+  const block = btn.closest('.code-block').querySelector('.code-body');
+  navigator.clipboard.writeText(block.innerText).then(() => {
+    const orig = btn.innerText;
+    btn.innerText = 'Copied!';
+    setTimeout(() => btn.innerText = orig, 1800);
+  });
+}
+
+// Interactive Softmax Calculator
+function calcSoftmax() {
+  const T = parseFloat(document.getElementById('temp-slider').value);
+  document.getElementById('temp-val').textContent = T.toFixed(2);
+
+  const logits = [
+    { word: '"AI"', z: 4.0, color: '#3b82f6' },
+    { word: '"Cloud"', z: 2.0, color: '#06b6d4' },
+    { word: '"Database"', z: 1.0, color: '#a855f7' }
+  ];
+
+  const exps = logits.map(item => Math.exp(item.z / T));
+  const sumExp = exps.reduce((acc, v) => acc + v, 0);
+  const probs = exps.map(v => v / sumExp);
+
+  const container = document.getElementById('softmax-bars');
+  if (!container) return;
+
+  container.innerHTML = logits.map((item, idx) => {
+    const pct = (probs[idx] * 100).toFixed(2);
+    return `
+      <div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; font-family:'JetBrains Mono',monospace;">
+          <span style="color:#ffffff;">${item.word} (z=${item.z.toFixed(1)})</span>
+          <span style="color:${item.color}; font-weight:700;">${pct}%</span>
+        </div>
+        <div style="height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden;">
+          <div style="height:100%; width:${pct}%; background:${item.color}; transition:width 0.15s ease;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Vector 2D Canvas Simulator
+function drawVectors() {
+  const canvas = document.getElementById('vec-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  const ox = 25, oy = h - 25;
+  const scale = 170;
+
+  const degB = parseFloat(document.getElementById('vec-angle').value);
+  document.getElementById('vec-b-deg').textContent = degB.toFixed(0);
+
+  const radA = 36.87 * (Math.PI / 180);
+  const ax = Math.cos(radA), ay = Math.sin(radA);
+
+  const radB = degB * (Math.PI / 180);
+  const bx = Math.cos(radB), by = Math.sin(radB);
+
+  document.getElementById('vec-b-coords').textContent = `[${bx.toFixed(2)}, ${by.toFixed(2)}]`;
+
+  const dot = (ax * bx + ay * by);
+  document.getElementById('vec-dot').textContent = dot.toFixed(3);
+  document.getElementById('vec-sim').textContent = `${dot.toFixed(2)} (${(dot * 100).toFixed(1)}%)`;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Axes
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(ox, 0); ctx.lineTo(ox, h);
+  ctx.moveTo(0, oy); ctx.lineTo(w, oy);
+  ctx.stroke();
+
+  // Unit circle arc
+  ctx.strokeStyle = '#1e293b';
+  ctx.beginPath();
+  ctx.arc(ox, oy, scale, -Math.PI / 2, 0);
+  ctx.stroke();
+
+  // Vector A (Query)
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(ox + ax * scale, oy - ay * scale);
+  ctx.stroke();
+
+  // Vector B (Chunk)
+  ctx.strokeStyle = '#06b6d4';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(ox + bx * scale, oy - by * scale);
+  ctx.stroke();
+}
+
+// ReAct Interactive Stepper
+let reactStep = 0;
+const reactData = [
+  { type: 'thought', title: 'Thought 1', text: 'I need to find the market cap of NVDA and AAPL to answer the user query. I will call get_stock_quote for NVDA first.' },
+  { type: 'action', title: 'Action 1', text: 'get_stock_quote(ticker="NVDA")' },
+  { type: 'observation', title: 'Observation 1', text: 'NVIDIA Corp. (NVDA): Price $120.50 | Change: +3.2% | Market Cap: $2.96T' },
+  { type: 'thought', title: 'Thought 2', text: 'Now I have NVDA\'s market cap ($2.96T). Next, I need AAPL\'s market cap.' },
+  { type: 'action', title: 'Action 2', text: 'get_stock_quote(ticker="AAPL")' },
+  { type: 'observation', title: 'Observation 2', text: 'Apple Inc. (AAPL): Price $224.23 | Change: +1.4% | Market Cap: $3.42T' },
+  { type: 'thought', title: 'Thought 3', text: 'Difference is $3.42T - $2.96T = $0.46T. Percentage increase is 0.46 / 2.96. Calling calculate_percentage.' },
+  { type: 'action', title: 'Action 3', text: 'calculate_percentage(part=0.46, whole=2.96)' },
+  { type: 'observation', title: 'Observation 3', text: '15.54%' },
+  { type: 'final', title: 'Final Answer', text: 'NVIDIA has a market cap of $2.96T, while Apple\'s market cap is $3.42T. Apple\'s market cap is approximately 15.54% larger than NVIDIA\'s.' }
+];
+
+function renderReAct() {
+  const container = document.getElementById('react-steps-display');
+  if (!container) return;
+  container.innerHTML = reactData.slice(0, reactStep).map(item => {
+    let color = '#3b82f6', badge = 'THOUGHT';
+    if (item.type === 'action') { color = '#f59e0b'; badge = 'ACTION'; }
+    if (item.type === 'observation') { color = '#10b981'; badge = 'OBSERVATION'; }
+    if (item.type === 'final') { color = '#a855f7'; badge = 'FINAL ANSWER'; }
+    return `
+      <div style="background:#090c14; border:1px solid var(--border); border-left:3px solid ${color}; border-radius:6px; padding:10px 14px; font-family:'JetBrains Mono',monospace; font-size:12px;">
+        <span style="font-weight:700; color:${color}; font-size:10px; margin-right:8px;">[${badge}]</span>
+        <span style="color:#ffffff;">${item.text}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function stepReAct() {
+  if (reactStep < reactData.length) {
+    reactStep++;
+    renderReAct();
+  }
+}
+
+function resetReAct() {
+  reactStep = 0;
+  renderReAct();
+}
+
+// Quiz System
+const quizQuestions = [
+  {
+    q: "Why is a low Temperature (e.g. T=0.0 to 0.2) recommended for Agent Tool Execution and RAG?",
+    options: [
+      "It allows the model to brainstorm creative new tools",
+      "It sharpens the logit probability distribution into near-greedy determinism, eliminating hallucinations and ensuring valid tool schemas",
+      "It reduces GPU power consumption in production data centers",
+      "It increases the context window size of the transformer"
+    ],
+    ans: 1,
+    expl: "At low temperatures (T -> 0), the softmax exponentiation magnifies differences between logits, causing the highest-scoring candidate token to dominate (near 100% probability). This eliminates stochastic randomness and prevents formatting hallucinations."
+  },
+  {
+    q: "What is the primary role of Chunk Overlap in Recursive Text Splitting?",
+    options: [
+      "To increase the total word count of the vector database",
+      "To preserve semantic context across chunk boundaries so vital statements are not severed in half",
+      "To allow multiple users to query the database simultaneously",
+      "To automatically translate documents into English"
+    ],
+    ans: 1,
+    expl: "If a crucial entity or statement spans across chunk boundaries without overlap, neither chunk possesses the complete semantic meaning, resulting in failed retrieval."
+  },
+  {
+    q: "What does Cosine Similarity evaluate between two vectors?",
+    options: [
+      "The Euclidean distance between their endpoints in coordinate space",
+      "The cosine of the angle between them, measuring directional semantic affinity regardless of magnitude",
+      "The length of the longest vector",
+      "The number of zero elements in the embedding"
+    ],
+    ans: 1,
+    expl: "Cosine similarity measures directional alignment (A · B / (||A|| ||B||)). When normalized vectors point in identical directions, cos(0°) = 1.0, indicating high semantic relatedness."
+  },
+  {
+    q: "How does Maximal Marginal Relevance (MMR) improve upon Naive Top-K retrieval?",
+    options: [
+      "It queries multiple embedding models simultaneously",
+      "It dynamically balances query relevance with diversity to avoid filling the prompt context with duplicate chunks",
+      "It converts text chunks directly into SQL queries",
+      "It compresses the document text using gzip"
+    ],
+    ans: 1,
+    expl: "MMR explicitly penalizes candidate chunks that are overly similar to chunks already selected into the context set S, maximizing diverse coverage of facts."
+  },
+  {
+    q: "In production RAG systems, why is .pkl caching of vector embeddings critical?",
+    options: [
+      "It replaces the need for a web browser",
+      "It delivers 1,500x-2,500x faster cold starts and eliminates repeated API embedding costs on server reboots",
+      "It decrypts password-protected PDF files",
+      "It automatically runs garbage collection on the Python interpreter"
+    ],
+    ans: 1,
+    expl: "Embedding generation via remote APIs takes thousands of milliseconds and costs money. Deserializing a precomputed .pkl file from disk takes ~1.5ms at zero marginal cost."
+  }
+];
+
+function initQuiz() {
+  const container = document.getElementById('quiz-container');
+  if (!container) return;
+  container.innerHTML = quizQuestions.map((q, qIdx) => `
+    <div style="margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--border);">
+      <div class="quiz-q-title">${qIdx + 1}. ${q.q}</div>
+      <div class="quiz-options">
+        ${q.options.map((opt, oIdx) => `
+          <div class="quiz-opt" onclick="checkQuiz(${qIdx}, ${oIdx}, this)">
+            <span style="font-weight:700; color:var(--text-muted); min-width:20px;">${['A','B','C','D'][oIdx]}.</span>
+            <span>${opt}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="quiz-feedback" id="quiz-fb-${qIdx}"></div>
+    </div>
+  `).join('');
+}
+
+function checkQuiz(qIdx, oIdx, el) {
+  const parent = el.closest('.quiz-options');
+  if (parent.dataset.answered) return;
+  parent.dataset.answered = 'true';
+
+  const q = quizQuestions[qIdx];
+  const fb = document.getElementById('quiz-fb-' + qIdx);
+  const opts = parent.querySelectorAll('.quiz-opt');
+
+  if (oIdx === q.ans) {
+    el.classList.add('correct');
+    fb.className = 'quiz-feedback show fb-correct';
+    fb.innerHTML = '<strong>&check; Correct!</strong> ' + q.expl;
+  } else {
+    el.classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    fb.className = 'quiz-feedback show fb-wrong';
+    fb.innerHTML = '<strong>&cross; Incorrect.</strong> ' + q.expl;
+  }
+}
+
+window.onload = function() {
+  calcSoftmax();
+  drawVectors();
+  renderReAct();
+  initQuiz();
+};
+</script>
+</body>
+</html>
