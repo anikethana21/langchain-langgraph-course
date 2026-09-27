@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Agentic AI & LangGraph — Interactive Learning Hub</title>
+<meta name="description" content="Interactive learning hub covering LangChain, LangGraph, RAG, Agents, and Multi-Agent Systems from Sheryians AI School."/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0b0f;--bg2:#0f1117;--bg3:#141720;--card:#1a1d28;--card2:#20243a;
+  --border:#252a3d;--border2:#2e3450;
+  --accent:#6c63ff;--accent2:#8b5cf6;--accent3:#06b6d4;
+  --green:#10b981;--yellow:#f59e0b;--red:#ef4444;--pink:#ec4899;--orange:#f97316;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --code-bg:#0d1117;--sidebar-w:270px;
+  --glow:0 0 30px rgba(108,99,255,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* SIDEBAR */
+#sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:100;transition:transform 0.3s ease;display:flex;flex-direction:column;}
+.sidebar-header{padding:20px 20px 16px;background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(6,182,212,0.1));border-bottom:1px solid var(--border);flex-shrink:0;}
+.sidebar-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.sidebar-logo svg{width:32px;height:32px;}
+.sidebar-logo h1{font-size:13px;font-weight:800;color:#fff;line-height:1.2;}
+.sidebar-logo p{font-size:10px;color:var(--text3);font-weight:500;}
+.sidebar-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(108,99,255,0.2);color:var(--accent);border:1px solid rgba(108,99,255,0.3);margin-top:6px;}
+.nav-section{padding:12px 12px 4px;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;margin:1px 8px;border-radius:8px;cursor:pointer;transition:all 0.2s;color:var(--text2);font-size:12px;font-weight:500;text-decoration:none;}
+.nav-item:hover{background:rgba(108,99,255,0.1);color:var(--text);}
+.nav-item.active{background:rgba(108,99,255,0.18);color:var(--accent);font-weight:600;}
+.nav-item .nav-icon{font-size:14px;width:16px;text-align:center;flex-shrink:0;}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:auto;display:none;}
+.nav-item.active .nav-dot{display:block;}
+.progress-bar-wrap{padding:12px 20px 16px;border-top:1px solid var(--border);flex-shrink:0;margin-top:auto;}
+.progress-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:6px;}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:2px;transition:width 0.4s ease;width:0%;}
+
+/* MAIN */
+#main{margin-left:var(--sidebar-w);min-height:100vh;}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,11,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.topbar-title{font-size:14px;font-weight:600;color:var(--text);}
+.topbar-actions{display:flex;gap:8px;}
+.btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;font-family:'Inter',sans-serif;}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--card);color:var(--text);}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-sm{padding:4px 10px;font-size:11px;}
+
+/* SECTIONS */
+.section{display:none;padding:32px;}
+.section.active{display:block;}
+.section-hero{background:linear-gradient(135deg,rgba(108,99,255,0.12),rgba(6,182,212,0.06));border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:28px;position:relative;overflow:hidden;}
+.section-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(108,99,255,0.15),transparent);border-radius:50%;}
+.section-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;background:rgba(108,99,255,0.15);color:var(--accent);border:1px solid rgba(108,99,255,0.25);margin-bottom:12px;}
+.section-hero h2{font-size:26px;font-weight:800;color:#fff;margin-bottom:8px;line-height:1.25;}
+.section-hero p{font-size:14px;color:var(--text2);max-width:600px;line-height:1.65;}
+
+/* GRID */
+.grid{display:grid;gap:16px;}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:all 0.25s;}
+.card:hover{border-color:var(--border2);box-shadow:var(--glow);}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.card-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.card-title{font-size:14px;font-weight:700;color:#fff;}
+.card-subtitle{font-size:11px;color:var(--text3);}
+.card p{font-size:13px;color:var(--text2);line-height:1.6;}
+
+/* CONCEPT */
+.concept{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:13px;line-height:1.65;color:var(--text2);}
+.concept strong{color:var(--text);}
+.concept .label{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* FORMULA */
+.formula{background:var(--code-bg);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#a5b4fc;line-height:1.8;overflow-x:auto;}
+.formula .f-title{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:var(--accent3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+.formula .f-main{font-size:15px;font-weight:700;color:#c4b5fd;text-align:center;margin:8px 0;}
+.formula .f-where{font-size:11px;color:var(--text3);margin-top:10px;}
+
+/* CODE */
+.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:14px 0;}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);}
+.code-lang{font-size:11px;font-weight:600;color:var(--text3);}
+.code-dots{display:flex;gap:5px;}
+.code-dot{width:10px;height:10px;border-radius:50%;}
+.code-pre{padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;overflow-x:auto;color:#abb2bf;}
+.code-pre .kw{color:#c678dd;}
+.code-pre .fn{color:#61afef;}
+.code-pre .str{color:#98c379;}
+.code-pre .num{color:#d19a66;}
+.code-pre .cm{color:#5c6370;font-style:italic;}
+.code-pre .cls{color:#e5c07b;}
+.code-pre .op{color:#56b6c2;}
+
+/* SIM BOX */
+.sim-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin:16px 0;}
+.sim-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.sim-title span{font-size:18px;}
+.sim-desc{font-size:12px;color:var(--text3);margin-bottom:18px;}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.slider-label{font-size:12px;color:var(--text2);min-width:110px;font-weight:500;}
+.slider-val{font-size:13px;font-weight:700;color:var(--accent);min-width:50px;text-align:right;}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.15s;box-shadow:0 0 0 3px rgba(108,99,255,0.2);}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
+
+/* BARS */
+.prob-bars{margin-top:14px;}
+.prob-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.prob-label{font-size:12px;color:var(--text2);min-width:80px;font-weight:600;}
+.prob-bar-bg{flex:1;height:28px;background:var(--bg3);border-radius:6px;overflow:hidden;}
+.prob-bar-fill{height:100%;border-radius:6px;transition:width 0.4s ease;display:flex;align-items:center;padding-left:8px;}
+.prob-pct{font-size:11px;font-weight:700;color:#fff;}
+
+/* CANVAS */
+canvas{border-radius:10px;border:1px solid var(--border);display:block;width:100%;}
+
+/* FLOW */
+.flow{display:flex;flex-direction:column;gap:0;align-items:center;margin:16px 0;}
+.flow-node{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;color:var(--text);min-width:220px;text-align:center;transition:all 0.3s;}
+.flow-node.highlight{border-color:var(--accent);background:rgba(108,99,255,0.15);color:var(--accent);box-shadow:0 0 20px rgba(108,99,255,0.2);}
+.flow-node.active-node{border-color:var(--green);background:rgba(16,185,129,0.12);color:var(--green);}
+.flow-arrow{font-size:20px;color:var(--text3);margin:4px 0;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;margin:14px 0;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{background:rgba(108,99,255,0.12);padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
+td{padding:10px 14px;font-size:12px;color:var(--text2);border-top:1px solid var(--border);}
+tr:hover td{background:rgba(255,255,255,0.02);}
+
+/* TOPOLOGY */
+.topology-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0;}
+.topo-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.25s;}
+.topo-card:hover,.topo-card.active{border-color:var(--accent);background:rgba(108,99,255,0.08);}
+.topo-card h4{font-size:12px;font-weight:700;color:#fff;margin-bottom:6px;}
+.topo-card p{font-size:11px;color:var(--text3);}
+.topo-vis{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);line-height:1.6;white-space:pre;}
+
+/* QUIZ */
+.quiz-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;}
+.quiz-q{font-size:15px;font-weight:700;color:#fff;margin-bottom:18px;line-height:1.45;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{padding:12px 16px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:13px;color:var(--text2);transition:all 0.2s;display:flex;align-items:center;gap:10px;}
+.quiz-opt:hover{border-color:var(--accent);background:rgba(108,99,255,0.08);color:var(--text);}
+.quiz-opt.correct{border-color:var(--green)!important;background:rgba(16,185,129,0.12)!important;color:var(--green)!important;}
+.quiz-opt.wrong{border-color:var(--red)!important;background:rgba(239,68,68,0.12)!important;color:var(--red)!important;}
+.quiz-opt .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.quiz-feedback{margin-top:14px;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6;display:none;}
+.quiz-feedback.show{display:block;}
+.quiz-feedback.correct-fb{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:var(--green);}
+.quiz-feedback.wrong-fb{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:var(--red);}
+.quiz-nav{display:flex;gap:8px;margin-top:16px;justify-content:space-between;align-items:center;}
+.quiz-progress{font-size:12px;color:var(--text3);}
+
+/* TAGS */
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;}
+.tag-purple{background:rgba(108,99,255,0.2);color:var(--accent);}
+.tag-cyan{background:rgba(6,182,212,0.2);color:var(--accent3);}
+.tag-green{background:rgba(16,185,129,0.2);color:var(--green);}
+.tag-yellow{background:rgba(245,158,11,0.2);color:var(--yellow);}
+.tag-red{background:rgba(239,68,68,0.2);color:var(--red);}
+.tag-pink{background:rgba(236,72,153,0.2);color:var(--pink);}
+.tag-orange{background:rgba(249,115,22,0.2);color:var(--orange);}
+
+/* STEP MATRIX */
+.step-matrix{display:flex;flex-direction:column;gap:0;}
+.step-row{display:flex;gap:0;}
+.step-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;flex-shrink:0;}
+.step-line-v{width:2px;height:100%;background:linear-gradient(to bottom,var(--accent),transparent);margin:0 auto;min-height:20px;}
+.step-content{flex:1;padding:14px 0 14px 14px;}
+.step-content h4{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;}
+.step-content p{font-size:12px;color:var(--text2);}
+
+/* PILL TABS */
+.pill-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.pill-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;}
+.pill-tab:hover{border-color:var(--border2);color:var(--text);}
+.pill-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* ACCORDION */
+.accordion{margin-bottom:8px;}
+.accordion-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.2s;}
+.accordion-header:hover{border-color:var(--border2);}
+.accordion-header h4{font-size:13px;font-weight:700;color:#fff;}
+.accordion-header .acc-icon{color:var(--text3);transition:transform 0.3s;font-size:14px;}
+.accordion-header.open .acc-icon{transform:rotate(180deg);}
+.accordion-body{padding:0;max-height:0;overflow:hidden;transition:max-height 0.4s ease;}
+.accordion-body.open{max-height:2000px;padding:10px 0 0 0;}
+.accordion-inner{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;}
+
+/* REACT SIM */
+.react-sim{border-radius:12px;background:var(--bg3);border:1px solid var(--border);overflow:hidden;}
+.react-step{padding:14px 18px;border-left:3px solid transparent;transition:all 0.4s;display:flex;gap:12px;align-items:flex-start;opacity:0.4;}
+.react-step.active{border-left-color:var(--accent);opacity:1;background:rgba(108,99,255,0.06);}
+.react-step.done{border-left-color:var(--green);opacity:0.75;}
+.react-step-icon{font-size:18px;flex-shrink:0;margin-top:2px;}
+.react-step-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);margin-bottom:3px;}
+.react-step-text{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* HERO BADGE */
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2);margin-bottom:14px;}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+
+/* VIDEO */
+.video-embed{border-radius:12px;overflow:hidden;aspect-ratio:16/9;border:1px solid var(--border);margin:16px 0;}
+.video-embed iframe{width:100%;height:100%;border:0;}
+
+/* MOBILE */
+#menu-btn{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;color:var(--text);font-size:18px;line-height:1;}
+
+/* NOTIF */
+.notif{position:fixed;bottom:24px;right:24px;padding:12px 18px;background:var(--card);border:1px solid var(--green);border-radius:10px;font-size:13px;color:var(--green);z-index:999;transform:translateY(100px);transition:transform 0.3s ease;}
+.notif.show{transform:translateY(0);}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp 0.4s ease forwards;}
+
+@media(max-width:900px){
+  #sidebar{transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #main{margin-left:0;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .topology-grid{grid-template-columns:1fr;}
+  .section{padding:20px;}
+  #menu-btn{display:block;}
+}
+</style>
+</head>
+<body>
+<button id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">&#9776;</button>
+
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="rgba(108,99,255,0.2)"/><path d="M8 16l5 5 11-11" stroke="#6c63ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="8" r="3" fill="#06b6d4" opacity="0.8"/></svg>
+      <div><h1>Agentic AI</h1><p>Interactive Course</p></div>
+    </div>
+    <span class="sidebar-badge">LangChain + LangGraph</span>
+  </div>
+  <div class="nav-section">Overview</div>
+  <a class="nav-item active" onclick="showSection('home',this)"><span class="nav-icon">&#127968;</span>Home<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('quiz',this)"><span class="nav-icon">&#129504;</span>Quick Quiz<span class="nav-dot"></span></a>
+  <div class="nav-section">Module 1 &mdash; Foundations</div>
+  <a class="nav-item" onclick="showSection('llms',this)"><span class="nav-icon">&#129302;</span>LLM Anatomy<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('temperature',this)"><span class="nav-icon">&#127777;&#65039;</span>Temperature Simulator<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('prompts',this)"><span class="nav-icon">&#9997;&#65039;</span>Prompt Engineering<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('lcel',this)"><span class="nav-icon">&#128279;</span>LCEL &amp; LangChain<span class="nav-dot"></span></a>
+  <div class="nav-section">Module 2 &mdash; RAG</div>
+  <a class="nav-item" onclick="showSection('ragwhy',this)"><span class="nav-icon">&#128218;</span>Why RAG?<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('chunking',this)"><span class="nav-icon">&#9986;&#65039;</span>Chunking &amp; Splitting<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('embeddings',this)"><span class="nav-icon">&#128208;</span>Embeddings &amp; Cosine Sim<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('vectorstores',this)"><span class="nav-icon">&#128452;&#65039;</span>Vector Stores<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('mmr',this)"><span class="nav-icon">&#9878;&#65039;</span>MMR Simulator<span class="nav-dot"></span></a>
+  <div class="nav-section">Module 3 &mdash; Agents</div>
+  <a class="nav-item" onclick="showSection('tools',this)"><span class="nav-icon">&#128295;</span>Tools &amp; Function Calling<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('react',this)"><span class="nav-icon">&#128260;</span>ReAct Loop Simulator<span class="nav-dot"></span></a>
+  <div class="nav-section">Module 4 &mdash; Multi-Agent</div>
+  <a class="nav-item" onclick="showSection('langgraph',this)"><span class="nav-icon">&#128375;</span>LangGraph Architecture<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('topologies',this)"><span class="nav-icon">&#128506;&#65039;</span>Agent Topologies<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('projects',this)"><span class="nav-icon">&#128640;</span>Projects Walkthrough<span class="nav-dot"></span></a>
+  <div class="nav-section">Module 6 &mdash; Blueprint</div>
+  <a class="nav-item" onclick="showSection('blueprint',this)"><span class="nav-icon">&#128203;</span>6-Step Agent Blueprint<span class="nav-dot"></span></a>
+  <a class="nav-item" onclick="showSection('formulas',this)"><span class="nav-icon">&#128208;</span>Key Formulas Cheatsheet<span class="nav-dot"></span></a>
+  <div class="progress-bar-wrap">
+    <div class="progress-label"><span>Course Progress</span><span id="prog-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+  </div>
+</nav>
+
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">&#127968; Home &mdash; Agentic AI Learning Hub</div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showSection('formulas',null)">&#128208; Cheatsheet</button>
+      <button class="btn btn-primary btn-sm" onclick="showSection('quiz',null)">&#129504; Take Quiz</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="section active" id="sec-home">
+    <div class="section-hero fade-up">
+      <div class="hero-badge"><span class="dot"></span>Interactive Learning Experience</div>
+      <h2>Agentic AI &amp; LangGraph<br>Complete Course Hub</h2>
+      <p>Master LangChain, RAG, AI Agents, and LangGraph with live simulators, interactive formula explorers, quizzes, and animated workflow visualizations. Based on Sheryians AI School by Akarsh Vyas.</p>
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="showSection('temperature',null)">&#127777;&#65039; Try Temperature Sim</button>
+        <button class="btn btn-ghost" onclick="showSection('embeddings',null)">&#128208; Cosine Sim Lab</button>
+        <button class="btn btn-ghost" onclick="showSection('react',null)">&#128260; See ReAct Loop</button>
+      </div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:20px;">
+      <div class="card" onclick="showSection('temperature',null)" style="cursor:pointer;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(108,99,255,0.2);">&#127777;&#65039;</div><div><div class="card-title">Temperature Simulator</div><div class="card-subtitle">Module 1</div></div></div>
+        <p>Adjust temperature T and watch how the Softmax probability distribution shifts in real-time across token candidates.</p>
+      </div>
+      <div class="card" onclick="showSection('embeddings',null)" style="cursor:pointer;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(6,182,212,0.2);">&#128208;</div><div><div class="card-title">Cosine Similarity Lab</div><div class="card-subtitle">Module 2</div></div></div>
+        <p>Drag vectors on a 2D canvas and watch cosine similarity calculate live. Understand embedding geometry intuitively.</p>
+      </div>
+      <div class="card" onclick="showSection('react',null)" style="cursor:pointer;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.2);">&#128260;</div><div><div class="card-title">ReAct Loop Simulator</div><div class="card-subtitle">Module 3</div></div></div>
+        <p>Watch the Thought &rarr; Action &rarr; Observation loop animate step-by-step with a real agent stock-analysis scenario.</p>
+      </div>
+      <div class="card" onclick="showSection('mmr',null)" style="cursor:pointer;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(245,158,11,0.2);">&#9878;&#65039;</div><div><div class="card-title">MMR &lambda; Explorer</div><div class="card-subtitle">Module 2</div></div></div>
+        <p>Tune the lambda parameter and see how MMR balances relevance vs. diversity when selecting RAG chunks.</p>
+      </div>
+      <div class="card" onclick="showSection('langgraph',null)" style="cursor:pointer;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(236,72,153,0.2);">&#128375;</div><div><div class="card-title">LangGraph Visualizer</div><div class="card-subtitle">Module 4</div></div></div>
+        <p>Animated state graph showing nodes, edges, conditional routing, and state flow across a multi-agent pipeline.</p>
+      </div>
+      <div class="card" onclick="showSection('quiz',null)" style="cursor:pointer;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(249,115,22,0.2);">&#129504;</div><div><div class="card-title">Knowledge Quiz</div><div class="card-subtitle">All Modules</div></div></div>
+        <p>15 curated questions spanning all modules with instant feedback and detailed explanations for every answer.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-icon" style="background:rgba(239,68,68,0.2);">&#128253;</div><div><div class="card-title">Course Video</div><div class="card-subtitle">Sheryians AI School &middot; Akarsh Vyas</div></div></div>
+      <div class="video-embed"><iframe src="https://www.youtube.com/embed/ytsHs-KZHVI" allowfullscreen loading="lazy"></iframe></div>
+    </div>
+  </div>
+
+  <!-- LLM ANATOMY -->
+  <div class="section" id="sec-llms">
+    <div class="section-hero fade-up"><div class="section-tag">&#129302; Module 1.1</div><h2>The Anatomy of Large Language Models</h2><p>How modern transformers (GPT-4o, Claude, Gemini, Llama) predict the next token using the autoregressive probability framework.</p></div>
+    <div class="grid grid-2">
+      <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(108,99,255,0.2);">&#128221;</div><div class="card-title">Tokenization</div></div><p>Text is converted into numerical IDs called tokens.</p><div class="formula" style="margin-top:10px;"><div class="f-title">Token Rule of Thumb</div><div class="f-main">1 token &asymp; 0.75 words &asymp; 4 characters</div></div><p style="margin-top:10px;">The sentence <em>"AI agents are powerful tools"</em> &asymp; 6 tokens.</p></div>
+      <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(6,182,212,0.2);">&#127919;</div><div class="card-title">Next-Token Prediction</div></div><div class="formula"><div class="f-title">Autoregressive Prediction</div><div class="f-main">P( w<sub>t+1</sub> | w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>t</sub> )</div><div class="f-where">"Given all previous tokens, compute the probability of every next token in vocabulary V"</div></div></div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.2);">&#127963;&#65039;</div><div class="card-title">The Four Eras of Software Engineering</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+        <div class="concept"><span class="label tag tag-red">Era 1</span> <strong>Deterministic Programming</strong> &mdash; Input &rarr; Explicit If/Else Rules &rarr; Output. Brittle, zero generalization.</div>
+        <div class="concept"><span class="label tag tag-yellow">Era 2</span> <strong>Classical ML</strong> &mdash; Data + Labels &rarr; Trained Weights &rarr; Predictions. Statistical, manual feature engineering.</div>
+        <div class="concept"><span class="label tag tag-cyan">Era 3</span> <strong>Generative AI (LLMs)</strong> &mdash; Prompt &rarr; Pre-trained Transformer &rarr; Generated Text. Semantic understanding, static knowledge.</div>
+        <div class="concept"><span class="label tag tag-green">Era 4</span> <strong>Agentic AI</strong> &mdash; Goal &rarr; Perception &rarr; Planning &rarr; Tool Execution &rarr; Reflection &rarr; Result. Dynamic, self-correcting.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEMPERATURE SIM -->
+  <div class="section" id="sec-temperature">
+    <div class="section-hero fade-up"><div class="section-tag">&#127777;&#65039; Module 1.2</div><h2>Temperature, Top-P &amp; Top-K Simulator</h2><p>Adjust temperature T and watch the Softmax probability distribution shift in real-time.</p></div>
+    <div class="formula"><div class="f-title">Formula 1: Softmax with Temperature Scaling</div><div class="f-main">P(w&#7522;) = exp(z&#7522; / T) / &Sigma; exp(z&#7541; / T)</div><div class="f-where">z&#7522; = raw logit score &nbsp;&middot;&nbsp; T = temperature &nbsp;&middot;&nbsp; Sum over all tokens j in vocabulary V</div></div>
+    <div class="sim-box">
+      <div class="sim-title"><span>&#127777;&#65039;</span>Live Temperature Explorer</div>
+      <div class="sim-desc">Logits fixed at: "AI"=4.0, "Cloud"=2.0, "Database"=1.0 &mdash; exactly as in the course example.</div>
+      <div class="slider-row"><span class="slider-label">Temperature (T)</span><input type="range" id="temp-slider" min="0.05" max="3" step="0.05" value="1.0" oninput="updateTempSim()"/><span class="slider-val" id="temp-val">1.00</span></div>
+      <div class="prob-bars">
+        <div class="prob-row"><span class="prob-label">&#129302; "AI"</span><div class="prob-bar-bg"><div class="prob-bar-fill" id="bar-ai" style="background:linear-gradient(90deg,#6c63ff,#8b5cf6);width:84%;"><span class="prob-pct" id="pct-ai">84.4%</span></div></div></div>
+        <div class="prob-row"><span class="prob-label">&#9729;&#65039; "Cloud"</span><div class="prob-bar-bg"><div class="prob-bar-fill" id="bar-cloud" style="background:linear-gradient(90deg,#06b6d4,#0891b2);width:11%;"><span class="prob-pct" id="pct-cloud">11.4%</span></div></div></div>
+        <div class="prob-row"><span class="prob-label">&#128452;&#65039; "Database"</span><div class="prob-bar-bg"><div class="prob-bar-fill" id="bar-db" style="background:linear-gradient(90deg,#10b981,#059669);width:4%;"><span class="prob-pct" id="pct-db">4.2%</span></div></div></div>
+      </div>
+      <div id="temp-interpretation" style="margin-top:14px;padding:12px 16px;background:var(--bg3);border-radius:8px;font-size:13px;color:var(--text2);border-left:3px solid var(--text3);"></div>
+    </div>
+    <div class="tbl-wrap"><table><tr><th>Parameter</th><th>Effect</th><th>Agents / RAG</th><th>Creative</th></tr><tr><td><strong>Temperature (T)</strong></td><td>Low = deterministic, High = random</td><td>0.0 &ndash; 0.2</td><td>0.7 &ndash; 0.9</td></tr><tr><td><strong>Top-P (Nucleus)</strong></td><td>Sample from smallest set summing to P</td><td>0.9 &ndash; 0.95</td><td>0.95</td></tr><tr><td><strong>Top-K</strong></td><td>Hard cap at K most probable tokens</td><td>40 &ndash; 50</td><td>50 &ndash; 100</td></tr></table></div>
+  </div>
+
+  <!-- PROMPTS -->
+  <div class="section" id="sec-prompts">
+    <div class="section-hero fade-up"><div class="section-tag">&#9997;&#65039; Module 1.3</div><h2>Prompt Engineering</h2><p>The 5 structural blocks every production agent prompt must contain.</p></div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)"><h4>1&#65039;&#8419; PERSONA &amp; ROLE &mdash; Who is the agent?</h4><span class="acc-icon">&#9660;</span></div><div class="accordion-body"><div class="accordion-inner"><p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Set the agent's identity and domain expertise at the very start of the system prompt.</p><div class="code-block"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">SYSTEM PROMPT</span></div><div class="code-pre"><span class="str">You are an expert Research Analyst Agent
+specializing in financial markets.</span></div></div></div></div></div>
+      <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)"><h4>2&#65039;&#8419; OBJECTIVE &amp; TASK &mdash; What must be done?</h4><span class="acc-icon">&#9660;</span></div><div class="accordion-body"><div class="accordion-inner"><div class="code-block"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">SYSTEM PROMPT</span></div><div class="code-pre"><span class="str">Analyze quarterly revenue reports and
+identify growth bottlenecks with evidence.</span></div></div></div></div></div>
+      <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)"><h4>3&#65039;&#8419; TOOLS &amp; CONSTRAINTS &mdash; What can / can't it do?</h4><span class="acc-icon">&#9660;</span></div><div class="accordion-body"><div class="accordion-inner"><div class="code-block"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">SYSTEM PROMPT</span></div><div class="code-pre"><span class="str">Tools: [web_search, calculator, query_db]
+- ONLY use retrieved facts
+- Do NOT fabricate numbers
+- State "DATA_UNAVAILABLE" if missing</span></div></div></div></div></div>
+      <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)"><h4>4&#65039;&#8419; REASONING PROCESS &mdash; Chain of Thought</h4><span class="acc-icon">&#9660;</span></div><div class="accordion-body"><div class="accordion-inner"><p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Force the model to reason step-by-step BEFORE answering. Reduces hallucinations significantly.</p><div class="code-block"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">SYSTEM PROMPT</span></div><div class="code-pre"><span class="str">Think step-by-step BEFORE answering:
+1. Parse ticker and fiscal quarters
+2. Formulate tool queries
+3. Compute YoY % delta with calculator</span></div></div></div></div></div>
+      <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)"><h4>5&#65039;&#8419; OUTPUT FORMAT &mdash; JSON Schema</h4><span class="acc-icon">&#9660;</span></div><div class="accordion-body"><div class="accordion-inner"><div class="code-block"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">JSON SCHEMA</span></div><div class="code-pre">{ <span class="str">"ticker"</span>: <span class="cls">string</span>, <span class="str">"yoy_growth"</span>: <span class="cls">float</span>,
+  <span class="str">"drivers"</span>: [<span class="cls">string</span>], <span class="str">"risks"</span>: [<span class="cls">string</span>] }</div></div></div></div></div>
+    </div>
+  </div>
+
+  <!-- LCEL -->
+  <div class="section" id="sec-lcel">
+    <div class="section-hero fade-up"><div class="section-tag">&#128279; Module 1.4</div><h2>LangChain &amp; LCEL</h2><p>LangChain Expression Language chains components using the pipe <code style="background:var(--card);padding:2px 6px;border-radius:4px;">|</code> operator.</p></div>
+    <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(108,99,255,0.2);">&#9883;&#65039;</div><div class="card-title">The Chain Formula</div></div><div class="formula"><div class="f-main">Chain = PromptTemplate | ChatModel | OutputParser</div><div class="f-where">Each component is a Runnable. They compose and stream automatically via the LCEL protocol.</div></div></div>
+    <div class="code-block" style="margin-top:16px;"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">Python &mdash; LCEL Chain</span></div><div class="code-pre"><span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> ChatPromptTemplate
+<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+
+prompt = ChatPromptTemplate.<span class="fn">from_messages</span>([
+    (<span class="str">"system"</span>, <span class="str">"You answer in concise bullet points."</span>),
+    (<span class="str">"human"</span>, <span class="str">"{question}"</span>)
+])
+chain = prompt <span class="op">|</span> <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0</span>) <span class="op">|</span> <span class="cls">StrOutputParser</span>()
+result = chain.<span class="fn">invoke</span>({<span class="str">"question"</span>: <span class="str">"Explain RAG in 3 sentences."</span>})</div></div>
+  </div>
+
+  <!-- RAG WHY -->
+  <div class="section" id="sec-ragwhy">
+    <div class="section-hero fade-up"><div class="section-tag">&#128218; Module 2.1</div><h2>Why RAG? The Triple Limitation Problem</h2><p>Standard LLMs suffer from 3 critical flaws. RAG solves all three without expensive fine-tuning.</p></div>
+    <div class="grid grid-3" style="margin-bottom:20px;">
+      <div class="card" style="border-color:rgba(239,68,68,0.3);"><div class="card-header"><div class="card-icon" style="background:rgba(239,68,68,0.2);">&#129668;</div><div class="card-title" style="color:var(--red);">Hallucinations</div></div><p>LLMs optimize for fluency, not truth. When uncertain, they output confident falsehoods. RAG grounds answers in retrieved verified facts.</p></div>
+      <div class="card" style="border-color:rgba(245,158,11,0.3);"><div class="card-header"><div class="card-icon" style="background:rgba(245,158,11,0.2);">&#128197;</div><div class="card-title" style="color:var(--yellow);">Knowledge Cutoff</div></div><p>Models know nothing after training ends. RAG injects live, up-to-date documents at query time without any retraining.</p></div>
+      <div class="card" style="border-color:rgba(108,99,255,0.3);"><div class="card-header"><div class="card-icon" style="background:rgba(108,99,255,0.2);">&#128274;</div><div class="card-title" style="color:var(--accent);">Private Data Blindness</div></div><p>Base models cannot see your internal wikis or databases. RAG retrieves proprietary context and injects it into the prompt dynamically.</p></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px;">RAG Pipeline &mdash; Animated Flow</div>
+      <div class="flow" id="rag-flow">
+        <div class="flow-node" id="rf-1">&#128221; User Query</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="rf-2">&#128290; Embedding Model</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="rf-3">&#128452;&#65039; Vector Similarity Search</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="rf-4">&#128196; Top-K Relevant Chunks</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="rf-5">&#9999;&#65039; Prompt with Context Injected</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="rf-6">&#129302; LLM Model</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node active-node" id="rf-7">&#9989; Grounded Answer</div>
+      </div>
+      <div style="text-align:center;margin-top:12px;"><button class="btn btn-ghost btn-sm" onclick="animateRAGFlow()">&#9654; Animate Flow</button></div>
+    </div>
+  </div>
+
+  <!-- CHUNKING -->
+  <div class="section" id="sec-chunking">
+    <div class="section-hero fade-up"><div class="section-tag">&#9986;&#65039; Module 2.2&ndash;2.3</div><h2>Document Loading &amp; Chunking</h2><p>LLMs can't ingest 500-page books. Recursive splitting preserves sentence boundaries with configurable overlap.</p></div>
+    <div class="grid grid-2">
+      <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(108,99,255,0.2);">&#128194;</div><div class="card-title">Document Loaders</div></div><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"><div class="concept"><strong>PyPDFLoader</strong> &mdash; Extracts text + page metadata from PDF files.</div><div class="concept"><strong>WebBaseLoader</strong> &mdash; Fetches &amp; strips clean text from URLs.</div><div class="concept"><strong>YoutubeLoader</strong> &mdash; Fetches video transcripts with time offsets.</div></div></div>
+      <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(16,185,129,0.2);">&#9986;&#65039;</div><div class="card-title">Why Overlap is Mandatory</div></div><p style="font-size:13px;margin-top:6px;">Without overlap, facts split across chunk boundaries are lost:</p><div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg3);padding:12px;border-radius:8px;"><div style="color:var(--red);">Chunk 1: "...The total net profit was"</div><div style="color:var(--red);">Chunk 2: "$42.5 million in Q3..."</div><div style="margin-top:8px;color:var(--green);">&#10003; With overlap = full fact preserved!</div></div></div>
+    </div>
+    <div class="sim-box" style="margin-top:16px;">
+      <div class="sim-title"><span>&#9986;&#65039;</span>Chunk Size &amp; Overlap Visualizer</div>
+      <div class="sim-desc">Adjust chunk_size and chunk_overlap to see how a 2400-char document gets split.</div>
+      <div class="slider-row"><span class="slider-label">chunk_size</span><input type="range" id="chunk-size" min="100" max="2000" step="50" value="500" oninput="updateChunkViz()"/><span class="slider-val" id="cs-val">500</span></div>
+      <div class="slider-row"><span class="slider-label">chunk_overlap</span><input type="range" id="chunk-overlap" min="0" max="500" step="10" value="100" oninput="updateChunkViz()"/><span class="slider-val" id="co-val">100</span></div>
+      <div id="chunk-viz" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- EMBEDDINGS -->
+  <div class="section" id="sec-embeddings">
+    <div class="section-hero fade-up"><div class="section-tag">&#128208; Module 2.4</div><h2>Vector Embeddings &amp; Cosine Similarity</h2><p>Texts become vectors in high-dimensional space. Similar meanings &rarr; similar directions &rarr; high cosine score.</p></div>
+    <div class="formula"><div class="f-title">Formula 2: Vector Cosine Similarity</div><div class="f-main">CosineSim(A, B) = (A &middot; B) / (||A|| &times; ||B||)</div><div class="f-where">A &middot; B = Dot Product (&Sigma; A&#7522;&times;B&#7522;) &nbsp;|&nbsp; ||A|| = &radic;(&Sigma; A&#7522;&sup2;) &nbsp;|&nbsp; Range: -1.0 to +1.0</div></div>
+    <div class="sim-box">
+      <div class="sim-title"><span>&#128208;</span>2D Cosine Similarity Lab</div>
+      <div class="sim-desc">Drag the vector endpoints on the canvas. Watch cosine similarity update live!</div>
+      <canvas id="cosine-canvas" width="600" height="300" style="cursor:crosshair;"></canvas>
+      <div id="cosine-result" style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="grid grid-3" style="margin-top:16px;">
+      <div class="card" style="border-color:rgba(16,185,129,0.3);"><div class="card-title" style="color:var(--green);">cos(&theta;) = +1.0</div><p style="margin-top:6px;">&theta; = 0&deg; &mdash; Identical meaning<br><em>"car" vs "automobile"</em></p></div>
+      <div class="card"><div class="card-title">cos(&theta;) = 0.0</div><p style="margin-top:6px;">&theta; = 90&deg; &mdash; Unrelated<br><em>"quantum mechanics" vs "banana recipe"</em></p></div>
+      <div class="card" style="border-color:rgba(239,68,68,0.3);"><div class="card-title" style="color:var(--red);">cos(&theta;) = -1.0</div><p style="margin-top:6px;">&theta; = 180&deg; &mdash; Opposite meaning<br><em>Antonyms / contradictory concepts</em></p></div>
+    </div>
+  </div>
+
+  <!-- VECTOR STORES -->
+  <div class="section" id="sec-vectorstores">
+    <div class="section-hero fade-up"><div class="section-tag">&#128452;&#65039; Module 2.5&ndash;2.6</div><h2>Vector Stores &amp; The Complete RAG Chain</h2><p>Databases storing embedding vectors for sub-second nearest-neighbor search.</p></div>
+    <div class="grid grid-3">
+      <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(108,99,255,0.2);">&#129714;</div><div class="card-title">ChromaDB</div></div><p>Lightweight, in-memory or local. Perfect for local dev. No server needed.</p><div style="margin-top:8px;"><span class="tag tag-green">Free</span> <span class="tag tag-cyan">Local</span></div></div>
+      <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(6,182,212,0.2);">&#9889;</div><div class="card-title">FAISS</div></div><p>Facebook's optimized C++ index. Ultra-fast similarity search for large corpora.</p><div style="margin-top:8px;"><span class="tag tag-yellow">Fastest</span> <span class="tag tag-cyan">Local</span></div></div>
+      <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(249,115,22,0.2);">&#9729;&#65039;</div><div class="card-title">Pinecone / Qdrant</div></div><p>Managed cloud vector DBs. Auto-scaling, multi-tenant, production-grade.</p><div style="margin-top:8px;"><span class="tag tag-orange">Cloud</span> <span class="tag tag-purple">Managed</span></div></div>
+    </div>
+    <div class="code-block" style="margin-top:16px;"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">Python &mdash; Complete RAG Chain (LCEL)</span></div><div class="code-pre"><span class="cm"># Full End-to-End RAG Chain</span>
+rag_chain = (
+    {<span class="str">"context"</span>: retriever <span class="op">|</span> format_docs, <span class="str">"question"</span>: <span class="cls">RunnablePassthrough</span>()}
+    <span class="op">|</span> rag_prompt
+    <span class="op">|</span> llm
+    <span class="op">|</span> <span class="cls">StrOutputParser</span>()
+)
+result = rag_chain.<span class="fn">invoke</span>(<span class="str">"What are the key Q3 growth drivers?"</span>)</div></div>
+  </div>
+
+  <!-- MMR -->
+  <div class="section" id="sec-mmr">
+    <div class="section-hero fade-up"><div class="section-tag">&#9878;&#65039; Module 2.7</div><h2>MMR &mdash; Maximal Marginal Relevance</h2><p>Eliminates redundant chunk retrieval by balancing relevance to query vs. diversity among selected chunks.</p></div>
+    <div class="formula"><div class="f-title">Formula 3: Maximal Marginal Relevance (MMR)</div><div class="f-main">MMR = argmax[ &lambda; &middot; Sim&#8321;(d&#7522;, q) &minus; (1&minus;&lambda;) &middot; max Sim&#8322;(d&#7522;, d&#7541;) ]</div><div class="f-where">&lambda;=1 &rarr; pure relevance (Top-K) &nbsp;&middot;&nbsp; &lambda;=0.7 &rarr; sweet spot &nbsp;&middot;&nbsp; &lambda;=0 &rarr; pure diversity</div></div>
+    <div class="sim-box">
+      <div class="sim-title"><span>&#9878;&#65039;</span>&lambda; Parameter Explorer</div>
+      <div class="sim-desc">Tune lambda and watch how chunk selection shifts between relevance and diversity.</div>
+      <div class="slider-row"><span class="slider-label">Lambda (&lambda;)</span><input type="range" id="mmr-lambda" min="0" max="1" step="0.05" value="0.7" oninput="updateMMR()"/><span class="slider-val" id="lambda-val">0.70</span></div>
+      <div id="mmr-bar" style="height:10px;border-radius:6px;margin:12px 0;background:linear-gradient(90deg,#06b6d4,#6c63ff,#ef4444);position:relative;"><div id="mmr-indicator" style="position:absolute;top:-5px;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--accent);transform:translateX(-50%);transition:left 0.2s;left:70%;"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);"><span>Pure Diversity</span><span>Sweet Spot</span><span>Pure Relevance</span></div>
+      <div id="mmr-description" style="margin-top:14px;padding:14px;background:var(--bg3);border-radius:8px;font-size:13px;color:var(--text2);border-left:3px solid var(--accent);"></div>
+    </div>
+    <div class="card" style="margin-top:16px;"><div class="card-title" style="margin-bottom:12px;">Chunk Candidates (simulated scoring)</div><div id="mmr-chunks" style="display:flex;flex-direction:column;gap:8px;"></div></div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="section" id="sec-tools">
+    <div class="section-hero fade-up"><div class="section-tag">&#128295; Module 3.1&ndash;3.2</div><h2>Tools &amp; Function Calling</h2><p>LLMs issue structured tool-call requests. Your Python runtime executes the actual function and returns results.</p></div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px;">The 5-Step Tool Call Loop</div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">1</div><div><h4 style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">Developer registers tools</h4><p style="font-size:12px;color:var(--text2);">Each tool has name, description, and Pydantic JSON schema. Passed to LLM on invocation.</p></div></div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">2</div><div><h4 style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">LLM returns Tool Call Request</h4><p style="font-size:12px;color:var(--text2);font-family:'JetBrains Mono';">{"name":"get_stock_quote","args":{"ticker":"AAPL"}}</p></div></div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">3</div><div><h4 style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">Python runtime executes the function</h4><p style="font-size:12px;color:var(--text2);">Your code calls get_stock_quote("AAPL") &rarr; returns "$224.50"</p></div></div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">4</div><div><h4 style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">Result packaged into ToolMessage</h4><p style="font-size:12px;color:var(--text2);">The observation is appended to message history and sent back to the LLM.</p></div></div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">5</div><div><h4 style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">LLM reads result &amp; drafts final response</h4><p style="font-size:12px;color:var(--text2);">With the tool observation in context, the model produces a grounded, factual answer.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REACT SIM -->
+  <div class="section" id="sec-react">
+    <div class="section-hero fade-up"><div class="section-tag">&#128260; Module 3.3&ndash;3.4</div><h2>ReAct Loop Simulator</h2><p>Reasoning + Acting. Watch the Thought &rarr; Action &rarr; Observation cycle execute step-by-step.</p></div>
+    <div class="formula"><div class="f-title">Formula 4: The ReAct Cognitive Loop</div><div class="f-main">Input &rarr; ( Thought &rarr; Action &rarr; Observation )* &rarr; Final Answer</div><div class="f-where">* = repeats until task complete or max_iterations reached</div></div>
+    <div class="sim-box">
+      <div class="sim-title"><span>&#128260;</span>Live Agent Simulation</div>
+      <div style="padding:10px 14px;background:var(--bg3);border-radius:8px;font-size:13px;color:var(--text2);border-left:3px solid var(--accent3);margin-bottom:14px;">&#128172; User: "What is AAPL's price and what % of NVDA's market cap is it?"</div>
+      <div class="react-sim">
+        <div class="react-step" id="rs-0"><div class="react-step-icon">&#128173;</div><div><div class="react-step-label">Thought 1</div><div class="react-step-text">I need AAPL's stock price. Let me call get_stock_quote.</div></div></div>
+        <div class="react-step" id="rs-1"><div class="react-step-icon">&#9889;</div><div><div class="react-step-label">Action 1</div><div class="react-step-text">get_stock_quote("AAPL")</div></div></div>
+        <div class="react-step" id="rs-2"><div class="react-step-icon">&#128065;&#65039;</div><div><div class="react-step-label">Observation 1</div><div class="react-step-text">Apple Inc. (AAPL): Price $224.23 | Market Cap: $3.42T</div></div></div>
+        <div class="react-step" id="rs-3"><div class="react-step-icon">&#128173;</div><div><div class="react-step-label">Thought 2</div><div class="react-step-text">Now I need NVDA's market cap to compute the percentage.</div></div></div>
+        <div class="react-step" id="rs-4"><div class="react-step-icon">&#9889;</div><div><div class="react-step-label">Action 2</div><div class="react-step-text">get_stock_quote("NVDA")</div></div></div>
+        <div class="react-step" id="rs-5"><div class="react-step-icon">&#128065;&#65039;</div><div><div class="react-step-label">Observation 2</div><div class="react-step-text">NVIDIA Corp. (NVDA): Price $120.50 | Market Cap: $2.96T</div></div></div>
+        <div class="react-step" id="rs-6"><div class="react-step-icon">&#128173;</div><div><div class="react-step-label">Thought 3</div><div class="react-step-text">AAPL=$3.42T, NVDA=$2.96T. I'll use calculate_percentage now.</div></div></div>
+        <div class="react-step" id="rs-7"><div class="react-step-icon">&#9889;</div><div><div class="react-step-label">Action 3</div><div class="react-step-text">calculate_percentage(part=3420, whole=2960)</div></div></div>
+        <div class="react-step" id="rs-8"><div class="react-step-icon">&#128065;&#65039;</div><div><div class="react-step-label">Observation 3</div><div class="react-step-text">115.54%</div></div></div>
+        <div class="react-step" id="rs-9"><div class="react-step-icon">&#9989;</div><div><div class="react-step-label">Final Answer</div><div class="react-step-text">AAPL trades at $224.23. Its market cap ($3.42T) is 115.54% of NVDA's market cap ($2.96T).</div></div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn btn-primary btn-sm" id="react-play-btn" onclick="startReactSim()">&#9654; Run Simulation</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetReactSim()">&#8634; Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LANGGRAPH -->
+  <div class="section" id="sec-langgraph">
+    <div class="section-hero fade-up"><div class="section-tag">&#128375; Module 4.3</div><h2>LangGraph Architecture</h2><p>Agent workflows as directed state graphs: Nodes execute logic, Edges route control, State persists data.</p></div>
+    <div class="grid grid-3" style="margin-bottom:20px;">
+      <div class="card" style="border-color:rgba(108,99,255,0.3);"><div style="font-size:24px;margin-bottom:8px;">&#128230;</div><div class="card-title">State</div><p style="margin-top:6px;">A TypedDict/Pydantic schema shared across ALL nodes. Single source of truth for the entire graph run.</p></div>
+      <div class="card" style="border-color:rgba(6,182,212,0.3);"><div style="font-size:24px;margin-bottom:8px;">&#9881;&#65039;</div><div class="card-title">Nodes</div><p style="margin-top:6px;">Python functions that receive current State, perform computation or call an LLM, and return state updates.</p></div>
+      <div class="card" style="border-color:rgba(16,185,129,0.3);"><div style="font-size:24px;margin-bottom:8px;">&#8596;&#65039;</div><div class="card-title">Edges</div><p style="margin-top:6px;">Deterministic connections OR conditional router functions returning next node name based on state values.</p></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px;">Animated Graph: Deep Research Multi-Agent Pipeline</div>
+      <div class="flow">
+        <div class="flow-node" id="lg-start" style="background:rgba(16,185,129,0.1);border-color:var(--green);">&#9654; START</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="lg-plan">&#128203; Planner Node</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="lg-research">&#128269; Researcher Node</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="lg-write">&#9999;&#65039; Drafter Node</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="lg-critic">&#128270; Critic / Evaluator</div><div class="flow-arrow">&#8595;</div>
+        <div class="flow-node" id="lg-check" style="border-style:dashed;">&#10067; Score &ge; 8.5?</div>
+      </div>
+      <div style="display:flex;gap:20px;justify-content:center;margin-top:8px;font-size:12px;color:var(--text3);"><span>&#10060; No &rarr; back to &#128269; Researcher</span><span>&#9989; Yes &rarr; &#9632; END</span></div>
+      <div style="text-align:center;margin-top:12px;"><button class="btn btn-primary btn-sm" onclick="animateLangGraph()">&#9654; Animate</button> <button class="btn btn-ghost btn-sm" onclick="resetLangGraph()">&#8634; Reset</button></div>
+    </div>
+    <div class="code-block" style="margin-top:16px;"><div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ef4444;"></div><div class="code-dot" style="background:#f59e0b;"></div><div class="code-dot" style="background:#10b981;"></div></div><span class="code-lang">Python &mdash; LangGraph StateGraph</span></div><div class="code-pre"><span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
+
+graph = <span class="cls">StateGraph</span>(State)
+graph.<span class="fn">add_node</span>(<span class="str">"planner"</span>, planner_node)
+graph.<span class="fn">add_node</span>(<span class="str">"researcher"</span>, research_node)
+graph.<span class="fn">add_edge</span>(START, <span class="str">"planner"</span>)
+graph.<span class="fn">add_conditional_edges</span>(<span class="str">"critic"</span>, route_critic)
+app = graph.<span class="fn">compile</span>()</div></div>
+  </div>
+
+  <!-- TOPOLOGIES -->
+  <div class="section" id="sec-topologies">
+    <div class="section-hero fade-up"><div class="section-tag">&#128506;&#65039; Module 4.1&ndash;4.2</div><h2>Multi-Agent Topologies</h2><p>Different architectures for different problem shapes. Pick the right topology every time.</p></div>
+    <div class="topology-grid">
+      <div class="topo-card active" onclick="setTopo(this,'seq')"><h4>1. Sequential Pipeline</h4><p>Linear hand-off between specialist agents.</p><div class="topo-vis">Planner &rarr; Researcher
+    &darr;
+  Writer &rarr; Output</div></div>
+      <div class="topo-card" onclick="setTopo(this,'hier')"><h4>2. Hierarchical Supervisor</h4><p>Central orchestrator routes to subagents.</p><div class="topo-vis">  [Supervisor]
+  /    |    \
+Web   DB   Code</div></div>
+      <div class="topo-card" onclick="setTopo(this,'gc')"><h4>3. Generator-Critic Loop</h4><p>Writer loops with Critic until quality passes.</p><div class="topo-vis">[Writer] &rarr; Draft
+  &uarr;         &darr;
+[Revise] &larr; [Critic]
+           &darr; Pass
+        [Output]</div></div>
+      <div class="topo-card" onclick="setTopo(this,'par')"><h4>4. Parallel Fan-Out</h4><p>Multiple branches run simultaneously.</p><div class="topo-vis">    [START]
+  /    |    \
+Tox Copy Cult
+  \    |    /
+ [Reducer]</div></div>
+      <div class="topo-card" onclick="setTopo(this,'rag')"><h4>5. Conditional RAG Router</h4><p>Classifier routes to matching knowledge base.</p><div class="topo-vis">[Classifier]
+/     |     \
+Acad  Fee  General
+  \   |   /
+[Response]</div></div>
+      <div class="topo-card" onclick="setTopo(this,'hitl')"><h4>6. Human-in-the-Loop</h4><p>Graph pauses, human reviews, then resumes.</p><div class="topo-vis">[Writer] &rarr; interrupt()
+              &darr;
+         Human Input
+              &darr;
+     Command(resume=...)</div></div>
+    </div>
+    <div id="topo-detail" class="card" style="margin-top:0;"></div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="section" id="sec-projects">
+    <div class="section-hero fade-up"><div class="section-tag">&#128640; Course Projects</div><h2>6 Project Walkthroughs</h2><p>File structure, architecture, and execution flow for every project in the course.</p></div>
+    <div class="pill-tabs" id="proj-tabs">
+      <button class="pill-tab active" onclick="showProject(0,this)">P1: Sequential</button>
+      <button class="pill-tab" onclick="showProject(1,this)">P2: Parallel</button>
+      <button class="pill-tab" onclick="showProject(2,this)">P3: RAG Router</button>
+      <button class="pill-tab" onclick="showProject(3,this)">P4: Iterative</button>
+      <button class="pill-tab" onclick="showProject(4,this)">P5: HITL</button>
+      <button class="pill-tab" onclick="showProject(5,this)">P6: Video RAG</button>
+    </div>
+    <div id="proj-content"></div>
+  </div>
+
+  <!-- BLUEPRINT -->
+  <div class="section" id="sec-blueprint">
+    <div class="section-hero fade-up"><div class="section-tag">&#128203; Module 6</div><h2>The 6-Step Agent Design Blueprint</h2><p>The universal framework for designing any AI agent from scratch.</p></div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border);"><div style="min-width:28px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">1</div></div><div><h4 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Define Domain, Objective &amp; Persona</h4><p style="font-size:13px;color:var(--text2);">What is the exact goal? What domain expertise does the agent need? What are its hard constraints?</p></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border);"><div style="min-width:28px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">2</div></div><div><h4 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Inventory the Action Space (Tools)</h4><p style="font-size:13px;color:var(--text2);">What external systems must it touch? Define strict Pydantic schemas and comprehensive docstrings for every tool.</p></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border);"><div style="min-width:28px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">3</div></div><div><h4 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Knowledge &amp; Context Grounding (RAG)</h4><p style="font-size:13px;color:var(--text2);">Configure loaders &rarr; chunking &rarr; vector store &rarr; MMR retriever &rarr; .pkl cache layer.</p></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border);"><div style="min-width:28px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">4</div></div><div><h4 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Select Cognitive Architecture</h4><p style="font-size:13px;color:var(--text2);">Linear &rarr; LCEL &nbsp;|&nbsp; Dynamic tools &rarr; ReAct Agent &nbsp;|&nbsp; Multi-step/iterative &rarr; LangGraph StateGraph</p></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--border);"><div style="min-width:28px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">5</div></div><div><h4 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Design State Schema &amp; Memory</h4><p style="font-size:13px;color:var(--text2);">What parameters persist across reasoning cycles? Serialize checkpoints to .pkl for session persistence.</p></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 0;"><div style="min-width:28px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">6</div></div><div><h4 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">Guardrails, Recursion Caps &amp; Recovery</h4><p style="font-size:13px;color:var(--text2);">Set max_iterations to prevent infinite loops. Catch all tool exceptions and return clean error strings to the LLM.</p></div></div>
+    </div>
+  </div>
+
+  <!-- FORMULAS -->
+  <div class="section" id="sec-formulas">
+    <div class="section-hero fade-up"><div class="section-tag">&#128208; Quick Reference</div><h2>Key Formulas Cheatsheet</h2><p>All 4 core formulas from the course at a glance.</p></div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="formula"><div class="f-title">1. Softmax with Temperature Scaling</div><div class="f-main">P(w&#7522;) = exp(z&#7522; / T) / &Sigma;&#7541;&isin;V exp(z&#7541; / T)</div><div class="f-where">T&rarr;0 = greedy/deterministic &nbsp;&middot;&nbsp; T=1 = standard &nbsp;&middot;&nbsp; T&gt;1 = creative/random</div></div>
+      <div class="formula" style="border-left-color:var(--accent3);"><div class="f-title" style="color:var(--accent3);">2. Vector Cosine Similarity</div><div class="f-main">CosineSim(A,B) = (A&middot;B) / (||A|| &times; ||B||) = &Sigma;(A&#7522;B&#7522;) / &radic;(&Sigma;A&#7522;&sup2;) &times; &radic;(&Sigma;B&#7522;&sup2;)</div><div class="f-where">+1 = identical &nbsp;&middot;&nbsp; 0 = orthogonal/unrelated &nbsp;&middot;&nbsp; -1 = opposite</div></div>
+      <div class="formula" style="border-left-color:var(--green);"><div class="f-title" style="color:var(--green);">3. Maximal Marginal Relevance (MMR)</div><div class="f-main">MMR = argmax&#7522;&isin;D\S [ &lambda;&middot;Sim&#8321;(d&#7522;,q) &minus; (1&minus;&lambda;)&middot;max&#7541;&isin;S Sim&#8322;(d&#7522;,d&#7541;) ]</div><div class="f-where">&lambda;=1 pure relevance &nbsp;&middot;&nbsp; &lambda;=0.7 sweet spot &nbsp;&middot;&nbsp; &lambda;=0 pure diversity</div></div>
+      <div class="formula" style="border-left-color:var(--yellow);"><div class="f-title" style="color:var(--yellow);">4. ReAct Cognitive Loop</div><div class="f-main">Input &rarr; ( Thought &rarr; Action &rarr; Observation )* &rarr; Final Answer</div><div class="f-where">* = repeats N times &nbsp;&middot;&nbsp; max_iterations guards against infinite loops</div></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title" style="margin-bottom:14px;">&#128230; .pkl Serialization &mdash; Performance Comparison</div>
+      <div class="tbl-wrap"><table><tr><th>Operation</th><th>Without Cache</th><th>With .pkl Cache</th><th>Speedup</th></tr><tr><td>Transcript Fetch</td><td>1,200 ms (Network)</td><td>0.8 ms</td><td style="color:var(--green);">1,500&times;</td></tr><tr><td>Recursive Chunking</td><td>350 ms (CPU)</td><td>0.4 ms</td><td style="color:var(--green);">875&times;</td></tr><tr><td>Embedding Generation</td><td>4,500 ms + API $</td><td>1.8 ms</td><td style="color:var(--green);">2,500&times;</td></tr><tr><td>API Cost</td><td>Paid per call</td><td>$0.00</td><td style="color:var(--green);">100% saved</td></tr></table></div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="section" id="sec-quiz">
+    <div class="section-hero fade-up"><div class="section-tag">&#129504; Knowledge Check</div><h2>Course Quiz</h2><p>15 questions across all modules. Instant feedback &amp; explanations for every answer.</p></div>
+    <div class="quiz-card" id="quiz-container"></div>
+  </div>
+
+</div><!-- end #main -->
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ===== NAVIGATION =====
+let visited=new Set(['home']);
+const totalSections=17;
+function showSection(id,navEl){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec) sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+  visited.add(id);
+  const pct=Math.round((visited.size/totalSections)*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  const titles={home:'Home',llms:'LLM Anatomy',temperature:'Temperature Simulator',prompts:'Prompt Engineering',lcel:'LCEL & LangChain',ragwhy:'Why RAG?',chunking:'Chunking & Splitting',embeddings:'Embeddings & Cosine Sim',vectorstores:'Vector Stores',mmr:'MMR Simulator',tools:'Tools & Function Calling',react:'ReAct Loop Simulator',langgraph:'LangGraph Architecture',topologies:'Agent Topologies',projects:'Projects',blueprint:'6-Step Blueprint',formulas:'Key Formulas',quiz:'Quiz'};
+  document.getElementById('topbar-title').textContent=(titles[id]||id)+' \u2014 Agentic AI';
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0,0);
+  initSection(id);
+}
+function initSection(id){
+  if(id==='temperature') updateTempSim();
+  if(id==='embeddings'){setTimeout(initCosineCanvas,100);}
+  if(id==='mmr'){updateMMR();renderMMRChunks();}
+  if(id==='chunking') updateChunkViz();
+  if(id==='topologies') updateTopoDetail('seq');
+  if(id==='projects') showProject(0,document.querySelector('#proj-tabs .pill-tab'));
+  if(id==='quiz') initQuiz();
+  if(id==='react') resetReactSim();
+}
+
+// ===== TEMPERATURE SIM =====
+function updateTempSim(){
+  const T=parseFloat(document.getElementById('temp-slider').value);
+  document.getElementById('temp-val').textContent=T.toFixed(2);
+  const logits=[4.0,2.0,1.0];
+  const exps=logits.map(z=>Math.exp(z/T));
+  const sum=exps.reduce((a,b)=>a+b,0);
+  const probs=exps.map(e=>e/sum*100);
+  document.getElementById('bar-ai').style.width=probs[0].toFixed(1)+'%';
+  document.getElementById('pct-ai').textContent=probs[0].toFixed(1)+'%';
+  document.getElementById('bar-cloud').style.width=probs[1].toFixed(1)+'%';
+  document.getElementById('pct-cloud').textContent=probs[1].toFixed(1)+'%';
+  document.getElementById('bar-db').style.width=probs[2].toFixed(1)+'%';
+  document.getElementById('pct-db').textContent=probs[2].toFixed(1)+'%';
+  let msg,color;
+  if(T<0.3){msg='<strong>Near-Deterministic</strong> \u2014 Extreme sharpening. Almost always picks "AI". Ideal for agents & RAG where factual precision is critical.';color='var(--green)';}
+  else if(T<0.8){msg='<strong>Balanced</strong> \u2014 Clear preference with small diversity. Recommended range for production agents.';color='var(--accent)';}
+  else if(T<1.2){msg='<strong>Standard (T=1.0)</strong> \u2014 Default probability distribution. No scaling applied to logits.';color='var(--text2)';}
+  else if(T<2.0){msg='<strong>Creative</strong> \u2014 Distribution flattens. More variety but higher hallucination risk. Good for brainstorming.';color='var(--yellow)';}
+  else{msg='<strong>High Entropy</strong> \u2014 Very flat, near-uniform distribution. Unpredictable, chaotic outputs.';color='var(--red)';}
+  const el=document.getElementById('temp-interpretation');
+  el.innerHTML=msg;el.style.borderLeft='3px solid '+color;el.style.color=color;
+}
+
+// ===== CHUNKING VIZ =====
+function updateChunkViz(){
+  const cs=parseInt(document.getElementById('chunk-size').value);
+  const co=parseInt(document.getElementById('chunk-overlap').value);
+  document.getElementById('cs-val').textContent=cs;
+  document.getElementById('co-val').textContent=co;
+  const docLen=2400,step=cs-co;
+  const chunks=[];let pos=0;
+  while(pos<docLen&&chunks.length<10){chunks.push({start:pos,end:Math.min(pos+cs,docLen)});pos+=step;if(step<=0)break;}
+  const colors=['#6c63ff','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#f97316','#8b5cf6','#06b6d4','#6c63ff'];
+  let html='<div style="position:relative;height:48px;background:var(--bg3);border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px;">';
+  chunks.forEach((c,i)=>{const l=(c.start/docLen)*100,w=((c.end-c.start)/docLen)*100;html+=`<div style="position:absolute;left:${l}%;width:${w}%;height:100%;background:${colors[i%colors.length]};opacity:0.35;border-right:2px solid ${colors[i%colors.length]};"></div>`;});
+  html+='</div>';
+  html+=`<p style="font-size:12px;color:var(--text2);">&#128230; <strong>${chunks.length}</strong> chunks from ${docLen} chars &nbsp;&middot;&nbsp; Overlap: <strong>${co}</strong> chars &nbsp;&middot;&nbsp; Step: <strong>${Math.max(0,step)}</strong> chars</p>`;
+  document.getElementById('chunk-viz').innerHTML=html;
+}
+
+// ===== COSINE SIMILARITY CANVAS =====
+let cosCtx,canW,canH,cx,cy;
+let vA={x:140,y:-80},vB={x:80,y:-130},drag=null;
+function initCosineCanvas(){
+  const can=document.getElementById('cosine-canvas');
+  if(!can)return;
+  canW=can.offsetWidth;canH=300;can.width=canW;can.height=canH;
+  cx=canW/2;cy=canH/2;cosCtx=can.getContext('2d');
+  drawCosine();
+  can.onmousedown=e=>{const r=can.getBoundingClientRect(),mx=e.clientX-r.left-cx,my=-(e.clientY-r.top-cy);drag=Math.hypot(mx-vA.x,my-vA.y)<22?'A':Math.hypot(mx-vB.x,my-vB.y)<22?'B':null;};
+  can.onmousemove=e=>{if(!drag)return;const r=can.getBoundingClientRect(),mx=e.clientX-r.left-cx,my=-(e.clientY-r.top-cy);if(drag==='A')vA={x:mx,y:my};else vB={x:mx,y:my};drawCosine();};
+  can.onmouseup=()=>drag=null;
+  can.ontouchstart=e=>{e.preventDefault();const t=e.touches[0],r=can.getBoundingClientRect(),mx=t.clientX-r.left-cx,my=-(t.clientY-r.top-cy);drag=Math.hypot(mx-vA.x,my-vA.y)<25?'A':Math.hypot(mx-vB.x,my-vB.y)<25?'B':null;};
+  can.ontouchmove=e=>{if(!drag)return;e.preventDefault();const t=e.touches[0],r=can.getBoundingClientRect(),mx=t.clientX-r.left-cx,my=-(t.clientY-r.top-cy);if(drag==='A')vA={x:mx,y:my};else vB={x:mx,y:my};drawCosine();};
+  can.ontouchend=()=>drag=null;
+}
+function drawCosine(){
+  if(!cosCtx)return;
+  const ctx=cosCtx;
+  ctx.clearRect(0,0,canW,canH);
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,canW,canH);
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(let x=0;x<canW;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canH);ctx.stroke();}
+  for(let y=0;y<canH;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canW,y);ctx.stroke();}
+  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(canW,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,canH);ctx.stroke();
+  drawArrow(ctx,cx,cy,cx+vA.x,cy-vA.y,'#6c63ff','A');
+  drawArrow(ctx,cx,cy,cx+vB.x,cy-vB.y,'#06b6d4','B');
+  const mA=Math.hypot(vA.x,vA.y),mB=Math.hypot(vB.x,vB.y);
+  const dot=vA.x*vB.x+vA.y*vB.y;
+  const sim=mA>1&&mB>1?dot/(mA*mB):0;
+  const ang=Math.acos(Math.max(-1,Math.min(1,sim)))*180/Math.PI;
+  const c=sim>0.7?'var(--green)':sim>0?'var(--yellow)':sim<-0.3?'var(--red)':'var(--text2)';
+  const label=sim>0.85?'Very Similar':sim>0.5?'Similar':sim>0.1?'Weakly Related':sim<-0.5?'Opposite':'Unrelated';
+  document.getElementById('cosine-result').innerHTML=`
+    <div style="flex:1;background:var(--bg3);padding:10px 14px;border-radius:8px;border-left:3px solid ${c};"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;">COSINE SIMILARITY</div><div style="font-size:26px;font-weight:800;color:${c};">${sim.toFixed(4)}</div></div>
+    <div style="flex:1;background:var(--bg3);padding:10px 14px;border-radius:8px;"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;">ANGLE &theta;</div><div style="font-size:26px;font-weight:800;color:var(--accent3);">${ang.toFixed(1)}&deg;</div></div>
+    <div style="flex:1;background:var(--bg3);padding:10px 14px;border-radius:8px;"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;">INTERPRETATION</div><div style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">${label}</div></div>`;
+}
+function drawArrow(ctx,x1,y1,x2,y2,color,label){
+  ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.shadowBlur=10;ctx.shadowColor=color;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.shadowBlur=0;
+  const angle=Math.atan2(y2-y1,x2-x1);ctx.fillStyle=color;
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-12*Math.cos(angle-0.4),y2-12*Math.sin(angle-0.4));ctx.lineTo(x2-12*Math.cos(angle+0.4),y2-12*Math.sin(angle+0.4));ctx.fill();
+  ctx.fillStyle=color;ctx.font='bold 13px Inter';ctx.fillText(label,x2+8,y2-6);
+  ctx.beginPath();ctx.arc(x2,y2,6,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+}
+
+// ===== MMR =====
+const mmrData=[
+  {text:'RAG uses vector similarity to retrieve relevant document chunks.',rel:0.92,topic:'rag'},
+  {text:'Vector embeddings map text into high-dimensional numerical coordinates.',rel:0.87,topic:'embeddings'},
+  {text:'Cosine similarity measures the angle between two vectors in embedding space.',rel:0.84,topic:'embeddings'},
+  {text:'The ReAct loop chains Thought, Action, and Observation iteratively.',rel:0.79,topic:'agents'},
+  {text:'LangGraph models agent workflows as directed state graphs.',rel:0.71,topic:'langgraph'},
+];
+function updateMMR(){
+  const l=parseFloat(document.getElementById('mmr-lambda').value);
+  document.getElementById('lambda-val').textContent=l.toFixed(2);
+  document.getElementById('mmr-indicator').style.left=(l*100)+'%';
+  let desc;
+  if(l<0.2) desc='<strong style="color:var(--accent3)">Pure Diversity</strong> \u2014 Maximizes variety. May pull loosely related chunks but prevents redundancy.';
+  else if(l<0.5) desc='<strong style="color:var(--accent)">Diversity-Leaning</strong> \u2014 Favors novel chunks not already represented in the selected set.';
+  else if(l<0.8) desc='<strong style="color:var(--green)">The Sweet Spot (\u03bb\u22480.7)</strong> \u2014 High relevance + penalizes duplicates. Recommended for production RAG systems.';
+  else desc='<strong style="color:var(--yellow)">Relevance-Leaning</strong> \u2014 Prioritizes most relevant chunks. Approaches naive Top-K at \u03bb=1.0.';
+  document.getElementById('mmr-description').innerHTML=desc;
+  renderMMRChunks(l);
+}
+function renderMMRChunks(l=0.7){
+  const el=document.getElementById('mmr-chunks');if(!el)return;
+  const scored=mmrData.map((c,i)=>{
+    const div=i===0?1:1-mmrData[i-1].rel*0.55;
+    const score=l*c.rel-(1-l)*(1-div);
+    return{...c,score,sel:score>0.45};
+  });
+  const tagColors=['purple','cyan','green','yellow','pink'];
+  el.innerHTML=scored.map((c,i)=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;background:${c.sel?'rgba(16,185,129,0.08)':'var(--bg3)'};border:1px solid ${c.sel?'rgba(16,185,129,0.25)':'var(--border)'};">
+      <div style="font-size:14px;margin-top:2px;">${c.sel?'\u2705':'\u2B1C'}</div>
+      <div style="flex:1;"><div style="font-size:12px;color:var(--text2);">${c.text}</div>
+      <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;">
+        <span style="font-size:10px;color:var(--text3);">Relevance: <strong style="color:var(--accent);">${c.rel.toFixed(2)}</strong></span>
+        <span style="font-size:10px;color:var(--text3);">MMR Score: <strong style="color:${c.sel?'var(--green)':'var(--text3)'};">${c.score.toFixed(2)}</strong></span>
+        <span class="tag tag-${tagColors[i%5]}">${c.topic}</span>
+      </div></div></div>`).join('');
+}
+
+// ===== RAG FLOW ANIMATION =====
+function animateRAGFlow(){
+  const nodes=['rf-1','rf-2','rf-3','rf-4','rf-5','rf-6','rf-7'];
+  nodes.forEach(n=>{const el=document.getElementById(n);if(el){el.classList.remove('highlight','active-node');}});
+  let i=0;const iv=setInterval(()=>{
+    if(i>0){const prev=document.getElementById(nodes[i-1]);if(prev)prev.classList.remove('highlight');}
+    if(i>=nodes.length){clearInterval(iv);const last=document.getElementById(nodes[nodes.length-1]);if(last)last.classList.add('active-node');return;}
+    const el=document.getElementById(nodes[i]);if(el)el.classList.add('highlight');i++;
+  },500);
+}
+
+// ===== REACT SIM =====
+let reactIv=null;
+function startReactSim(){
+  resetReactSim();
+  const btn=document.getElementById('react-play-btn');if(btn)btn.disabled=true;
+  let step=0;
+  reactIv=setInterval(()=>{
+    if(step>=10){clearInterval(reactIv);if(btn)btn.disabled=false;return;}
+    if(step>0){const prev=document.getElementById('rs-'+(step-1));if(prev){prev.classList.remove('active');prev.classList.add('done');}}
+    const el=document.getElementById('rs-'+step);if(el)el.classList.add('active');step++;
+  },900);
+}
+function resetReactSim(){
+  if(reactIv)clearInterval(reactIv);
+  const btn=document.getElementById('react-play-btn');if(btn)btn.disabled=false;
+  for(let i=0;i<10;i++){const el=document.getElementById('rs-'+i);if(el)el.classList.remove('active','done');}
+}
+
+// ===== LANGGRAPH ANIMATION =====
+let lgIv=null;
+function animateLangGraph(){
+  resetLangGraph();
+  const nodes=['lg-start','lg-plan','lg-research','lg-write','lg-critic','lg-check'];
+  let i=0;lgIv=setInterval(()=>{
+    if(i>0){const prev=document.getElementById(nodes[i-1]);if(prev)prev.classList.remove('highlight');}
+    if(i>=nodes.length){clearInterval(lgIv);return;}
+    const el=document.getElementById(nodes[i]);if(el)el.classList.add('highlight');i++;
+  },700);
+}
+function resetLangGraph(){
+  if(lgIv)clearInterval(lgIv);
+  ['lg-start','lg-plan','lg-research','lg-write','lg-critic','lg-check'].forEach(n=>{const el=document.getElementById(n);if(el)el.classList.remove('highlight','active-node');});
+}
+
+// ===== TOPOLOGIES =====
+const topoDetails={
+  seq:`<div class="card-title" style="margin-bottom:10px;">Sequential Pipeline</div><p style="font-size:13px;color:var(--text2);">Each node processes the previous node's output in strict linear order. Simple, debuggable, predictable. Used in Project 1: Editor &rarr; Scriptwriter &rarr; Hinglish Translator pipeline.</p>`,
+  hier:`<div class="card-title" style="margin-bottom:10px;">Hierarchical Supervisor</div><p style="font-size:13px;color:var(--text2);">A central Supervisor Agent routes subtasks to specialized subagents (Web, DB, Code). The supervisor evaluates results and decides the next step. Ideal for complex multi-domain tasks.</p>`,
+  gc:`<div class="card-title" style="margin-bottom:10px;">Generator-Critic Loop</div><p style="font-size:13px;color:var(--text2);">Writer generates content; Critic evaluates it. If score &lt; threshold, conditional edge routes back to Writer. Stops when approved or max_iterations reached. Used in Project 4.</p>`,
+  par:`<div class="card-title" style="margin-bottom:10px;">Parallel Fan-Out + Annotated Reducer</div><p style="font-size:13px;color:var(--text2);">Multiple branches (Toxicity, Copyright, Culture) execute simultaneously. Without a reducer, last-writer-wins silently overwrites results. <code style="font-family:'JetBrains Mono';font-size:11px;background:var(--bg3);padding:2px 5px;border-radius:3px;">Annotated[dict, merge_score_dicts]</code> safely merges all branch dicts.</p>`,
+  rag:`<div class="card-title" style="margin-bottom:10px;">Conditional RAG Router</div><p style="font-size:13px;color:var(--text2);">Classifier node categorizes the user query (academic/fee/general). Conditional edge routes to the matching retriever. All paths converge at Response Node for grounded answer generation. Used in Projects 3 &amp; 6.</p>`,
+  hitl:`<div class="card-title" style="margin-bottom:10px;">Human-in-the-Loop (HITL)</div><p style="font-size:13px;color:var(--text2);">Graph pauses via <code style="font-family:'JetBrains Mono';font-size:11px;background:var(--bg3);padding:2px 5px;border-radius:3px;">interrupt()</code>, yields a draft to a human reviewer, and resumes via <code style="font-family:'JetBrains Mono';font-size:11px;background:var(--bg3);padding:2px 5px;border-radius:3px;">Command(resume=...)</code>. State persisted by <code style="font-family:'JetBrains Mono';font-size:11px;background:var(--bg3);padding:2px 5px;border-radius:3px;">MemorySaver</code> across interrupts. Project 5.</p>`
+};
+function setTopo(el,key){
+  document.querySelectorAll('.topo-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  updateTopoDetail(key);
+}
+function updateTopoDetail(key){const el=document.getElementById('topo-detail');if(el)el.innerHTML=topoDetails[key]||'';}
+
+// ===== PROJECTS =====
+const projects=[
+  {title:'P1: Sequential Content Pipeline',tags:['sequential','lcel'],file:'sequential_base.py',desc:'Editor &rarr; Scriptwriter &rarr; Hinglish Translator. Three LangGraph nodes in linear sequence sharing state.',steps:['Raw text input enters state.raw_input','editor_node: Fixes grammar, smooths tone &rarr; state.edited_text','scriptwriter_node: Converts to YouTube hook &rarr; state.script_text','translator_node: Natural Hinglish localization &rarr; state.final_output','app.invoke() returns final state dict']},
+  {title:'P2: Parallel Safety Analyzer',tags:['parallel','reducer','fan-out'],file:'parallel_reducers.py',desc:'Three branches (Toxicity, Copyright, Culture) run simultaneously from START. Annotated merge_score_dicts reducer combines results without overwrite.',steps:['raw_text fans out from START to 3 nodes simultaneously','toxicity_node: Returns {"toxicity_level": score}','copyright_node: Returns {"copyright_risk": score}','culture_node: Returns {"cultural_insensitivity": score}','Reducer merges all 3 dicts into safety_scores']},
+  {title:'P3: College RAG Assistant',tags:['conditional','rag','faiss'],file:'conditional_RAG.py',desc:'Query classifier routes to academic_retriever (FAISS on academics_handbook.pdf) or fee_retriever. All paths converge at response_node.',steps:['Student selects programme (BCA/BBA/B.Com)','classifier_node: "academic" | "fee" | "general"','Conditional edge routes to matching retriever node','RAG node fetches top-4 chunks from FAISS index','response_node generates grounded, programme-specific answer']},
+  {title:'P4: LinkedIn Post Generator',tags:['iterative','tools','reviewer','loop'],file:'iterative_tools.py',desc:'Writer invokes TavilySearch if needed. Reviewer grades against 7 strict criteria. Loop continues up to 3 attempts.',steps:['writer_node: Search web if needed, produce draft','extract_draft_node: Pull clean text from message history','reviewer_node: APPROVED or REJECTED + detailed feedback','should_stop_looping: Check approval or attempt &ge; 3','If rejected &rarr; back to writer_node with reviewer feedback']},
+  {title:'P5: Human-in-the-Loop',tags:['hitl','interrupt','memorysaver'],file:'humanintheloop.py',desc:'Graph pauses at human_review_node via interrupt(). Yields draft to human. Resumes via Command(resume=...). MemorySaver persists state.',steps:['writer_node: Generate LinkedIn post draft','human_review_node: interrupt() &rarr; graph pauses','Human reads draft, types "approved" or specific feedback','Command(resume=input) &rarr; graph resumes execution','Loop or end based on human approval decision']},
+  {title:'P6: AI Video RAG Assistant',tags:['rag','pickle','.pkl','youtube'],file:'project_2_video_rag/',desc:'YouTube transcript &rarr; timecode chunking &rarr; .pkl serialization &rarr; vector index. Tools: search_video_transcript, jump_to_timestamp.',steps:['ingest.py: Fetch transcript via YouTubeTranscriptApi','Chunk with timecode preservation (timestamp_display, video_url)','vector_store.py: Build VideoVectorIndex, serialize to .pkl','tools.py: search_video_transcript, jump_to_timestamp','app.py: Streamlit player synced to timestamp navigation']},
+];
+function showProject(i,btn){
+  if(btn){document.querySelectorAll('#proj-tabs .pill-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  const p=projects[i];
+  const tagColors=['purple','cyan','green','yellow','pink','orange'];
+  document.getElementById('proj-content').innerHTML=`
+    <div class="card">
+      <div class="card-header" style="margin-bottom:14px;"><div class="card-icon" style="background:rgba(108,99,255,0.2);">&#128640;</div><div><div class="card-title">${p.title}</div><div class="card-subtitle">${p.file}</div></div></div>
+      <div style="margin-bottom:12px;">${p.tags.map((t,i)=>`<span class="tag tag-${tagColors[i%tagColors.length]}" style="margin-right:4px;">${t}</span>`).join('')}</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">${p.desc}</p>
+      <div style="font-size:12px;font-weight:700;color:var(--accent3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;">EXECUTION FLOW</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${p.steps.map((s,idx)=>`<div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">${idx+1}</div><div style="font-size:12px;color:var(--text2);padding-top:2px;">${s}</div></div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ===== ACCORDION =====
+function toggleAccordion(header){
+  const body=header.nextElementSibling;
+  const isOpen=header.classList.contains('open');
+  document.querySelectorAll('.accordion-header').forEach(h=>{h.classList.remove('open');h.nextElementSibling.classList.remove('open');});
+  if(!isOpen){header.classList.add('open');body.classList.add('open');}
+}
+
+// ===== QUIZ =====
+const questions=[
+  {q:"What does 'temperature' control in an LLM's output?",opts:["The physical heat of the GPU","The probability distribution sharpness during token sampling","The maximum length of the response","The speed of inference"],ans:1,exp:"Temperature (T) divides logits before Softmax. Low T sharpens the distribution (deterministic). High T flattens it (creative/random). T\u21920 always picks the highest-logit token."},
+  {q:"What is the correct Cosine Similarity formula?",opts:["(A - B) / (||A|| + ||B||)","(A \u00b7 B) / (||A|| \u00d7 ||B||)","||A - B|| / n","A \u00d7 B / ||A||\u00b2"],ans:1,exp:"CosineSim = Dot Product \u00f7 Product of magnitudes. It measures the cosine of the angle between vectors, independent of their length. Range: -1 to +1."},
+  {q:"What does RAG stand for?",opts:["Retrieval Augmented Generation","Recursive Agent Graph","Reasoning and Grounding","Ranked Autoregressive Generation"],ans:0,exp:"RAG = Retrieval-Augmented Generation. It retrieves relevant document chunks from a vector store and injects them into the prompt, solving hallucinations, knowledge cutoff, and private data blindness."},
+  {q:"Why is chunk_overlap important in text splitting?",opts:["It reduces memory usage","It ensures facts spanning chunk boundaries aren't split apart","It speeds up embedding generation","It removes duplicate sentences"],ans:1,exp:"Without overlap, a sentence like '...total profit was | $42.5M in Q3...' would be split across two chunks with neither containing the complete fact. Overlap preserves boundary-spanning context."},
+  {q:"In the ReAct framework, what is the correct step order?",opts:["Action \u2192 Thought \u2192 Observation","Observation \u2192 Action \u2192 Thought","Thought \u2192 Action \u2192 Observation","Plan \u2192 Execute \u2192 Verify"],ans:2,exp:"ReAct = Reasoning + Acting. The loop is: Thought (analyze state) \u2192 Action (call a tool) \u2192 Observation (receive result). This repeats until the final answer is produced."},
+  {q:"In LangGraph, what is 'State'?",opts:["A variable storing only the final answer","A centralized TypedDict/Pydantic schema shared across all nodes","The temperature setting of the LLM","A Python class that inherits from GraphNode"],ans:1,exp:"State is the single source of truth for the entire graph. Every node receives it, may update it, and returns state diffs. All nodes in the graph share the same State schema."},
+  {q:"What does \u03bb=0.0 mean in the MMR formula?",opts:["Pure relevance \u2014 identical to Top-K retrieval","Disable retrieval entirely","Pure diversity \u2014 maximize variety, ignore query relevance","Balance relevance and diversity equally"],ans:2,exp:"MMR: \u03bb\u00b7Sim1(query) - (1-\u03bb)\u00b7maxSim2(already selected). \u03bb=0 zeroes out the relevance term, maximizing diversity among selected chunks. \u03bb=1 reverts to plain Top-K relevance."},
+  {q:"What does 'function calling' mean for LLMs?",opts:["The LLM writes Python code that runs inside its weights","The LLM returns a structured JSON request; your runtime executes it","The LLM calls another LLM directly","Function calling is a deprecated feature replaced by prompting"],ans:1,exp:"LLMs can't execute code in their weights. They return a structured tool call JSON like {name, args}. Your Python runtime executes the actual function and feeds the result back as a ToolMessage."},
+  {q:"What causes 'context window poisoning' in monolithic agents?",opts:["Using too many tools","Excessive tool results filling the context and degrading reasoning quality","Setting temperature too high","Using FAISS instead of ChromaDB"],ans:1,exp:"As a single ReAct agent accumulates many tool calls across long tasks, its context fills with raw results and intermediate steps, reducing reasoning quality. Multi-agent systems distribute this context load."},
+  {q:"What is the purpose of 'MemorySaver' in LangGraph?",opts:["It compresses model weights to save VRAM","It persists graph state between interrupt() pauses for Human-in-the-Loop","It caches vector embeddings to .pkl files","It stores conversation history in GPU RAM"],ans:1,exp:"MemorySaver is a checkpointer that serializes the full LangGraph state between executions. This allows the graph to be resumed after interrupt() yields control to a human reviewer."},
+  {q:"What speedup does .pkl caching provide for embedding generation?",opts:["~10\u00d7","~100\u00d7","~2,500\u00d7","No speedup \u2014 just saves API money"],ans:2,exp:"Course benchmark: Embedding generation takes ~4,500ms via OpenAI API. Loading the same pre-computed numpy array from a .pkl file takes ~1.8ms. That's a 2,500\u00d7 speedup plus zero API cost."},
+  {q:"In LCEL, what does the | (pipe) operator do?",opts:["Performs bitwise OR on tensors","Chains Runnable components (Prompt | Model | Parser) into a pipeline","Logs intermediate outputs to stdout","Selects between multiple available models"],ans:1,exp:"LCEL uses | as a pipe operator (inspired by Unix pipes). Each component (PromptTemplate, ChatModel, OutputParser) is a Runnable. They compose into a chain that can be invoked, streamed, or batched."},
+  {q:"What problem does 'merge_score_dicts' solve in Project 2?",opts:["It prevents JSON parse errors","It merges parallel branch dicts without last-writer-wins overwrite","It filters toxic content automatically","It speeds up parallel node execution"],ans:1,exp:"When multiple nodes run concurrently and write to the same state key, the last update silently overwrites previous results. merge_score_dicts does {**existing, **new} to safely combine all parallel branch outputs."},
+  {q:"Which architecture should you choose for a 'self-correcting' multi-step workflow?",opts:["Simple LCEL Chain","ReAct Single Agent","LangGraph StateGraph","Direct API calls without a framework"],ans:2,exp:"LangGraph StateGraphs support cycles (loops), conditional edges, and persistent state \u2014 essential for self-correcting workflows like the Writer-Critic loop. LCEL chains are linear; ReAct agents lack graph-level cycle orchestration."},
+  {q:"What is a 'conditional edge' in LangGraph?",opts:["An edge that only works in cloud deployments","A routing function returning the next node name based on current state","An edge with a time limit that expires","A connection that only fires once per run"],ans:1,exp:"add_conditional_edges(node, router_fn) calls router_fn with the current state. The router returns a string node name. This enables dynamic routing like 'if query_type==academic: goto academic_rag else: goto fee_rag'."}
+];
+let curQ=0,score=0,answered=[];
+function initQuiz(){curQ=0;score=0;answered=new Array(questions.length).fill(null);renderQ();}
+function renderQ(){
+  const q=questions[curQ];
+  document.getElementById('quiz-container').innerHTML=`
+    <div class="quiz-q">${curQ+1}. ${q.q}</div>
+    <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="quiz-opt" id="qo-${i}" onclick="selectAns(${i})"><div class="opt-letter">${['A','B','C','D'][i]}</div>${o}</div>`).join('')}</div>
+    <div class="quiz-feedback" id="quiz-fb"></div>
+    <div class="quiz-nav">
+      <span class="quiz-progress">Question ${curQ+1} of ${questions.length} &nbsp;&middot;&nbsp; Score: ${score}/${curQ}</span>
+      <div style="display:flex;gap:8px;">${curQ>0?'<button class="btn btn-ghost btn-sm" onclick="goQ(-1)">\u2190 Prev</button>':''}${answered[curQ]!==null?(curQ<questions.length-1?'<button class="btn btn-primary btn-sm" onclick="goQ(1)">Next \u2192</button>':'<button class="btn btn-primary btn-sm" onclick="showResults()">See Results \ud83c\udf89</button>'):''}</div>
+    </div>`;
+  if(answered[curQ]!==null) showAnsState(q,answered[curQ]);
+}
+function selectAns(chosen){
+  if(answered[curQ]!==null)return;
+  const q=questions[curQ];answered[curQ]=chosen;
+  if(chosen===q.ans)score++;
+  showAnsState(q,chosen);
+  setTimeout(()=>{
+    const nav=document.querySelector('.quiz-nav div');
+    if(nav)nav.innerHTML=curQ<questions.length-1?'<button class="btn btn-primary btn-sm" onclick="goQ(1)">Next \u2192</button>':'<button class="btn btn-primary btn-sm" onclick="showResults()">See Results \ud83c\udf89</button>';
+    const p=document.querySelector('.quiz-progress');
+    if(p)p.innerHTML=`Question ${curQ+1} of ${questions.length} &nbsp;&middot;&nbsp; Score: ${score}/${curQ+1}`;
+  },50);
+}
+function showAnsState(q,chosen){
+  document.querySelectorAll('.quiz-opt').forEach((el,i)=>{
+    if(i===q.ans)el.classList.add('correct');
+    else if(i===chosen&&chosen!==q.ans)el.classList.add('wrong');
+    el.style.pointerEvents='none';
+  });
+  const fb=document.getElementById('quiz-fb');
+  fb.className=`quiz-feedback show ${chosen===q.ans?'correct-fb':'wrong-fb'}`;
+  fb.innerHTML=(chosen===q.ans?'\u2705 Correct! ':'\u274C Not quite. ')+q.exp;
+}
+function goQ(dir){curQ+=dir;renderQ();}
+function showResults(){
+  const pct=Math.round((score/questions.length)*100);
+  const grade=pct>=90?'\ud83c\udfc6 Expert':pct>=75?'\u2b50 Proficient':pct>=60?'\ud83d\udcda Learner':'\ud83c\udf31 Keep Going';
+  document.getElementById('quiz-container').innerHTML=`
+    <div style="text-align:center;padding:28px;">
+      <div style="font-size:52px;margin-bottom:12px;">${pct>=90?'\ud83c\udfc6':pct>=75?'\u2b50':pct>=60?'\ud83d\udcda':'\ud83c\udf31'}</div>
+      <div style="font-size:36px;font-weight:800;color:${pct>=75?'var(--green)':pct>=60?'var(--yellow)':'var(--red)'};">${score}/${questions.length}</div>
+      <div style="font-size:20px;font-weight:700;color:#fff;margin:8px 0;">${grade}</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:24px;">${pct}% &mdash; ${pct>=90?'Outstanding mastery of Agentic AI!':pct>=75?'Strong understanding \u2014 review any missed concepts.':pct>=60?'Good start \u2014 revisit the simulators to reinforce.':'Keep exploring the interactive modules!'}</div>
+      <button class="btn btn-primary" onclick="initQuiz()">\ud83d\udd04 Retake Quiz</button>
+      <button class="btn btn-ghost" onclick="showSection('formulas',null)" style="margin-left:8px;">\ud83d\udcd0 Review Formulas</button>
+    </div>`;
+}
+
+// ===== INIT =====
+window.onload=()=>{
+  updateTempSim();updateMMR();updateChunkViz();initQuiz();
+  showProject(0,document.querySelector('#proj-tabs .pill-tab'));
+  updateTopoDetail('seq');
+  setTimeout(initCosineCanvas,300);
+};
+window.onresize=()=>{if(document.getElementById('sec-embeddings').classList.contains('active'))initCosineCanvas();};
+</script>
+</body>
+</html>
