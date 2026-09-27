@@ -3,50 +3,63 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LangChain &amp; RAG Architecture — The Complete Pedagogical Engineering Handbook</title>
-<meta name="description" content="Definitive pedagogical guide to Generative AI, LangChain LCEL, 5 Pillars of RAG, Vector Geometry, Tool Use, Multi-Agent Systems, Video RAG Assistant, and Universal Blueprint."/>
+<title>LangChain &amp; Advanced RAG — A Companion Guide for Engineers</title>
+<meta name="description" content="A warm, deeply practical guide to LangChain LCEL, 5 Pillars of RAG, Vector Mathematics, Tool Function Calling, Multi-Agent Systems, and Binary .pkl Caching."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
   --bg-primary: #07090e;
-  --bg-secondary: #0d111a;
-  --bg-card: #131826;
-  --bg-card-hover: #182032;
-  --border: #1f273d;
-  --border-focus: #3b82f6;
-  --accent-blue: #3b82f6;
+  --bg-secondary: #0d121d;
+  --bg-card: #121929;
+  --bg-card-hover: #172136;
+  --border: #1e293b;
+  --border-light: rgba(148, 163, 184, 0.12);
   --accent-cyan: #06b6d4;
+  --accent-cyan-light: #67e8f9;
+  --accent-blue: #3b82f6;
   --accent-purple: #8b5cf6;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
   background-color: var(--bg-primary);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-family: var(--font-sans);
-  line-height: 1.7;
-  overflow-x: hidden;
-  font-size: 16px;
+  line-height: 1.8;
+  font-size: 16.5px;
+  -webkit-font-smoothing: antialiased;
+}
+
+#reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+  width: 0%;
+  z-index: 200;
+  transition: width 0.1s ease-out;
 }
 
 header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(7, 9, 14, 0.85);
+  background: rgba(7, 9, 14, 0.88);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
-  padding: 1rem 2rem;
+  padding: 0.9rem 2rem;
 }
 .header-container {
   max-width: 1400px;
@@ -59,55 +72,56 @@ header {
 .brand-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   text-decoration: none;
   color: var(--text-primary);
 }
 .brand-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: #fff;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.35);
 }
+.brand-text { display: flex; flex-direction: column; }
 .brand-title {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 .brand-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 .nav-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   border: 1px solid var(--border);
   background: var(--bg-secondary);
   color: var(--text-secondary);
 }
 .nav-btn:hover {
-  border-color: var(--accent-blue);
+  border-color: var(--accent-cyan);
   color: var(--text-primary);
   transform: translateY(-1px);
 }
@@ -122,43 +136,45 @@ header {
   display: flex;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 2rem;
-  gap: 2.5rem;
+  padding: 2.5rem 2rem;
+  gap: 3rem;
 }
 
 aside.sidebar {
-  width: 300px;
+  width: 290px;
   flex-shrink: 0;
   position: sticky;
-  top: 5.5rem;
-  height: calc(100vh - 7rem);
+  top: 5rem;
+  height: calc(100vh - 6.5rem);
   overflow-y: auto;
-  padding-right: 1rem;
+  padding-right: 0.75rem;
 }
 aside.sidebar::-webkit-scrollbar { width: 4px; }
 aside.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .toc-title {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-muted);
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
   font-weight: 700;
 }
-.toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+.toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
 .toc-link {
-  display: block;
-  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
   border-radius: 6px;
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-decoration: none;
   transition: all 0.15s ease;
   border-left: 2px solid transparent;
 }
 .toc-link:hover, .toc-link.active {
   background: var(--bg-card);
-  color: var(--accent-cyan);
+  color: var(--accent-cyan-light);
   border-left-color: var(--accent-cyan);
 }
 
@@ -167,202 +183,227 @@ main.content {
   min-width: 0;
 }
 
-.hero {
-  padding: 2.5rem 0 3rem 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 3rem;
+.welcome-hero {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: 16px;
+  padding: 2.5rem 2.5rem;
+  margin-bottom: 3.5rem;
+  position: relative;
+  overflow: hidden;
 }
-.badge {
+.welcome-hero::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.15), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.badge-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.3rem 0.8rem;
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 0.25rem 0.75rem;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.35);
   border-radius: 9999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--accent-cyan);
-  margin-bottom: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-cyan-light);
+  margin-bottom: 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
-h1.hero-title {
-  font-size: 2.8rem;
+h1.welcome-title {
+  font-size: 2.5rem;
   font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-  margin-bottom: 1.25rem;
-  background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan) 80%, var(--accent-blue) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin-bottom: 1.2rem;
 }
-p.hero-desc {
+p.welcome-lead {
   font-size: 1.15rem;
   color: var(--text-secondary);
-  max-width: 900px;
-  line-height: 1.8;
-  margin-bottom: 2rem;
+  line-height: 1.85;
+  margin-bottom: 1.75rem;
+  max-width: 880px;
 }
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-.stat-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem;
-}
-.stat-num {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--accent-blue);
-  font-family: var(--font-mono);
-}
-.stat-label {
-  font-size: 0.8rem;
+.welcome-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
+.meta-item { display: flex; align-items: center; gap: 0.45rem; }
+.meta-item strong { color: var(--text-primary); }
 
 section {
   margin-bottom: 4.5rem;
-  scroll-margin-top: 6rem;
+  scroll-margin-top: 5rem;
 }
-.section-header { margin-bottom: 1.75rem; }
 .section-tag {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   font-weight: 700;
-  color: var(--accent-cyan);
-  margin-bottom: 0.5rem;
+  color: var(--accent-cyan-light);
+  margin-bottom: 0.4rem;
 }
-h2.section-title {
-  font-size: 2rem;
+h2.section-heading {
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
   color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
 }
-h3.subsection-title {
-  font-size: 1.4rem;
+h3.sub-heading {
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #f8fafc;
-  margin: 2rem 0 1rem 0;
-  letter-spacing: -0.01em;
+  color: #fff;
+  margin: 2rem 0 0.85rem 0;
 }
-
-.pedagogy-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin: 1.75rem 0;
+p {
+  margin-bottom: 1.2rem;
+  color: var(--text-secondary);
 }
+strong { color: var(--text-primary); }
 
-.analogy-box {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.03));
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  border-left: 5px solid var(--accent-amber);
+.mentor-note {
+  background: rgba(13, 18, 29, 0.75);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 1.5rem 1.75rem;
+  padding: 1.4rem 1.6rem;
+  margin: 1.6rem 0;
+  position: relative;
 }
-.callout-header {
+.mentor-note.tip {
+  border-left: 4px solid var(--accent-cyan);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.06), rgba(13, 18, 29, 0.75));
+}
+.mentor-note.caution {
+  border-left: 4px solid var(--accent-amber);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(13, 18, 29, 0.75));
+}
+.mentor-note.gotcha {
+  border-left: 4px solid var(--accent-rose);
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.06), rgba(13, 18, 29, 0.75));
+}
+.mentor-header {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.95rem;
+  gap: 0.5rem;
+  font-size: 0.88rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.6rem;
 }
-.analogy-box .callout-header { color: var(--accent-amber); }
-.callout-body {
-  color: #cbd5e1;
-  font-size: 1rem;
-  line-height: 1.75;
-}
-.callout-body strong { color: #fff; }
+.mentor-note.tip .mentor-header { color: var(--accent-cyan-light); }
+.mentor-note.caution .mentor-header { color: var(--accent-amber); }
+.mentor-note.gotcha .mentor-header { color: var(--accent-rose); }
 
-.deep-dive-box {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(14, 116, 144, 0.03));
-  border: 1px solid rgba(6, 182, 212, 0.35);
-  border-left: 5px solid var(--accent-cyan);
-  border-radius: 12px;
-  padding: 1.5rem 1.75rem;
+details.deep-dive {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 1.4rem 0;
+  padding: 0;
+  overflow: hidden;
 }
-.deep-dive-box .callout-header { color: var(--accent-cyan); }
-
-.empathy-box {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.08), rgba(190, 18, 60, 0.03));
-  border: 1px solid rgba(244, 63, 94, 0.35);
-  border-left: 5px solid var(--accent-rose);
-  border-radius: 12px;
-  padding: 1.5rem 1.75rem;
+details.deep-dive summary {
+  padding: 1rem 1.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  background: var(--bg-secondary);
+  transition: background 0.15s ease;
 }
-.empathy-box .callout-header { color: var(--accent-rose); }
+details.deep-dive summary:hover { background: rgba(6, 182, 212, 0.08); }
+details.deep-dive summary::-webkit-details-marker { display: none; }
+details.deep-dive summary::after {
+  content: "+";
+  font-size: 1.25rem;
+  color: var(--accent-cyan-light);
+  font-weight: 400;
+}
+details.deep-dive[open] summary::after { content: "−"; }
+details.deep-dive .details-content {
+  padding: 1.4rem 1.6rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
 
-.comparison-card {
+.table-wrapper {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  margin: 1.5rem 0;
+  margin: 1.6rem 0;
 }
-.comparison-title {
-  padding: 1rem 1.5rem;
+.table-header-title {
+  padding: 0.85rem 1.4rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #e2e8f0;
 }
-table.comparison-table {
+table.styled-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
   font-size: 0.92rem;
+  text-align: left;
 }
-table.comparison-table th {
-  background: rgba(15, 23, 42, 0.6);
+table.styled-table th {
+  background: rgba(13, 18, 29, 0.85);
   padding: 0.85rem 1.25rem;
-  color: var(--accent-cyan);
+  color: var(--accent-cyan-light);
   font-weight: 700;
-  border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
   font-size: 0.78rem;
+  text-transform: uppercase;
   letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
 }
-table.comparison-table td {
-  padding: 0.9rem 1.25rem;
-  border-bottom: 1px solid rgba(31, 39, 61, 0.6);
+table.styled-table td {
+  padding: 0.95rem 1.25rem;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.6);
   color: var(--text-secondary);
   vertical-align: top;
 }
-table.comparison-table tr:last-child td { border-bottom: none; }
-table.comparison-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
-table.comparison-table td strong { color: #f1f5f9; }
+table.styled-table tr:last-child td { border-bottom: none; }
+table.styled-table tr:hover td { background: rgba(255, 255, 255, 0.015); }
 
 .code-container {
-  background: #090d16;
+  background: #07090e;
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  margin: 1.75rem 0;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+  margin: 1.6rem 0;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
 }
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.25rem;
-  background: #0f1422;
+  background: #0d121d;
   border-bottom: 1px solid var(--border);
   font-family: var(--font-mono);
   font-size: 0.82rem;
@@ -376,8 +417,8 @@ table.comparison-table td strong { color: #f1f5f9; }
 .file-name::before {
   content: "";
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   background: var(--accent-cyan);
   border-radius: 50%;
 }
@@ -386,14 +427,14 @@ table.comparison-table td strong { color: #f1f5f9; }
   border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--text-muted);
-  font-size: 0.75rem;
-  padding: 0.3rem 0.7rem;
+  font-size: 0.76rem;
+  padding: 0.3rem 0.65rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-family: var(--font-mono);
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 .copy-btn:hover {
   background: var(--bg-card);
@@ -409,8 +450,32 @@ pre {
   line-height: 1.65;
   color: #e2e8f0;
 }
-pre::-webkit-scrollbar { height: 6px; }
+pre::-webkit-scrollbar { height: 5px; }
 pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.formula-card {
+  background: #0a0e17;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--accent-cyan-light);
+  margin: 1.2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.formula-tag {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan-light);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
 
 code.inline {
   background: rgba(30, 41, 59, 0.7);
@@ -418,337 +483,178 @@ code.inline {
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 0.86rem;
-  color: var(--accent-cyan);
+  color: var(--accent-cyan-light);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
-.formula-box {
-  background: #0b0f19;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem 1.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  color: var(--accent-amber);
-  margin: 1.25rem 0;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.formula-badge {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid var(--accent-amber);
-  color: var(--accent-amber);
-  padding: 0.25rem 0.6rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-ul.feature-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin: 1rem 0;
-}
-ul.feature-list li {
-  position: relative;
-  padding-left: 1.75rem;
-  color: var(--text-secondary);
-}
-ul.feature-list li::before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: var(--accent-cyan);
-  font-weight: 700;
-}
-ul.feature-list li strong { color: #f1f5f9; }
 
 @media (max-width: 1024px) {
   aside.sidebar { display: none; }
   .layout { padding: 1.5rem 1rem; }
-  h1.hero-title { font-size: 2.2rem; }
+  h1.welcome-title { font-size: 2rem; }
 }
 </style>
 </head>
 <body>
 
+<div id="reading-progress"></div>
+
 <header>
   <div class="header-container">
     <a href="index.html" class="brand-link">
       <div class="brand-icon">LC</div>
-      <div>
-        <div class="brand-title">LangChain &amp; RAG Handbook</div>
-        <div class="brand-subtitle">The Complete Pedagogical Engineering Guide</div>
+      <div class="brand-text">
+        <div class="brand-title">LangChain &amp; RAG Architecture Handbook</div>
+        <div class="brand-subtitle">The Complete Engineering Guide</div>
       </div>
     </a>
     <div class="nav-actions">
-      <a href="index.html" class="nav-btn">← Main Portal</a>
-      <a href="langgraph.html" class="nav-btn primary">Go to LangGraph Guide →</a>
+      <a href="index.html" class="nav-btn">← Portal</a>
+      <a href="langgraph.html" class="nav-btn primary">LangGraph Handbook →</a>
     </div>
   </div>
 </header>
 
 <div class="layout">
   <aside class="sidebar">
-    <div class="toc-title">Course Modules</div>
+    <div class="toc-title">Guide Roadmap</div>
     <ul class="toc-list">
       <li><a href="#prologue" class="toc-link">Prologue: Paradigm Shift</a></li>
-      <li><a href="#module-1" class="toc-link">Mod 1: GenAI &amp; LCEL Foundations</a></li>
-      <li><a href="#module-2" class="toc-link">Mod 2: 5 Pillars of RAG Architecture</a></li>
-      <li><a href="#module-3" class="toc-link">Mod 3: Tools &amp; ReAct Loops</a></li>
-      <li><a href="#module-4" class="toc-link">Mod 4: Multi-Agent Systems &amp; Project 1</a></li>
-      <li><a href="#module-5" class="toc-link">Mod 5: Video RAG Assistant &amp; Project 2</a></li>
-      <li><a href="#module-6" class="toc-link">Mod 6: Universal Master Blueprint</a></li>
-      <li><a href="#formulas" class="toc-link">Summary &amp; Key Formulas</a></li>
+      <li><a href="#module-1" class="toc-link">1. GenAI &amp; LCEL Foundations</a></li>
+      <li><a href="#module-2" class="toc-link">2. 5 Pillars of Production RAG</a></li>
+      <li><a href="#module-3" class="toc-link">3. Tools &amp; ReAct Loops</a></li>
+      <li><a href="#module-4" class="toc-link">4. Multi-Agent Research (Project 1)</a></li>
+      <li><a href="#module-5" class="toc-link">5. Video RAG Assistant (Project 2)</a></li>
+      <li><a href="#module-6" class="toc-link">6. Master 6-Step Blueprint</a></li>
+      <li><a href="#formulas" class="toc-link">7. Key Mathematical Formulas</a></li>
     </ul>
   </aside>
 
   <main class="content">
 
-    <section class="hero">
-      <div class="badge">Comprehensive Pedagogical Masterclass</div>
-      <h1 class="hero-title">LangChain &amp; Advanced RAG Engineering</h1>
-      <p class="hero-desc">
-        A deep-dive textbook and architectural implementation guide. From autoregressive next-token prediction and high-dimensional semantic vector spaces, to full production multi-agent pipelines with binary <code>.pkl</code> caching engines.
+    <!-- WELCOMING HERO BANNER -->
+    <div class="welcome-hero">
+      <div class="badge-pill">Production AI Engineering</div>
+      <h1 class="welcome-title">Mastering LangChain &amp; Advanced RAG Architecture</h1>
+      <p class="welcome-lead">
+        Welcome! If you've ever felt frustrated when a simple tutorial fails to scale into a real production app—when vector searches return hallucinated noise, long documents get chopped mid-sentence, or cold API calls cost you seconds per request—<strong>we understand</strong>.
+        <br><br>
+        This guide is structured to walk alongside you. We start from first principles (how next-token probabilities and vector geometry really work), move through LangChain Expression Language (LCEL), and implement two complete end-to-end production systems equipped with binary <code>.pkl</code> caching engines.
       </p>
-      <div class="hero-stats">
-        <div class="stat-box">
-          <div class="stat-num">6</div>
-          <div class="stat-label">Core Modules</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">2</div>
-          <div class="stat-label">Production Projects</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">4</div>
-          <div class="stat-label">Mathematical Formulas</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">9</div>
-          <div class="stat-label">Full Python Files</div>
-        </div>
+      <div class="welcome-meta">
+        <div class="meta-item">⏱️ Reading Time: <strong>~25 min</strong></div>
+        <div class="meta-item">🛠️ Projects: <strong>2 Multi-File Applications (9 Files)</strong></div>
+        <div class="meta-item">📐 Mathematics: <strong>4 Core Formulas Explained</strong></div>
       </div>
-    </section>
+    </div>
 
+    <!-- PROLOGUE -->
     <section id="prologue">
-      <div class="section-header">
-        <div class="section-tag">Prologue</div>
-        <h2 class="section-title">The Paradigm Shift to Agentic AI</h2>
-      </div>
+      <div class="section-tag">Prologue</div>
+      <h2 class="section-heading">The Paradigm Shift: From Scripts to Agents</h2>
 
       <p>
-        Software engineering is experiencing its greatest inflection point in four decades. We have transitioned from deterministic punch-cards to probability distributions, and now to autonomous reasoning loops. Understanding this transition is essential before writing a single line of LangChain code.
+        To build effectively with LangChain, it helps to pause and look at how our industry evolved. We didn't jump straight from basic Python scripts to autonomous multi-agent pipelines overnight:
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Four Puppeteers of Computing</div>
-          <div class="callout-body">
-            Think of software history as controlling a marionette puppet:
-            <br><br>
-            <strong>1. Era 1 (Rule-Based):</strong> You tie 1,000 physical strings to every joint. If a gust of wind blows or an obstacle appears that you didn't tie a string for, the puppet collapses onto the stage.
-            <br>
-            <strong>2. Era 2 (Classical ML):</strong> You replace strings with elastic rubber bands that learn weight balances from past falls. It balances well on familiar terrain, but cannot read a sign or speak a sentence.
-            <br>
-            <strong>3. Era 3 (Generative AI):</strong> You give the puppet a magical voice box. When you ask it a question, it recites the collective wisdom of civilization with astonishing fluency—yet its feet remain nailed to the floorboards. It can talk, but cannot touch the world.
-            <br>
-            <strong>4. Era 4 (Agentic AI):</strong> You cut the floorboards, give the puppet hands, eyes, a notebook to plan its journey, and a telephone to call external services. When it stumbles, it inspects its scratchpad, self-corrects its stride, and completes the mission autonomously.
-          </div>
-        </div>
+      <div class="mentor-note tip">
+        <div class="mentor-header">💡 The Mental Model: The Four Eras of Software</div>
+        <strong>Era 1 (Rule-Based):</strong> Explicit <code>if/else</code> statements. Reliable, but crashes the moment an unexpected input arrives.
+        <br>
+        <strong>Era 2 (Statistical ML):</strong> Classifiers and regression models that interpolate patterns. Great at predicting numbers, but unable to speak or reason.
+        <br>
+        <strong>Era 3 (Generative LLMs):</strong> Massive autoregressive models reciting the collective knowledge of humanity with astonishing fluency—yet passive, with no hands to interact with databases or APIs.
+        <br>
+        <strong>Era 4 (Agentic Systems):</strong> Giving that reasoning model tools, persistent state, reflection loops, and verifiable boundaries.
+      </div>
 
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ The Four Eras of Software Engineering: Architectural Trade-Offs</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Dimension</th>
-                <th>Era 1: Procedural Code</th>
-                <th>Era 2: Statistical ML</th>
-                <th>Era 3: Generative LLMs</th>
-                <th>Era 4: Agentic Systems</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Primary Mechanism</strong></td>
-                <td>Boolean logic, <code>if/else</code>, loops</td>
-                <td>Feature weights, SGD, trees</td>
-                <td>Transformer attention, next-token prediction</td>
-                <td>ReAct loops, state graphs, tool routing</td>
-              </tr>
-              <tr>
-                <td><strong>Adaptability</strong></td>
-                <td>Zero (Crashes on unseen input)</td>
-                <td>Moderate (Interpolates within distribution)</td>
-                <td>High (Zero-shot generalization)</td>
-                <td>Autonomous (Self-correcting, multi-step)</td>
-              </tr>
-              <tr>
-                <td><strong>External Action</strong></td>
-                <td>Hardcoded API calls only</td>
-                <td>Passive score output</td>
-                <td>Passive text output (No hands)</td>
-                <td>Dynamic function calling &amp; state persistence</td>
-              </tr>
-              <tr>
-                <td><strong>Failure Mode</strong></td>
-                <td>Uncaught exception / crash</td>
-                <td>Drift / misclassification</td>
-                <td>Hallucination / context overflow</td>
-                <td>Runaway tool loops / state divergence</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-wrapper">
+        <div class="table-header-title">⚖️ Software Engineering Paradigms at a Glance</div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Procedural Code</th>
+              <th>Classical ML</th>
+              <th>Generative LLM</th>
+              <th>Agentic Systems</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primary Unit</strong></td>
+              <td>Boolean functions &amp; loops</td>
+              <td>Weights &amp; tree splits</td>
+              <td>Attention heads &amp; tokens</td>
+              <td>State graphs &amp; tool actions</td>
+            </tr>
+            <tr>
+              <td><strong>External Interaction</strong></td>
+              <td>Hardcoded API calls</td>
+              <td>Passive score emission</td>
+              <td>Passive text generation</td>
+              <td>Autonomous dynamic tool dispatch</td>
+            </tr>
+            <tr>
+              <td><strong>Failure Recovery</strong></td>
+              <td>Exception handler or crash</td>
+              <td>Drift &amp; misclassification</td>
+              <td>Hallucination</td>
+              <td>Self-correction &amp; critique loops</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <div class="deep-dive-box">
-          <div class="callout-header">🔬 Under the Hood: What Makes a System Truly "Agentic"?</div>
-          <div class="callout-body">
-            A system does not become agentic simply by invoking an LLM. An agentic system implements a closed-loop cybernetic feedback cycle consisting of <strong>5 Core Pillars</strong>:
-            <ul class="feature-list" style="margin-top:0.75rem;">
-              <li><strong>Perception:</strong> Ingesting unstructured multi-modal inputs, environmental variables, and query nuances.</li>
-              <li><strong>Reasoning:</strong> Generating multi-step decomposition, hypotheses, and Chain-of-Thought scratchpads before acting.</li>
-              <li><strong>Tool Action:</strong> Emitting structured JSON payloads that invoke external APIs, databases, sandboxes, and file systems.</li>
-              <li><strong>Memory &amp; State:</strong> Maintaining conversation context, short-term observations, and long-term vectorized episodic storage.</li>
-              <li><strong>Reflection &amp; Self-Correction:</strong> Inspecting execution outputs against success criteria and dynamically replanning upon failure.</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: The "Monolithic Prompt" Trap</div>
-          <div class="callout-body">
-            Every engineer begins their LLM journey by writing a 4,000-word system prompt attempting to instruct a single model how to handle every edge case, parse every format, and verify every fact.
-            <br><br>
-            <strong>Why you hit a wall:</strong> LLM attention is a finite resource. As context length grows, reasoning fidelity degrades exponentially (the <em>"Lost in the Middle"</em> phenomenon). When your monolithic prompt fails, you cannot diagnose which instruction caused the regression.
-            <br><br>
-            <strong>The Architectural Cure:</strong> Decompose monolithic prompts into discrete, specialized agents connected by deterministic state machines and typed schemas.
-          </div>
-        </div>
+      <div class="mentor-note gotcha">
+        <div class="mentor-header">⚠️ A Trap to Avoid: The Monolithic Prompt</div>
+        When building your first AI app, the temptation is always to write a 4,000-word prompt instructing the model how to handle every single edge case. In practice, attention degrades as context expands (the <em>Lost in the Middle</em> phenomenon). The professional pattern is decomposing tasks into focused, modular runnables connected through structured pipelines.
       </div>
     </section>
 
+    <!-- MODULE 1 -->
     <section id="module-1">
-      <div class="section-header">
-        <div class="section-tag">Module 1</div>
-        <h2 class="section-title">Foundations of Generative AI &amp; LangChain LCEL</h2>
-      </div>
+      <div class="section-tag">Module 1</div>
+      <h2 class="section-heading">Foundations: Model Mechanics &amp; LCEL (LangChain Expression Language)</h2>
 
       <p>
-        To master LangChain, you must demystify how autoregressive language models generate tokens and how LangChain Expression Language (LCEL) transforms disparate runnables into a unified, composable pipeline.
+        At its core, an autoregressive language model computes probabilities for what token should come next. When you pass a string to an LLM, it projects logits across a vocabulary $V$ and scales them via the Softmax function:
       </p>
 
-      <h3 class="subsection-title">1.1 The Anatomy of Large Language Models (LLMs)</h3>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 1</span>
+        <span>P(w_i) = exp(z_i / T) / &Sigma; exp(z_j / T)</span>
+      </div>
+
+      <details class="deep-dive">
+        <summary>Walkthrough: How Temperature (T) Mathematically Changes Output Logits</summary>
+        <div class="details-content">
+          Suppose the model has raw logits $z = [4.0, 2.0, 1.0, 0.5]$ for candidate tokens.
+          <br><br>
+          • <strong>At T = 1.0 (Standard):</strong> Logits remain unchanged. Probabilities are ~82% for token 1, 11% for token 2, 4% for token 3.
+          <br>
+          • <strong>At T = 0.2 (Greedy / Deterministic):</strong> Logits are divided by 0.2, becoming $[20, 10, 5, 2.5]$. When exponentiated, token 1 absorbs <strong>99.99%</strong> of the probability mass. This is why $T=0.0$ is mandatory for deterministic JSON parsing, SQL generation, and factual RAG extraction.
+        </div>
+      </details>
+
+      <h3 class="sub-heading">Why LCEL Over Legacy LangChain?</h3>
       <p>
-        LLMs do not "think" in human concepts. They are probabilistic sequence completion engines operating over discrete tokens. Given an input context sequence <code>x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>t</sub></code>, the transformer calculates a probability distribution over the entire vocabulary $V$:
+        In older versions of LangChain, workflows relied on classes like <code>LLMChain</code> and <code>SequentialChain</code>. They were difficult to debug and had clunky syntax. Modern LangChain introduces <strong>LCEL</strong>, which uses the Unix-style pipe operator (<code>|</code>) to compose components that all adhere to a unified <code>Runnable</code> interface (<code>invoke</code>, <code>batch</code>, <code>stream</code>).
       </p>
 
-      <div class="formula-box">
-        <span class="formula-badge">Formula 1</span>
-        <span>P(w<sub>i</sub>) = exp(z<sub>i</sub> / T) / &Sigma;<sub>j</sub> exp(z<sub>j</sub> / T)</span>
+      <div class="mentor-note tip">
+        <div class="mentor-header">💡 The Mental Model: Standardized Adapters</div>
+        Think of LCEL like Lego blocks: every block has the same standard connectors. A <code>PromptTemplate</code> takes a dictionary and outputs a prompt. A <code>ChatModel</code> takes a prompt and outputs a message. An <code>OutputParser</code> takes a message and outputs a clean string. Because they all share the same interface, chaining them is as simple as <code>prompt | model | parser</code>.
       </div>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Grand Oracle's Teleprompter</div>
-          <div class="callout-body">
-            Imagine an oracle standing before an infinite scroll of all human writing. When you hand them a question, they don't consult an internal database of truth. Instead, their hand instantly highlights the top 50,000 words that have historically followed your exact phrasing. Temperature controls whether they strictly pick the single most frequent word (T=0.0) or spin a roulette wheel across the top 20 alternatives (T=1.0).
-          </div>
-        </div>
-
-        <div class="deep-dive-box">
-          <div class="callout-header">🔬 Step-by-Step Numerical Walkthrough: Softmax Temperature Scaling</div>
-          <div class="callout-body">
-            Suppose the model predicts logits for 4 candidate tokens: <code>["Agent", "Model", "Prompt", "Chain"]</code> with raw output logits $z = [4.0, 2.0, 1.0, 0.5]$.
-            <br><br>
-            <strong>At T = 1.0 (Standard Softmax):</strong>
-            <br>
-            <code>exp(z) = [54.60, 7.39, 2.72, 1.65]</code> &nbsp;|&nbsp; Sum = 66.36
-            <br>
-            Probabilities: <strong>Agent: 82.3%</strong>, Model: 11.1%, Prompt: 4.1%, Chain: 2.5%
-            <br><br>
-            <strong>At T = 0.2 (Greedy / Deterministic Code Mode):</strong>
-            <br>
-            <code>z / 0.2 = [20.0, 10.0, 5.0, 2.5]</code>
-            <br>
-            <code>exp(z/0.2) = [4.85e8, 22026, 148, 12]</code>
-            <br>
-            Probabilities: <strong>Agent: 99.995%</strong>, Model: 0.005%, others ~ 0.0%
-            <br>
-            <em>The slight gap between 4.0 and 2.0 is amplified into absolute certainty!</em>
-          </div>
-        </div>
-
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ Hyperparameter Decision Matrix</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Parameter</th>
-                <th>Mechanic</th>
-                <th>Low Setting</th>
-                <th>High Setting</th>
-                <th>Best For</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Temperature (T)</strong></td>
-                <td>Divides logits before softmax; flattens or sharpens distribution</td>
-                <td><code>0.0 - 0.2</code> (Near-deterministic)</td>
-                <td><code>0.8 - 1.2</code> (Creative, diverse)</td>
-                <td>T=0.0 for SQL/JSON/RAG; T=0.7 for conversational narrative</td>
-              </tr>
-              <tr>
-                <td><strong>Top-P (Nucleus)</strong></td>
-                <td>Cumulative probability cutoff; drops tail tokens</td>
-                <td><code>0.1 - 0.5</code> (Strict, focused)</td>
-                <td><code>0.9 - 1.0</code> (Broad vocabulary)</td>
-                <td>0.9 preserves high coherence while avoiding repetition traps</td>
-              </tr>
-              <tr>
-                <td><strong>Top-K</strong></td>
-                <td>Hard integer cutoff for top $K$ candidate tokens</td>
-                <td><code>K = 1</code> (Greedy selection)</td>
-                <td><code>K = 50 - 100</code> (Rich token pool)</td>
-                <td>Prevents low-probability nonsense words in creative generation</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <h3 class="subsection-title">1.4 LangChain &amp; LCEL (LangChain Expression Language)</h3>
-      <p>
-        In modern LangChain, pipelines are not constructed via legacy classes like <code>LLMChain</code>. They are composed via <strong>LCEL</strong> using the overloaded bitwise OR pipe operator (<code>|</code>), mapping directly to the <strong>Runnable Protocol</strong>.
-      </p>
-
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: Unix Pipes &amp; The Factory Conveyor Belt</div>
-          <div class="callout-body">
-            Just like Unix allows piping standard output to standard input (<code>cat logs.txt | grep "404" | wc -l</code>), LCEL standardizes inputs and outputs across all AI components. A <code>PromptTemplate</code> takes a dictionary and emits a <code>PromptValue</code>. A <code>ChatModel</code> takes a <code>PromptValue</code> and emits an <code>AIMessage</code>. An <code>OutputParser</code> takes an <code>AIMessage</code> and emits a clean string or Pydantic object. Because every component honors the <code>Runnable</code> interface, they snap together effortlessly.
-          </div>
-        </div>
-
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: Why Did My Chain Return NoneType?</div>
-          <div class="callout-body">
-            The most common mistake when starting with LCEL is passing non-runnable Python functions directly into the pipe. If you write <code>prompt | my_custom_func | model</code>, LangChain will crash because <code>my_custom_func</code> does not implement <code>.invoke()</code> or <code>.batch()</code>.
-            <br><br>
-            <strong>The Fix:</strong> Wrap any raw Python function in <code>RunnableLambda(my_custom_func)</code> or pass values through <code>RunnablePassthrough()</code>.
-          </div>
-        </div>
-      </div>
-
+      <h3 class="sub-heading">Production Source Code: LCEL Fundamentals</h3>
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">lcel_foundations.py — Complete LCEL Pipeline</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -780,98 +686,45 @@ if __name__ == "__main__":
     print(response)
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- MODULE 2 -->
     <section id="module-2">
-      <div class="section-header">
-        <div class="section-tag">Module 2</div>
-        <h2 class="section-title">The Retrieval-Augmented Generation (RAG) Architecture</h2>
-      </div>
+      <div class="section-tag">Module 2</div>
+      <h2 class="section-heading">The 5 Pillars of Production RAG Architecture</h2>
 
       <p>
-        RAG bridges the three fatal flaws of standalone LLMs: <strong>Static Knowledge Cutoffs</strong>, <strong>Hallucinations</strong>, and <strong>Enterprise Data Blindspots</strong>. Rather than retraining weights, RAG provides relevant contextual facts dynamically at inference time.
+        Retrieval-Augmented Generation (RAG) solves three persistent limitations of standalone LLMs: <strong>Static Knowledge Cutoffs</strong>, <strong>Hallucinations</strong>, and <strong>Enterprise Data Blindspots</strong>. Rather than retraining multi-billion-parameter weights, RAG retrieves precise factual context dynamically at query time.
       </p>
 
-      <h3 class="subsection-title">The 5 Core Pillars of Production RAG</h3>
+      <p>
+        Every production RAG system is built upon 5 foundational pillars:
+      </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: Open-Book Bar Exam vs Memorization</div>
-          <div class="callout-body">
-            Asking a vanilla LLM about internal company policy is like asking a law student to take the Bar Exam with their eyes closed, relying purely on memory from two years ago. RAG is turning the exam into an open-book test: when a question arrives, a high-speed research paralegal (Retriever) pulls the exact three relevant statutory clauses from the law library and places them directly on the student's desk before they answer.
-          </div>
-        </div>
+      <h3 class="sub-heading">Pillars 1 &amp; 2: Document Loading &amp; Chunking Mathematics</h3>
+      <p>
+        Raw enterprise documents (PDFs, transcripts, markdown files) must be converted into manageable pieces. Splitting purely on character count or single newlines produces broken sentences and severed facts.
+      </p>
 
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ Enterprise Knowledge Strategies: Prompting vs Fine-Tuning vs RAG</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Strategy</th>
-                <th>Setup Cost</th>
-                <th>Update Latency</th>
-                <th>Hallucination Defense</th>
-                <th>Data Privacy &amp; Governance</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Prompt Stuffing</strong></td>
-                <td>Zero</td>
-                <td>Instant</td>
-                <td>Low (Prone to context overflow &amp; loss)</td>
-                <td>Full context transmitted per request</td>
-              </tr>
-              <tr>
-                <td><strong>Fine-Tuning</strong></td>
-                <td>Very High ($1k - $50k)</td>
-                <td>Hours to Days</td>
-                <td>Poor (Memorization does not guarantee accuracy)</td>
-                <td>Data baked irreversibly into weights</td>
-              </tr>
-              <tr>
-                <td><strong>Production RAG</strong></td>
-                <td>Moderate (Vector DB)</td>
-                <td>Seconds (Near real-time ingest)</td>
-                <td><strong>High (Grounded in cited evidence)</strong></td>
-                <td><strong>Document-level ACLs &amp; role-based access</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="mentor-note caution">
+        <div class="mentor-header">⚠️ Why Chunk Overlap is Mandatory</div>
+        If you slice a document strictly every 1,000 characters with zero overlap, a key sentence spanning characters 980 to 1,020 gets severed in half. Neither chunk understands the complete thought! A 200-character overlap acts like a safety margin, ensuring boundary context is preserved.
       </div>
 
-      <h3 class="subsection-title">Pillars 1 &amp; 2: Document Loading &amp; Chunking Mathematics</h3>
-      <p>
-        Raw documents cannot be fed into vector stores as massive blobs. They must be parsed and split using the <strong>Recursive Character Text Splitter</strong>, adhering to the mathematical stride formula:
-      </p>
-
-      <div class="formula-box">
-        <span class="formula-badge">Formula 4</span>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 4</span>
         <span>Effective_Stride = Chunk_Size - Chunk_Overlap</span>
       </div>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: Splicing Movie Film Frames</div>
-          <div class="callout-body">
-            If you cut a film reel strictly every 1,000 frames with zero overlap, an actor speaking a sentence right across the 1,000th frame gets their sentence guillotined in half. Part 1 ends with <em>"The suspect fled towards the..."</em> and Part 2 starts with <em>"...harbor at midnight."</em> Neither chunk understands where the suspect went! A 200-character overlap stitches the frames together so no semantic thought is severed.
-          </div>
-        </div>
-
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: The Table Splitting Nightmare</div>
-          <div class="callout-body">
-            Standard character text splitters treat markdown tables and financial balance sheets like plain text. If a split occurs halfway down a table, Chunk 2 receives rows of numbers with completely missing column headers! The vector embedding for Chunk 2 becomes semantic noise.
-            <br><br>
-            <strong>Best Practice:</strong> Use table-aware parsers or format tables as individual JSON key-value blocks prior to chunking.
-          </div>
-        </div>
-      </div>
-
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">rag_ingestion_chunking.py — Loading & Splitting</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from langchain_community.document_loaders import PyPDFLoader, YoutubeLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -897,84 +750,60 @@ print(f"Sample Chunk 0 Preview: {chunks[0].page_content[:200]}...")
 </code></pre>
       </div>
 
-      <h3 class="subsection-title">Pillars 3, 4 &amp; 5: High-Dimensional Embeddings &amp; Vector Stores</h3>
+
+      <h3 class="sub-heading">Pillars 3, 4 &amp; 5: High-Dimensional Vectors, Storage &amp; Synthesis</h3>
       <p>
-        Embeddings map textual chunks into an N-dimensional geometric space where conceptual similarity translates into spatial proximity, calculated via <strong>Cosine Similarity</strong>:
+        Embeddings map text chunks into geometric coordinates. When a user asks a question, we compute its embedding and find the nearest document chunks using <strong>Cosine Similarity</strong>:
       </p>
 
-      <div class="formula-box">
-        <span class="formula-badge">Formula 2</span>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 2</span>
         <span>Cosine_Similarity(A, B) = (A &middot; B) / (||A|| * ||B||)</span>
       </div>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: Flashlight Beams in Dense Fog</div>
-          <div class="callout-body">
-            Imagine two explorers shining flashlights into the night fog from the same position. <strong>Euclidean distance</strong> measures the straight-line distance between the tips of their light beams (which gets ruined if one flashlight is twice as powerful as the other). <strong>Cosine similarity</strong> measures only the <em>angle</em> between their beams! If both flashlights point directly north, $	heta = 0^\circ$ and $\cos(0) = 1.0$, regardless of whether one beam is short and the other is long.
-          </div>
-        </div>
-
-        <div class="deep-dive-box">
-          <div class="callout-header">🔬 2D Numerical Walkthrough: Calculating Cosine Similarity Step-by-Step</div>
-          <div class="callout-body">
-            Let Query Vector $Q = [0.8, 0.6]$ and Candidate Document Chunk $D = [0.6, 0.8]$.
-            <br><br>
-            1. <strong>Dot Product:</strong> $Q \cdot D = (0.8 	imes 0.6) + (0.6 	imes 0.8) = 0.48 + 0.48 = 0.96$
-            <br>
-            2. <strong>Magnitude of Q:</strong> $\|Q\| = \sqrt{0.8^2 + 0.6^2} = \sqrt{0.64 + 0.36} = \sqrt{1.0} = 1.0$
-            <br>
-            3. <strong>Magnitude of D:</strong> $\|D\| = \sqrt{0.6^2 + 0.8^2} = \sqrt{0.36 + 0.64} = \sqrt{1.0} = 1.0$
-            <br>
-            4. <strong>Cosine Similarity:</strong> $\cos(	heta) = rac{0.96}{1.0 	imes 1.0} = 0.96$
-            <br>
-            <em>Result: 0.96 indicates an extraordinarily close semantic match ($pprox 16.2^\circ$ angle)!</em>
-          </div>
-        </div>
-
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ Vector Store Showdown: In-Memory vs ChromaDB vs FAISS vs Cloud Engines</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Engine</th>
-                <th>Architecture</th>
-                <th>Persistence</th>
-                <th>Query Latency</th>
-                <th>Production Sweet Spot</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>ChromaDB</strong></td>
-                <td>DuckDB + SQLite + HNSW</td>
-                <td>Local Directory / Client-Server</td>
-                <td>Fast (5-15 ms)</td>
-                <td>Local dev, prototypes, on-prem small apps (&lt;1M vectors)</td>
-              </tr>
-              <tr>
-                <td><strong>FAISS</strong></td>
-                <td>Pure C++ Optimized Index</td>
-                <td>In-Memory (Exportable to disk)</td>
-                <td>Ultra-Fast (&lt;2 ms)</td>
-                <td>High-throughput batch search, GPU acceleration</td>
-              </tr>
-              <tr>
-                <td><strong>Pinecone / Qdrant</strong></td>
-                <td>Distributed Cloud-Native</td>
-                <td>Fully Managed Distributed</td>
-                <td>Network Bound (20-60 ms)</td>
-                <td>Enterprise multi-tenant, horizontal scale, billion-vector scale</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-wrapper">
+        <div class="table-header-title">⚖️ Vector Stores: Choosing the Right Engine for Your Workload</div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Engine</th>
+              <th>Persistence</th>
+              <th>Query Speed</th>
+              <th>Best Fit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ChromaDB</strong></td>
+              <td>Local disk (DuckDB/SQLite)</td>
+              <td>Fast (5-15 ms)</td>
+              <td>Local prototyping, on-prem small apps (&lt;1M vectors)</td>
+            </tr>
+            <tr>
+              <td><strong>FAISS</strong></td>
+              <td>In-memory C++ index (disk exportable)</td>
+              <td>Blazing (&lt;2 ms)</td>
+              <td>High-throughput batch search, embedded hardware</td>
+            </tr>
+            <tr>
+              <td><strong>Pinecone / Qdrant</strong></td>
+              <td>Fully managed cloud</td>
+              <td>Network-bound (20-60 ms)</td>
+              <td>Enterprise multi-tenant, horizontal scale across clusters</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
+      <h3 class="sub-heading">Production Source Code: Complete End-to-End RAG Chain</h3>
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">complete_rag_chain.py — Production LCEL RAG Pipeline</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -1031,58 +860,42 @@ if __name__ == "__main__":
 </code></pre>
       </div>
 
-      <h3 class="subsection-title">2.7 Advanced RAG: MMR (Maximal Marginal Relevance)</h3>
+
+      <h3 class="sub-heading">Advanced RAG: Maximal Marginal Relevance (MMR)</h3>
       <p>
-        Standard Top-K retrieval often returns five virtually identical paragraphs from different pages of a document. <strong>Maximal Marginal Relevance (MMR)</strong> solves this by balancing similarity to query with diversity against already selected chunks:
+        Standard Top-K retrieval often returns five nearly identical paragraphs from different pages of a document. <strong>Maximal Marginal Relevance (MMR)</strong> balances query similarity with diversity among already-selected chunks:
       </p>
 
-      <div class="formula-box">
-        <span class="formula-badge">Formula 3</span>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 3</span>
         <span>MMR = argmax [ &lambda; * Sim1(d_i, Q) - (1 - &lambda;) * max Sim2(d_i, d_j) ]</span>
       </div>
-
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: Assembling an Expert Taskforce</div>
-          <div class="callout-body">
-            If you need 3 advisors to review a complex legal case, Naive Top-K hires the 3 best corporate tax lawyers in the world. They all say the exact same thing! MMR hires the best corporate tax lawyer, but then penalizes anyone who has the same expertise, deliberately selecting a criminal defense attorney and a constitutional scholar for the remaining two seats to maximize broad perspective.
-          </div>
-        </div>
-      </div>
+      <p>Setting $\lambda = 0.5$ provides an ideal balance between topical relevance and diverse context.</p>
     </section>
 
+    <!-- MODULE 3 -->
     <section id="module-3">
-      <div class="section-header">
-        <div class="section-tag">Module 3</div>
-        <h2 class="section-title">Tools, Function Calling &amp; Single-Agent Systems</h2>
-      </div>
+      <div class="section-tag">Module 3</div>
+      <h2 class="section-heading">Giving LLMs Hands: Tools, Function Calling &amp; ReAct Loops</h2>
 
       <p>
-        Giving an LLM "hands" transforms it from a passive predictor into an active agent. By binding tools described via JSON Schema, the LLM emits structured tool call requests which your application executes, feeding the observations back into the context.
+        An LLM that can only speak is limited. By binding external tools defined with Pydantic schemas, you allow the model to emit structured JSON requests that your application executes on its behalf.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Armchair Scholar Given a Calculator</div>
-          <div class="callout-body">
-            A pure LLM attempting to multiply <code>48291 * 92812</code> will hallucinate an answer because it is guessing next tokens based on probability. Binding a tool is handing the scholar a physical scientific calculator. When asked to multiply, the scholar pauses, punches the numbers into the calculator, reads the digital screen, and reports the 100% verified result.
-          </div>
-        </div>
-
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: The Vague Docstring Pitfall</div>
-          <div class="callout-body">
-            LLMs do not see your Python code; they only see the tool's <strong>name</strong>, <strong>docstring</strong>, and <strong>argument schema</strong>. If your docstring is <em>"Performs search"</em>, the LLM will fail to understand when to call it or pass malformed arguments.
-            <br><br>
-            <strong>Golden Rule:</strong> Write your tool docstring as if you are explaining the function to a junior intern on their first day: explain what it does, what inputs it requires, what format it returns, and when NOT to use it.
-          </div>
-        </div>
+      <div class="mentor-note gotcha">
+        <div class="mentor-header">⚠️ The #1 Reason Tools Fail: Vague Docstrings</div>
+        The LLM cannot see your Python function's code; it only sees the function name, its arguments, and its <strong>docstring</strong>. If your docstring is <em>"Performs calculation"</em>, the LLM will hallucinate arguments or refuse to invoke it. Write docstrings as if you are explaining the function to a new teammate on day one.
       </div>
 
+      <h3 class="sub-heading">Production Source Code: Tool Definition &amp; ReAct Loop</h3>
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">agent_tools_react.py — Tool Definition & Execution Loop</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from langchain_core.tools import tool
 from pydantic import BaseModel, Field
@@ -1136,70 +949,37 @@ while True:
         messages.append(ToolMessage(content=str(tool_result), tool_call_id=call_id))
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- MODULE 4 -->
     <section id="module-4">
-      <div class="section-header">
-        <div class="section-tag">Module 4 &amp; Project 1</div>
-        <h2 class="section-title">Multi-Agent Systems &amp; Research Pipeline Project</h2>
-      </div>
+      <div class="section-tag">Module 4 &amp; Project 1</div>
+      <h2 class="section-heading">Multi-Agent Systems: Research Pipeline with Binary .pkl Caching</h2>
 
       <p>
-        When tasks grow complex, a single agent suffers cognitive overload. In this module, we implement <strong>Project 1: Multi-Agent Research Pipeline</strong>, featuring specialized Searcher, Reader, and Writer agents coordinated with a binary <code>.pkl</code> caching engine.
+        Complex research is too much for a single agent. In <strong>Project 1</strong>, we split the workflow across three specialized agent personas:
+        <br>
+        1. <strong>Search Scout:</strong> Queries the web and extracts high-authority sources.
+        <br>
+        2. <strong>Reader Analyst:</strong> Scrapes page contents and extracts key technical takeaways.
+        <br>
+        3. <strong>Executive Editor:</strong> Synthesizes the raw notes into an executive publication draft.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Special Forces Task Force</div>
-          <div class="callout-body">
-            You don't send one person to fly the helicopter, conduct surveillance, decrypt enemy radio signals, and write the diplomatic treaty. You deploy a specialized team: a Scout (Search Agent) who surveys the perimeter, an Analyst (Reader Agent) who digests the intelligence, and an Envoy (Writer Agent) who drafts the final operational report.
-          </div>
-        </div>
+      <p>
+        To prevent burning API quota during development, we back the pipeline with an automatic <strong>binary <code>.pkl</code> cache</strong>.
+      </p>
 
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ Multi-Agent Topologies Compared</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Topology</th>
-                <th>Coordination Pattern</th>
-                <th>Latency</th>
-                <th>Token Cost</th>
-                <th>Ideal Use Case</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Sequential Chain</strong></td>
-                <td>Linear hand-off (A &rarr; B &rarr; C)</td>
-                <td>Low (Predictable)</td>
-                <td>Low</td>
-                <td>Content pipelines, code translation</td>
-              </tr>
-              <tr>
-                <td><strong>Hierarchical Supervisor</strong></td>
-                <td>Central router delegates &amp; aggregates</td>
-                <td>Moderate</td>
-                <td>Moderate</td>
-                <td>Complex research, multi-department tasks</td>
-              </tr>
-              <tr>
-                <td><strong>Collaborative Swarm</strong></td>
-                <td>Dynamic peer-to-peer delegation</td>
-                <td>High (Unpredictable)</td>
-                <td>High</td>
-                <td>Open-ended creative synthesis, game theory</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <h3 class="subsection-title">Project 1 Implementation: Complete 4-File Production Code</h3>
-
+      <h3 class="sub-heading">Complete 4-File Project Implementation</h3>
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project1_multi_agent/cache_manager.py — Binary Persistence Layer</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 import pickle
@@ -1231,10 +1011,14 @@ def load_from_cache(prefix: str, payload: str) -&gt; Optional[Any]:
 </code></pre>
       </div>
 
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project1_multi_agent/tools.py — Cached Web Fetch Tools</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 import requests
@@ -1276,10 +1060,14 @@ def scrape_webpage(url: str) -&gt; str:
 </code></pre>
       </div>
 
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project1_multi_agent/agents.py — Agent Persona Factory</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -1314,10 +1102,14 @@ def build_writer_agent():
 </code></pre>
       </div>
 
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project1_multi_agent/pipelines.py — Pipeline Orchestrator</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from agents import build_search_agent, build_read_agent, build_writer_agent
 from cache_manager import save_to_cache, load_from_cache
@@ -1361,72 +1153,61 @@ if __name__ == "__main__":
     print(report)
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- MODULE 5 -->
     <section id="module-5">
-      <div class="section-header">
-        <div class="section-tag">Module 5 &amp; Project 2</div>
-        <h2 class="section-title">Video RAG Assistant &amp; Binary .pkl Caching Engine</h2>
-      </div>
+      <div class="section-tag">Module 5 &amp; Project 2</div>
+      <h2 class="section-heading">Video RAG Assistant with Exact Timestamp Navigation</h2>
 
       <p>
-        Building RAG over multimedia (such as YouTube videos or podcasts) introduces a critical latency bottleneck: fetching transcripts and calculating high-dimensional embeddings on every user query is unacceptably slow and costly. In <strong>Project 2</strong>, we engineer a full <strong>AI Video Assistant with Timestamp Navigation</strong> backed by an industrial <code>.pkl</code> binary serialization engine.
+        When building RAG over multimedia (like YouTube lectures or podcasts), fetching transcripts and recalculating embeddings on every run introduces unbearable latency. In <strong>Project 2</strong>, we implement an <strong>AI Video Assistant</strong> that answers user queries with clickable timestamps, backed by a persistent <code>.pkl</code> vector cache.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: Flash-Freezing Fresh Meals in Liquid Nitrogen</div>
-          <div class="callout-body">
-            Calling the YouTube API, transcribing 2 hours of audio, and paying OpenAI to embed 500 chunks is like growing wheat, harvesting it, milling flour, and baking bread every single time a customer orders a sandwich. Pickle serialization is flash-freezing the freshly baked bread in nitrogen storage: on subsequent queries, you pull the binary file directly from disk into RAM in <strong>0.8 milliseconds</strong> with <strong>zero network calls</strong> and <strong>zero API cost</strong>!
-          </div>
-        </div>
-
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ Performance Benchmark: Cold Network Fetch vs .pkl Binary Load</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Cold Network Fetch (Live API)</th>
-                <th>Serialized .pkl Memory Load</th>
-                <th>Improvement Factor</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Transcript Ingestion Latency</strong></td>
-                <td>1,800 ms - 3,500 ms</td>
-                <td><strong>0.4 ms</strong></td>
-                <td>~5,000x faster</td>
-              </tr>
-              <tr>
-                <td><strong>Vector Embedding Latency</strong></td>
-                <td>2,200 ms - 6,000 ms</td>
-                <td><strong>1.2 ms</strong></td>
-                <td>~3,500x faster</td>
-              </tr>
-              <tr>
-                <td><strong>API Cost per Startup</strong></td>
-                <td>$0.02 - $0.15 (Tokens + Network)</td>
-                <td><strong>$0.00</strong></td>
-                <td>100% Free</td>
-              </tr>
-              <tr>
-                <td><strong>Network Dependency</strong></td>
-                <td>Requires 100% live internet &amp; quota</td>
-                <td><strong>100% Offline Capable</strong></td>
-                <td>Infinite resilience</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-wrapper">
+        <div class="table-header-title">⚖️ Performance Impact: Cold Network Fetch vs .pkl Memory Load</div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Cold Live API Fetch</th>
+              <th>Cached .pkl Memory Load</th>
+              <th>Improvement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Transcript Fetch</strong></td>
+              <td>1,800 ms - 3,500 ms</td>
+              <td><strong>0.4 ms</strong></td>
+              <td>~5,000x faster</td>
+            </tr>
+            <tr>
+              <td><strong>Embedding Computation</strong></td>
+              <td>2,200 ms - 6,000 ms</td>
+              <td><strong>1.2 ms</strong></td>
+              <td>~3,500x faster</td>
+            </tr>
+            <tr>
+              <td><strong>Startup Cost</strong></td>
+              <td>$0.02 - $0.15 per run</td>
+              <td><strong>$0.00</strong></td>
+              <td>100% Free</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <h3 class="subsection-title">Project 2 Implementation: Complete 5-File Production Code</h3>
-
+      <h3 class="sub-heading">Complete 5-File Project Implementation</h3>
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project2_video_assistant/cache_manager.py — Binary Serialization Engine</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 import pickle
@@ -1458,10 +1239,14 @@ def load_artifact(video_id: str, artifact_type: str) -&gt; Optional[Any]:
 </code></pre>
       </div>
 
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project2_video_assistant/ingest.py — Transcript Ingestion & Export</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from typing import List, Dict, Any
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -1491,10 +1276,14 @@ def get_video_transcript(video_id: str) -&gt; List[Dict[str, Any]]:
 </code></pre>
       </div>
 
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project2_video_assistant/vector_store.py — Vector Indexing & Pickle Export</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import numpy as np
 from typing import List, Dict, Any, Tuple
@@ -1536,10 +1325,14 @@ def get_or_build_video_index(video_id: str) -&gt; VideoVectorIndex:
 </code></pre>
       </div>
 
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project2_video_assistant/tools.py — Timestamp Tools</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from langchain_core.tools import tool
 from langchain_openai import OpenAIEmbeddings
@@ -1569,10 +1362,14 @@ def find_video_timestamp(query: str) -&gt; str:
 </code></pre>
       </div>
 
+      
       <div class="code-container">
         <div class="code-header">
           <div class="file-name">project2_video_assistant/agent.py — Interactive Video Assistant</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
@@ -1608,115 +1405,107 @@ if __name__ == "__main__":
     print(response)
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- MODULE 6 -->
     <section id="module-6">
-      <div class="section-header">
-        <div class="section-tag">Module 6</div>
-        <h2 class="section-title">The Universal Master Blueprint: Building Any Agent from Scratch</h2>
-      </div>
+      <div class="section-tag">Module 6</div>
+      <h2 class="section-heading">The Universal Master Blueprint: Building Any Agent from Scratch</h2>
 
       <p>
-        Every production agentic system—whether a customer support bot, an autonomous coder, or a financial audit engine—follows a universal 6-step architectural lifecycle. Commit this blueprint to memory before embarking on any production system.
+        Every successful agentic architecture—whether a customer support co-pilot or an automated research engine—follows a disciplined 6-step lifecycle:
       </p>
 
-      <div class="pedagogy-container">
-        <div class="comparison-card">
-          <div class="comparison-title">📋 The 6-Step Production Agent Blueprint</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Step</th>
-                <th>Phase Name</th>
-                <th>Primary Engineering Deliverable</th>
-                <th>Key Pitfall to Avoid</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Step 1</strong></td>
-                <td><strong>State &amp; Schema Modeling</strong></td>
-                <td>Define TypedDict / Pydantic schema with strict field validation</td>
-                <td>Using loose, un-typed dictionaries that mutate silently</td>
-              </tr>
-              <tr>
-                <td><strong>Step 2</strong></td>
-                <td><strong>Tool Isolation</strong></td>
-                <td>Decorate atomic functions with <code>@tool</code> and exhaustive docstrings</td>
-                <td>Writing ambiguous, multi-purpose functions that confuse the LLM</td>
-              </tr>
-              <tr>
-                <td><strong>Step 3</strong></td>
-                <td><strong>Node Specialization</strong></td>
-                <td>Wrap single-responsibility agents with distinct system prompts</td>
-                <td>Creating a single monolithic node with conflicting objectives</td>
-              </tr>
-              <tr>
-                <td><strong>Step 4</strong></td>
-                <td><strong>Edge &amp; Router Graphing</strong></td>
-                <td>Construct state graph with conditional routing &amp; cycle termination</td>
-                <td>Omitting hard recursion limits (e.g. infinite loops draining funds)</td>
-              </tr>
-              <tr>
-                <td><strong>Step 5</strong></td>
-                <td><strong>Persistence &amp; Checkpointing</strong></td>
-                <td>Attach SQLite / Postgres checkpointers for session threads &amp; replay</td>
-                <td>Relying on in-memory state that dies on server restarts</td>
-              </tr>
-              <tr>
-                <td><strong>Step 6</strong></td>
-                <td><strong>Human-in-the-Loop Escrow</strong></td>
-                <td>Insert <code>interrupt()</code> before sensitive write/spend operations</td>
-                <td>Allowing unsupervised destructive API calls (SQL DROP, payments)</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-wrapper">
+        <div class="table-header-title">📋 The 6-Step Production Blueprint</div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Step</th>
+              <th>Phase</th>
+              <th>Key Engineering Deliverable</th>
+              <th>What to Watch Out For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><strong>State Schema Modeling</strong></td>
+              <td>Define typed schemas (TypedDict/Pydantic) with clear fields</td>
+              <td>Using loose, untyped dictionaries that mutate unpredictably</td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><strong>Tool Isolation</strong></td>
+              <td>Decorate atomic functions with clear Pydantic schemas &amp; docstrings</td>
+              <td>Overloaded tools that try to do three things at once</td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td><strong>Node Specialization</strong></td>
+              <td>Build single-responsibility agents with focused system prompts</td>
+              <td>Creating a giant monolithic prompt with conflicting roles</td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td><strong>Edge &amp; Router Graphing</strong></td>
+              <td>Connect nodes with deterministic edges and conditional branches</td>
+              <td>Forgetting cycle counters, causing infinite loops that drain funds</td>
+            </tr>
+            <tr>
+              <td><strong>5</strong></td>
+              <td><strong>Persistence &amp; Checkpointing</strong></td>
+              <td>Attach SQLite/Postgres checkpointers for session continuity</td>
+              <td>Relying purely on RAM state that vanishes on server restarts</td>
+            </tr>
+            <tr>
+              <td><strong>6</strong></td>
+              <td><strong>Human-in-the-Loop Escrow</strong></td>
+              <td>Insert pauses (<code>interrupt</code>) before sensitive financial/data actions</td>
+              <td>Letting agents execute destructive mutations unsupervised</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
+    <!-- FORMULAS REFERENCE -->
     <section id="formulas">
-      <div class="section-header">
-        <div class="section-tag">Appendix</div>
-        <h2 class="section-title">Summary &amp; Key Mathematical Formulas</h2>
-      </div>
+      <div class="section-tag">Reference</div>
+      <h2 class="section-heading">Mathematical Formulas Cheat Sheet</h2>
 
-      <p>
-        A consolidated engineering reference of the fundamental mathematical equations governing GenAI, RAG, and retrieval algorithms.
-      </p>
+      <p>A consolidated reference of the equations governing GenAI and RAG:</p>
 
-      <div class="formula-box">
-        <span class="formula-badge">Formula 1</span>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 1</span>
         <div>
-          <strong>Softmax Probability Distribution with Temperature Scaling:</strong><br>
-          <code>P(w_i) = exp(z_i / T) / &Sigma;_{j=1}^{|V|} exp(z_j / T)</code><br>
-          <small style="color:var(--text-muted);">Where $z_i$ is the unnormalized logit for token $i$, $T$ is temperature, and $|V|$ is vocabulary size.</small>
+          <strong>Softmax with Temperature Scaling:</strong><br>
+          <code>P(w_i) = exp(z_i / T) / &Sigma; exp(z_j / T)</code>
         </div>
       </div>
 
-      <div class="formula-box">
-        <span class="formula-badge">Formula 2</span>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 2</span>
         <div>
-          <strong>High-Dimensional Cosine Similarity:</strong><br>
-          <code>cos(&theta;) = (A &middot; B) / (||A|| * ||B||) = &Sigma;(A_i * B_i) / ( &radic;&Sigma;A_i^2 * &radic;&Sigma;B_i^2 )</code><br>
-          <small style="color:var(--text-muted);">Measures the angle between normalized semantic embeddings in $\mathbb{R}^D$ space, bounded between -1.0 and +1.0.</small>
+          <strong>Cosine Similarity in High Dimensions:</strong><br>
+          <code>cos(&theta;) = (A &middot; B) / (||A|| * ||B||)</code>
         </div>
       </div>
 
-      <div class="formula-box">
-        <span class="formula-badge">Formula 3</span>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 3</span>
         <div>
           <strong>Maximal Marginal Relevance (MMR):</strong><br>
-          <code>MMR = argmax_{d_i &isin; D \setminus S} [ &lambda; * Sim_1(d_i, Q) - (1 - &lambda;) * max_{d_j &isin; S} Sim_2(d_i, d_j) ]</code><br>
-          <small style="color:var(--text-muted);">Balances query relevance against redundancy. $\lambda = 0.5$ balances diversity and accuracy equally.</small>
+          <code>MMR = argmax [ &lambda; * Sim1(d_i, Q) - (1 - &lambda;) * max Sim2(d_i, d_j) ]</code>
         </div>
       </div>
 
-      <div class="formula-box">
-        <span class="formula-badge">Formula 4</span>
+      <div class="formula-card">
+        <span class="formula-tag">Formula 4</span>
         <div>
           <strong>Text Splitter Effective Stride:</strong><br>
-          <code>Effective_Stride = Chunk_Size - Chunk_Overlap</code><br>
-          <small style="color:var(--text-muted);">Defines the sliding stride index across character streams to prevent boundary clipping.</small>
+          <code>Effective_Stride = Chunk_Size - Chunk_Overlap</code>
         </div>
       </div>
     </section>
@@ -1725,15 +1514,23 @@ if __name__ == "__main__":
 </div>
 
 <script>
+window.addEventListener('scroll', () => {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('reading-progress').style.width = scrolled + '%';
+});
+
 function copyCode(btn) {
-  const codeBlock = btn.closest('.code-container').querySelector('code');
-  navigator.clipboard.writeText(codeBlock.innerText).then(() => {
-    const originalText = btn.innerText;
-    btn.innerText = "✓ Copied!";
+  const code = btn.closest('.code-container').querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    const span = btn.querySelector('span');
+    const orig = span.innerText;
+    span.innerText = "Copied!";
     btn.style.borderColor = "var(--accent-emerald)";
     btn.style.color = "var(--accent-emerald)";
     setTimeout(() => {
-      btn.innerText = originalText;
+      span.innerText = orig;
       btn.style.borderColor = "";
       btn.style.color = "";
     }, 2000);
@@ -1746,13 +1543,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('scroll', () => {
     let current = '';
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop - 120;
-      if (pageYOffset >= sectionTop) {
-        current = section.getAttribute('id');
+    sections.forEach(sec => {
+      const top = sec.offsetTop - 120;
+      if (pageYOffset >= top) {
+        current = sec.getAttribute('id');
       }
     });
-
     navLinks.forEach(link => {
       link.classList.remove('active');
       if (link.getAttribute('href') === '#' + current) {

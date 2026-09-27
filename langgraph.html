@@ -3,50 +3,64 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LangGraph Production Architecture — The Complete Pedagogical Guide</title>
-<meta name="description" content="Master guide to LangGraph state machines, parallel reducers, conditional RAG routing, iterative reviewer loops, human-in-the-loop interrupts, and Streamlit production apps."/>
+<title>LangGraph Production Architecture — A Companion Guide for Engineers</title>
+<meta name="description" content="A warm, deeply practical guide to building stateful multi-agent systems with LangGraph. From mental models to production-ready code for sequential, parallel, conditional, and human-in-the-loop workflows."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg-primary: #07090e;
-  --bg-secondary: #0d111a;
-  --bg-card: #131826;
-  --bg-card-hover: #182032;
-  --border: #1f273d;
-  --border-focus: #8b5cf6;
+  --bg-primary: #080a11;
+  --bg-secondary: #0e1320;
+  --bg-card: #131a2d;
+  --bg-card-hover: #17213a;
+  --border: #1e293b;
+  --border-light: rgba(148, 163, 184, 0.12);
   --accent-purple: #8b5cf6;
-  --accent-blue: #3b82f6;
-  --accent-cyan: #06b6d4;
+  --accent-purple-light: #a78bfa;
+  --accent-blue: #38bdf8;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
   background-color: var(--bg-primary);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-family: var(--font-sans);
-  line-height: 1.7;
-  overflow-x: hidden;
-  font-size: 16px;
+  line-height: 1.8;
+  font-size: 16.5px;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Top Reading Progress Bar */
+#reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+  width: 0%;
+  z-index: 200;
+  transition: width 0.1s ease-out;
+}
+
+/* Header */
 header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(7, 9, 14, 0.85);
+  background: rgba(8, 10, 17, 0.88);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
-  padding: 1rem 2rem;
+  padding: 0.9rem 2rem;
 }
 .header-container {
   max-width: 1400px;
@@ -59,49 +73,50 @@ header {
 .brand-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   text-decoration: none;
   color: var(--text-primary);
 }
 .brand-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  background: linear-gradient(135deg, var(--accent-purple), #6366f1);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: #fff;
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
 }
+.brand-text { display: flex; flex-direction: column; }
 .brand-title {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 .brand-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 .nav-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   border: 1px solid var(--border);
   background: var(--bg-secondary);
   color: var(--text-secondary);
@@ -112,257 +127,293 @@ header {
   transform: translateY(-1px);
 }
 .nav-btn.primary {
-  background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+  background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
   color: #fff;
   border: none;
   box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
 }
 
+/* Layout */
 .layout {
   display: flex;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 2rem;
-  gap: 2.5rem;
+  padding: 2.5rem 2rem;
+  gap: 3rem;
 }
 
+/* Sidebar */
 aside.sidebar {
-  width: 300px;
+  width: 290px;
   flex-shrink: 0;
   position: sticky;
-  top: 5.5rem;
-  height: calc(100vh - 7rem);
+  top: 5rem;
+  height: calc(100vh - 6.5rem);
   overflow-y: auto;
-  padding-right: 1rem;
+  padding-right: 0.75rem;
 }
 aside.sidebar::-webkit-scrollbar { width: 4px; }
 aside.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .toc-title {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-muted);
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
   font-weight: 700;
 }
-.toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+.toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
 .toc-link {
-  display: block;
-  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
   border-radius: 6px;
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-decoration: none;
   transition: all 0.15s ease;
   border-left: 2px solid transparent;
 }
 .toc-link:hover, .toc-link.active {
   background: var(--bg-card);
-  color: var(--accent-purple);
+  color: var(--accent-purple-light);
   border-left-color: var(--accent-purple);
 }
 
+/* Main Content */
 main.content {
   flex: 1;
   min-width: 0;
 }
 
-.hero {
-  padding: 2.5rem 0 3rem 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 3rem;
+/* Welcoming Hero Banner */
+.welcome-hero {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(56, 189, 248, 0.04) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 16px;
+  padding: 2.5rem 2.5rem;
+  margin-bottom: 3.5rem;
+  position: relative;
+  overflow: hidden;
 }
-.badge {
+.welcome-hero::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.badge-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.3rem 0.8rem;
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 0.25rem 0.75rem;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.35);
   border-radius: 9999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--accent-purple);
-  margin-bottom: 1.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-h1.hero-title {
-  font-size: 2.8rem;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-  margin-bottom: 1.25rem;
-  background: linear-gradient(135deg, #ffffff 40%, var(--accent-purple) 80%, var(--accent-blue) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-p.hero-desc {
-  font-size: 1.15rem;
-  color: var(--text-secondary);
-  max-width: 900px;
-  line-height: 1.8;
-  margin-bottom: 2rem;
-}
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-.stat-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem;
-}
-.stat-num {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--accent-purple);
-  font-family: var(--font-mono);
-}
-.stat-label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-section {
-  margin-bottom: 4.5rem;
-  scroll-margin-top: 6rem;
-}
-.section-header { margin-bottom: 1.75rem; }
-.section-tag {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--accent-purple);
-  margin-bottom: 0.5rem;
-}
-h2.section-title {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #fff;
-}
-h3.subsection-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #f8fafc;
-  margin: 2rem 0 1rem 0;
-  letter-spacing: -0.01em;
-}
-
-.pedagogy-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin: 1.75rem 0;
-}
-
-.analogy-box {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.03));
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  border-left: 5px solid var(--accent-amber);
-  border-radius: 12px;
-  padding: 1.5rem 1.75rem;
-}
-.callout-header {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.95rem;
-  font-weight: 700;
+  color: var(--accent-purple-light);
+  margin-bottom: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 0.75rem;
 }
-.analogy-box .callout-header { color: var(--accent-amber); }
-.callout-body {
-  color: #cbd5e1;
-  font-size: 1rem;
-  line-height: 1.75;
+h1.welcome-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin-bottom: 1.2rem;
 }
-.callout-body strong { color: #fff; }
+p.welcome-lead {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  margin-bottom: 1.75rem;
+  max-width: 880px;
+}
+.welcome-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+.meta-item { display: flex; align-items: center; gap: 0.45rem; }
+.meta-item strong { color: var(--text-primary); }
 
-.deep-dive-box {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(124, 58, 237, 0.03));
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  border-left: 5px solid var(--accent-purple);
-  border-radius: 12px;
-  padding: 1.5rem 1.75rem;
+/* Sections */
+section {
+  margin-bottom: 4.5rem;
+  scroll-margin-top: 5rem;
 }
-.deep-dive-box .callout-header { color: var(--accent-purple); }
-
-.empathy-box {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.08), rgba(190, 18, 60, 0.03));
-  border: 1px solid rgba(244, 63, 94, 0.35);
-  border-left: 5px solid var(--accent-rose);
-  border-radius: 12px;
-  padding: 1.5rem 1.75rem;
+.section-tag {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--accent-purple-light);
+  margin-bottom: 0.4rem;
 }
-.empathy-box .callout-header { color: var(--accent-rose); }
+h2.section-heading {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+h3.sub-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 2rem 0 0.85rem 0;
+}
+p {
+  margin-bottom: 1.2rem;
+  color: var(--text-secondary);
+}
+strong { color: var(--text-primary); }
 
-.comparison-card {
-  background: var(--bg-card);
+/* Mentor / Companion Callouts */
+.mentor-note {
+  background: rgba(14, 19, 32, 0.75);
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
-  margin: 1.5rem 0;
+  padding: 1.4rem 1.6rem;
+  margin: 1.6rem 0;
+  position: relative;
 }
-.comparison-title {
-  padding: 1rem 1.5rem;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.95rem;
-  font-weight: 700;
+.mentor-note.tip {
+  border-left: 4px solid var(--accent-purple);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), rgba(14, 19, 32, 0.75));
+}
+.mentor-note.caution {
+  border-left: 4px solid var(--accent-amber);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(14, 19, 32, 0.75));
+}
+.mentor-note.gotcha {
+  border-left: 4px solid var(--accent-rose);
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.06), rgba(14, 19, 32, 0.75));
+}
+.mentor-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #e2e8f0;
-}
-table.comparison-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.92rem;
-}
-table.comparison-table th {
-  background: rgba(15, 23, 42, 0.6);
-  padding: 0.85rem 1.25rem;
-  color: var(--accent-purple);
+  font-size: 0.88rem;
   font-weight: 700;
-  border-bottom: 1px solid var(--border);
   text-transform: uppercase;
-  font-size: 0.78rem;
   letter-spacing: 0.05em;
+  margin-bottom: 0.6rem;
 }
-table.comparison-table td {
-  padding: 0.9rem 1.25rem;
-  border-bottom: 1px solid rgba(31, 39, 61, 0.6);
-  color: var(--text-secondary);
-  vertical-align: top;
-}
-table.comparison-table tr:last-child td { border-bottom: none; }
-table.comparison-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
-table.comparison-table td strong { color: #f1f5f9; }
+.mentor-note.tip .mentor-header { color: var(--accent-purple-light); }
+.mentor-note.caution .mentor-header { color: var(--accent-amber); }
+.mentor-note.gotcha .mentor-header { color: var(--accent-rose); }
 
-.code-container {
-  background: #090d16;
+/* Collapsible Under-the-Hood Explanations */
+details.deep-dive {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 1.4rem 0;
+  padding: 0;
+  overflow: hidden;
+}
+details.deep-dive summary {
+  padding: 1rem 1.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  background: var(--bg-secondary);
+  transition: background 0.15s ease;
+}
+details.deep-dive summary:hover { background: rgba(139, 92, 246, 0.08); }
+details.deep-dive summary::-webkit-details-marker { display: none; }
+details.deep-dive summary::after {
+  content: "+";
+  font-size: 1.25rem;
+  color: var(--accent-purple-light);
+  font-weight: 400;
+}
+details.deep-dive[open] summary::after { content: "−"; }
+details.deep-dive .details-content {
+  padding: 1.4rem 1.6rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+/* Comparison Tables */
+.table-wrapper {
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  margin: 1.75rem 0;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+  margin: 1.6rem 0;
+}
+.table-header-title {
+  padding: 0.85rem 1.4rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+table.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  text-align: left;
+}
+table.styled-table th {
+  background: rgba(14, 19, 32, 0.85);
+  padding: 0.85rem 1.25rem;
+  color: var(--accent-purple-light);
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+table.styled-table td {
+  padding: 0.95rem 1.25rem;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+table.styled-table tr:last-child td { border-bottom: none; }
+table.styled-table tr:hover td { background: rgba(255, 255, 255, 0.015); }
+
+/* Code Containers */
+.code-container {
+  background: #07090e;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1.6rem 0;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
 }
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.25rem;
-  background: #0f1422;
+  background: #0d111c;
   border-bottom: 1px solid var(--border);
   font-family: var(--font-mono);
   font-size: 0.82rem;
@@ -376,8 +427,8 @@ table.comparison-table td strong { color: #f1f5f9; }
 .file-name::before {
   content: "";
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   background: var(--accent-purple);
   border-radius: 50%;
 }
@@ -386,14 +437,14 @@ table.comparison-table td strong { color: #f1f5f9; }
   border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--text-muted);
-  font-size: 0.75rem;
-  padding: 0.3rem 0.7rem;
+  font-size: 0.76rem;
+  padding: 0.3rem 0.65rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-family: var(--font-mono);
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 .copy-btn:hover {
   background: var(--bg-card);
@@ -409,63 +460,81 @@ pre {
   line-height: 1.65;
   color: #e2e8f0;
 }
-pre::-webkit-scrollbar { height: 6px; }
+pre::-webkit-scrollbar { height: 5px; }
 pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+/* Key Step Badges */
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid var(--accent-purple);
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent-purple-light);
+  margin-right: 0.5rem;
+}
+
+/* Inline Code */
 code.inline {
   background: rgba(30, 41, 59, 0.7);
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 0.86rem;
-  color: var(--accent-purple);
+  color: var(--accent-purple-light);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Interactive Quiz */
-.quiz-card {
+.quiz-wrapper {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 2rem;
+  border-radius: 14px;
+  padding: 2rem 2.2rem;
   margin: 2rem 0;
 }
-.quiz-question {
-  font-size: 1.15rem;
+.quiz-q {
+  font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
   margin-bottom: 1.25rem;
 }
-.quiz-options {
+.quiz-opts {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.7rem;
 }
-.quiz-opt {
-  padding: 0.85rem 1.25rem;
+.quiz-btn {
+  padding: 0.85rem 1.2rem;
   border-radius: 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   font-size: 0.95rem;
+  text-align: left;
 }
-.quiz-opt:hover {
+.quiz-btn:hover {
   border-color: var(--accent-purple);
   color: #fff;
 }
-.quiz-opt.correct {
-  background: rgba(16, 185, 129, 0.15);
+.quiz-btn.correct {
+  background: rgba(16, 185, 129, 0.12);
   border-color: var(--accent-emerald);
   color: var(--accent-emerald);
 }
-.quiz-opt.incorrect {
-  background: rgba(244, 63, 94, 0.15);
+.quiz-btn.incorrect {
+  background: rgba(244, 63, 94, 0.12);
   border-color: var(--accent-rose);
   color: var(--accent-rose);
 }
-.quiz-feedback {
+.quiz-explanation {
   margin-top: 1rem;
   font-size: 0.92rem;
   display: none;
@@ -475,208 +544,175 @@ code.inline {
 @media (max-width: 1024px) {
   aside.sidebar { display: none; }
   .layout { padding: 1.5rem 1rem; }
-  h1.hero-title { font-size: 2.2rem; }
+  h1.welcome-title { font-size: 2rem; }
 }
 </style>
 </head>
 <body>
 
+<div id="reading-progress"></div>
+
 <header>
   <div class="header-container">
     <a href="index.html" class="brand-link">
       <div class="brand-icon">LG</div>
-      <div>
+      <div class="brand-text">
         <div class="brand-title">LangGraph Architecture Handbook</div>
         <div class="brand-subtitle">The Complete State Machine Guide</div>
       </div>
     </a>
     <div class="nav-actions">
-      <a href="index.html" class="nav-btn">← Main Portal</a>
-      <a href="langchain.html" class="nav-btn primary">Go to LangChain Guide →</a>
+      <a href="index.html" class="nav-btn">← Portal</a>
+      <a href="langchain.html" class="nav-btn primary">LangChain Handbook →</a>
     </div>
   </div>
 </header>
 
 <div class="layout">
   <aside class="sidebar">
-    <div class="toc-title">Course Projects</div>
+    <div class="toc-title">Guide Roadmap</div>
     <ul class="toc-list">
-      <li><a href="#paradigm" class="toc-link">Paradigm Shift</a></li>
-      <li><a href="#states" class="toc-link">State Modeling: states.py</a></li>
-      <li><a href="#p1-sequential" class="toc-link">Project 1: Sequential Base</a></li>
-      <li><a href="#p2-parallel" class="toc-link">Project 2: Parallel Reducers</a></li>
-      <li><a href="#p3-conditional" class="toc-link">Project 3: Conditional Multi-RAG</a></li>
-      <li><a href="#p4-iterative" class="toc-link">Project 4: Iterative Reviewer</a></li>
-      <li><a href="#p5-hitl" class="toc-link">Project 5: Human-in-the-Loop</a></li>
-      <li><a href="#p6-streamlit" class="toc-link">Project 6: Streamlit Web App</a></li>
-      <li><a href="#quiz" class="toc-link">Interactive Knowledge Check</a></li>
+      <li><a href="#paradigm" class="toc-link">1. The Paradigm Shift</a></li>
+      <li><a href="#states" class="toc-link">2. State Modeling: states.py</a></li>
+      <li><a href="#p1-sequential" class="toc-link">3. Project 1: Sequential Base</a></li>
+      <li><a href="#p2-parallel" class="toc-link">4. Project 2: Parallel Reducers</a></li>
+      <li><a href="#p3-conditional" class="toc-link">5. Project 3: Conditional Multi-RAG</a></li>
+      <li><a href="#p4-iterative" class="toc-link">6. Project 4: Iterative Reviewer</a></li>
+      <li><a href="#p5-hitl" class="toc-link">7. Project 5: Human-in-the-Loop</a></li>
+      <li><a href="#p6-streamlit" class="toc-link">8. Project 6: Streamlit Web App</a></li>
+      <li><a href="#quiz" class="toc-link">9. Interactive Knowledge Check</a></li>
     </ul>
   </aside>
 
   <main class="content">
 
-    <section class="hero">
-      <div class="badge">Advanced Cyclic StateGraph Engineering</div>
-      <h1 class="hero-title">LangGraph Production Architecture</h1>
-      <p class="hero-desc">
-        The ultimate pedagogical guide to orchestrating complex, resilient multi-agent state machines. Master parallel reducers, conditional dynamic routing, iterative editorial reviewer loops, checkpointed interrupts, and full Streamlit web applications.
+    <!-- WELCOMING HERO BANNER -->
+    <div class="welcome-hero">
+      <div class="badge-pill">Advanced Agentic Engineering</div>
+      <h1 class="welcome-title">Mastering Production Workflows with LangGraph</h1>
+      <p class="welcome-lead">
+        If you’ve ever tried building complex AI agents with simple loops and felt things spiraling out of control—tools hallucinating arguments, parallel branches overwriting state, or prompts growing into fragile 4,000-word monoliths—<strong>you are not alone</strong>.
+        <br><br>
+        This guide is designed as your companion. We will build, break down, and master the exact architectural patterns needed to turn chaotic LLM calls into deterministic, resilient state machines you can deploy with pride.
       </p>
-      <div class="hero-stats">
-        <div class="stat-box">
-          <div class="stat-num">6</div>
-          <div class="stat-label">Full Projects</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">2</div>
-          <div class="stat-label">State Paradigms</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">7</div>
-          <div class="stat-label">Reviewer Criteria</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">100%</div>
-          <div class="stat-label">Production Code</div>
-        </div>
+      <div class="welcome-meta">
+        <div class="meta-item">⏱️ Reading Time: <strong>~20 min</strong></div>
+        <div class="meta-item">🛠️ Projects: <strong>6 Production Python Applications</strong></div>
+        <div class="meta-item">🎯 Prerequisites: <strong>Python &amp; Basic LangChain</strong></div>
       </div>
-    </section>
+    </div>
 
+    <!-- 1. PARADIGM SHIFT -->
     <section id="paradigm">
-      <div class="section-header">
-        <div class="section-tag">Core Concepts</div>
-        <h2 class="section-title">Generative AI vs. Agentic AI: The Fundamental Shift</h2>
-      </div>
+      <div class="section-tag">Foundation</div>
+      <h2 class="section-heading">1. Generative AI vs. Agentic AI: The Fundamental Shift</h2>
 
       <p>
-        Traditional Generative AI is a one-way street: you give a prompt, the model calculates logits, and it returns text. If it hallucinates or misses a step, you have no recourse. <strong>LangGraph</strong> transforms this into a stateful, cyclical graph where agents plan, execute, inspect their own work, branch concurrently, and loop until success.
+        Most developers enter the AI space by making standard chat completions: send a prompt, wait for tokens, parse the answer. But the moment your application requires more than one step—like querying a database, verifying facts against a PDF, or having a reviewer approve a draft—single-call prompting collapses.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Rapid Typist vs The Operations Director</div>
-          <div class="callout-body">
-            A standalone LLM is like a world-class typist sitting in an isolated soundproof room: whatever prompt slides under the door, they type out a brilliant 500-word response in 3 seconds and slide it back. They cannot check if the server is down, cannot consult a colleague, and cannot correct a mistake.
-            <br><br>
-            LangGraph is appointing an <strong>Operations Director</strong> with a whiteboard (State). The Director dispatches tasks to specialists (Nodes), merges their findings (Reducers), routes based on conditions (Conditional Edges), and walks into the CEO's office for approval before wiring money (Interrupt).
-          </div>
-        </div>
+      <p>
+        In traditional software, we didn't solve complex problems by writing one giant 10,000-line function. We split logic into modules, state stores, and control flows. <strong>LangGraph applies this exact engineering wisdom to LLMs.</strong>
+      </p>
 
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ Architectural Showdown: Chains vs Autonomous Agents vs LangGraph StateGraphs</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Feature</th>
-                <th>Linear Chains (LCEL)</th>
-                <th>Legacy AgentExecutor</th>
-                <th>LangGraph StateGraph</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Flow Control</strong></td>
-                <td>Strictly Directed Acyclic (DAG)</td>
-                <td>Black-box while loop</td>
-                <td><strong>Arbitrary Cyclic &amp; Parallel Graph</strong></td>
-              </tr>
-              <tr>
-                <td><strong>State Persistence</strong></td>
-                <td>Volatile (Lost after invoke)</td>
-                <td>Internal memory buffer</td>
-                <td><strong>First-class durable checkpointers (SQLite/Postgres)</strong></td>
-              </tr>
-              <tr>
-                <td><strong>Branching &amp; Concurrency</strong></td>
-                <td>Manual async gathers</td>
-                <td>Sequential only</td>
-                <td><strong>Native Fan-Out &amp; Reducer Fan-In</strong></td>
-              </tr>
-              <tr>
-                <td><strong>Human Intervention</strong></td>
-                <td>None (Must terminate chain)</td>
-                <td>Extremely brittle callbacks</td>
-                <td><strong>Native <code>interrupt()</code> and <code>Command(resume=...)</code></strong></td>
-              </tr>
-              <tr>
-                <td><strong>Production Readiness</strong></td>
-                <td>High (For simple ETL)</td>
-                <td>Deprecated by LangChain</td>
-                <td><strong>The Modern Industry Standard</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="mentor-note tip">
+        <div class="mentor-header">💡 The Mental Model That Makes It Click</div>
+        Instead of treating the LLM as an isolated genius answering questions in a vacuum, think of LangGraph as appointing an <strong>Operations Director</strong> with a shared whiteboard. The Director assigns tasks to specialized workers (Nodes), collects their progress (Reducers), routes according to rules (Conditional Edges), and pauses for human sign-off before major decisions (Interrupts).
+      </div>
+
+      <div class="table-wrapper">
+        <div class="table-header-title">⚖️ Architectural Evolution: How We Got Here</div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Approach</th>
+              <th>How It Works</th>
+              <th>Where It Shines</th>
+              <th>Where It Breaks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Simple Chains (LCEL)</strong></td>
+              <td>Linear A &rarr; B &rarr; C DAG</td>
+              <td>Fast, deterministic document transformation &amp; basic RAG</td>
+              <td>Cannot loop, cannot recover from errors, cannot pause for human input</td>
+            </tr>
+            <tr>
+              <td><strong>Legacy AgentExecutor</strong></td>
+              <td>Black-box ReAct while-loop</td>
+              <td>Quick prototypes with tools</td>
+              <td>Brittle, unpredictable loops, impossible to debug intermediate state</td>
+            </tr>
+            <tr>
+              <td><strong>LangGraph StateGraph</strong></td>
+              <td>Explicit cyclic state machine</td>
+              <td><strong>Enterprise agents, parallel branches, reviewer loops, human approval</strong></td>
+              <td>Requires deliberate state and reducer design upfront</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
+    <!-- 2. STATE MODELING -->
     <section id="states">
-      <div class="section-header">
-        <div class="section-tag">State Architecture</div>
-        <h2 class="section-title">State Modeling: TypedDict vs. Pydantic</h2>
-      </div>
+      <div class="section-tag">Core Architecture</div>
+      <h2 class="section-heading">2. State Modeling: TypedDict vs. Pydantic</h2>
 
       <p>
-        In LangGraph, every graph is parameterized by a central <strong>State Schema</strong>. Nodes do not receive arbitrary parameters; they receive the current state dictionary and return updates (deltas) that are merged back into the state.
+        Every LangGraph workflow is organized around a central <strong>State Schema</strong>. Think of State as the single source of truth that travels through your graph. When a node executes, it receives a read-only copy of the current state and returns a small dictionary of updates (deltas) that get merged back into the state.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Operating Room Whiteboard</div>
-          <div class="callout-body">
-            Think of the LangGraph State as a large magnetic whiteboard hanging in a surgical operating room. The Surgeon, the Anesthesiologist, and the Head Nurse all look at the exact same board. When the Anesthesiologist administers a drug, they write the dosage on the board. The Surgeon reads the board before making an incision. Nobody whispers in secret corridors—all communication happens through the central, synchronized board.
-          </div>
-        </div>
+      <p>
+        In Python, you have two primary ways to define this schema: <code>TypedDict</code> and <code>Pydantic BaseModel</code>. Here is how they compare in the field:
+      </p>
 
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ State Modeling Trade-Offs: TypedDict vs Pydantic BaseModel</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Dimension</th>
-                <th>TypedDict (Standard)</th>
-                <th>Pydantic BaseModel</th>
-                <th>When to Choose Which?</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Runtime Validation</strong></td>
-                <td>None (Type hints only at edit/compile time)</td>
-                <td>Strict (Validates types, lengths, regex on instantiation)</td>
-                <td>Use Pydantic when accepting raw, untrusted user/API payloads</td>
-              </tr>
-              <tr>
-                <td><strong>Performance Overhead</strong></td>
-                <td>Zero (Native Python dictionary)</td>
-                <td>Slight overhead (Instantiates validation objects)</td>
-                <td>Use TypedDict for high-throughput, latency-critical pipelines</td>
-              </tr>
-              <tr>
-                <td><strong>LangGraph Ecosystem</strong></td>
-                <td>Native default across documentation</td>
-                <td>Supported via <code>StateGraph(MyModel)</code></td>
-                <td>TypedDict is 90% of production LangGraph architectures</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: The "In-Place Mutation" Trap</div>
-          <div class="callout-body">
-            A catastrophic bug that causes silent graph bugs is writing <code>state["messages"].append(msg)</code> inside a node.
-            <br><br>
-            <strong>Why it fails:</strong> LangGraph relies on immutability and state snapshots for checkpointing and time-travel replay. Modifying state in-place corrupts history!
-            <br><br>
-            <strong>Golden Rule:</strong> Nodes must ALWAYS treat input state as read-only, and return a dictionary of state updates (e.g. <code>return {"messages": [msg]}</code>).
-          </div>
-        </div>
+      <div class="table-wrapper">
+        <div class="table-header-title">⚖️ TypedDict vs. Pydantic: Making the Right Choice</div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>TypedDict (Most Common)</th>
+              <th>Pydantic BaseModel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Runtime Overhead</strong></td>
+              <td>Virtually zero (standard Python dictionary)</td>
+              <td>Slight (validates fields and types on instantiation)</td>
+            </tr>
+            <tr>
+              <td><strong>Validation Strictness</strong></td>
+              <td>Static typing only (IDE &amp; mypy check)</td>
+              <td>Strict runtime checking, automatic type coercion</td>
+            </tr>
+            <tr>
+              <td><strong>Best Used When</strong></td>
+              <td>Internal application state, speed is critical</td>
+              <td>Ingesting external untrusted payloads or user webhooks</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
+      <div class="mentor-note gotcha">
+        <div class="mentor-header">⚠️ A Common Pitfall: In-Place Mutation</div>
+        Never modify state in place inside a node (e.g. <code>state["history"].append(item)</code>). LangGraph relies on immutable state transitions to support checkpointing, thread isolation, and time-travel replay. Always return a dictionary containing the new or updated keys!
+      </div>
+
+      <h3 class="sub-heading">Production Source Code: states.py</h3>
+      <p>Here is the canonical implementation supporting both approaches:</p>
+      
       <div class="code-container">
         <div class="code-header">
-          <div class="file-name">states.py — TypedDict & Pydantic Implementations</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <div class="file-name">states.py — State Schemas</div>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 from typing import TypedDict
@@ -703,37 +739,38 @@ class ValidatedState(BaseModel):
     final_output: str = Field(default="", description="Synthesized response")
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- 3. PROJECT 1: SEQUENTIAL BASE -->
     <section id="p1-sequential">
-      <div class="section-header">
-        <div class="section-tag">Project 1</div>
-        <h2 class="section-title">Sequential Pipeline: Copyeditor &rarr; Hook Creator &rarr; Hinglish Translator</h2>
-      </div>
+      <div class="section-tag">Project 1</div>
+      <h2 class="section-heading">3. Sequential Workflows: The Predictable Assembly Line</h2>
 
       <p>
-        The fundamental unit of graph orchestration is the <strong>Sequential Workflow</strong>. Each node performs a specialized transformation and passes the baton to the next node via explicit directed edges.
+        Let's build our first graph. A sequential workflow is the simplest pattern: Node A finishes, updates the state, and passes the baton cleanly to Node B.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Automotive Assembly Line</div>
-          <div class="callout-body">
-            In an automotive factory, a car chassis moves along a conveyor track. Station 1 installs the engine (Copyeditor expands the topic). Station 2 bolts on the aerodynamic spoiler (Hook Creator drafts the viral intro). Station 3 paints the car with custom regional decals (Hinglish Translator adapts the tone). No station tries to build the whole car from scratch.
-          </div>
-        </div>
+      <p>
+        In this project, we create an automated content pipeline:
+        <br>
+        <code>START</code> &rarr; <strong>Copyeditor</strong> (expands raw topic into an article) &rarr; <strong>Hook Creator</strong> (crafts a high-retention video hook) &rarr; <strong>Hinglish Translator</strong> (adapts the hook for urban Indian audiences) &rarr; <code>END</code>.
+      </p>
 
-        <div class="deep-dive-box">
-          <div class="callout-header">🔬 Under the Hood: Graph Compilation and Node Execution</div>
-          <div class="callout-body">
-            When you call <code>workflow.compile()</code>, LangGraph validates graph topology: checking for orphaned nodes, unreachable endpoints, and schema conformance. When invoked, it starts at <code>START</code>, passes state to the first node, merges the emitted delta, and follows outgoing edges until hitting <code>END</code>.
-          </div>
-        </div>
+      <div class="mentor-note tip">
+        <div class="mentor-header">💡 Why Not Just Do This In One Prompt?</div>
+        If you ask a single prompt to simultaneously be a rigorous tech copyeditor, a viral YouTube creator, and a colloquial Hinglish translator, the model tries to compromise on all three tones. Decomposing the task into distinct nodes gives each prompt full focus and allows you to tune temperatures individually.
       </div>
 
+      <h3 class="sub-heading">Production Source Code: sequential_base.py</h3>
+      
       <div class="code-container">
         <div class="code-header">
-          <div class="file-name">sequential_base.py — Production Sequential Pipeline</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <div class="file-name">sequential_base.py — Complete Linear Pipeline</div>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 from typing import TypedDict
@@ -800,39 +837,38 @@ if __name__ == "__main__":
     print(result["hinglish_script"])
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- 4. PROJECT 2: PARALLEL REDUCERS -->
     <section id="p2-parallel">
-      <div class="section-header">
-        <div class="section-tag">Project 2</div>
-        <h2 class="section-title">Parallel Workflows &amp; Annotated State Reducers</h2>
-      </div>
+      <div class="section-tag">Project 2</div>
+      <h2 class="section-heading">4. Parallel Workflows &amp; State Reducers: Safe Concurrency</h2>
 
       <p>
-        When multiple evaluations or searches can happen concurrently, running them sequentially wastes valuable seconds. LangGraph supports <strong>Parallel Fan-Out</strong> from <code>START</code>, triggering multiple nodes at the same time. However, when multiple nodes write to the same key, they will collide unless coordinated with an <strong>`Annotated` Reducer</strong>.
+        Running evaluations one after another sequentially is slow. If you need to check a piece of text for Toxicity, Copyright Infringement, and Cultural Sensitivity, all three checks can run at the exact same moment.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: Olympic Judges &amp; The Scorekeeper Clerk</div>
-          <div class="callout-body">
-            In Olympic figure skating, 3 specialized judges (Toxicity, Copyright, Cultural Sensitivity) evaluate a performance simultaneously. If all three ran up to a single chalkboard and tried to overwrite the same box marked "Score", chaos ensues! The <strong>Reducer</strong> is the official Scorekeeper Clerk: they collect the three separate scorecards and merge them neatly into a single official ledger.
-          </div>
-        </div>
+      <p>
+        LangGraph supports <strong>Parallel Fan-Out</strong> directly from <code>START</code>. But here is the critical challenge every developer encounters:
+      </p>
 
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: The Overwrite Disaster!</div>
-          <div class="callout-body">
-            If you create 3 parallel nodes that return <code>{"scores": ...}</code> on an un-annotated state key, Python dictionary semantics dictate that whichever node finishes last completely overwrites the results of the other two! You lose 66% of your audit data silently.
-            <br><br>
-            <strong>The Fix:</strong> Annotate the state field with a reducer function: <code>scores: Annotated[dict, merge_score_dicts]</code>.
-          </div>
-        </div>
+      <div class="mentor-note gotcha">
+        <div class="mentor-header">⚠️ The Concurrency Trap: Last-Write-Wins</div>
+        If 3 parallel nodes all emit updates to a key called <code>scores</code>, standard dictionary assignment means the last node to finish overwrites the work of the other two!
+        <br><br>
+        <strong>The Solution:</strong> Python's <code>Annotated</code> type hint with a custom <strong>Reducer</strong>. A reducer is simply a function that teaches LangGraph how to combine multiple incoming updates without destroying data.
       </div>
 
+      <h3 class="sub-heading">Production Source Code: parallel_reducers.py</h3>
+      
       <div class="code-container">
         <div class="code-header">
-          <div class="file-name">parallel_reducers.py — Concurrent Fan-Out & Custom Reducer</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <div class="file-name">parallel_reducers.py — Fan-Out & Custom Reducer</div>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 from typing import TypedDict, Annotated
@@ -908,61 +944,37 @@ if __name__ == "__main__":
     print(out["safety_audit_scores"])
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- 5. PROJECT 3: CONDITIONAL MULTI-RAG -->
     <section id="p3-conditional">
-      <div class="section-header">
-        <div class="section-tag">Project 3</div>
-        <h2 class="section-title">Conditional Routing &amp; Multi-PDF RAG Architecture</h2>
-      </div>
+      <div class="section-tag">Project 3</div>
+      <h2 class="section-heading">5. Conditional Routing &amp; Multi-PDF RAG: Smart Triage</h2>
 
       <p>
-        In enterprise systems, stuffing 50 different PDF documents into a single giant vector store causes severe semantic dilution and irrelevant retrieval. In <strong>Project 3</strong>, we implement an intelligent <strong>Conditional Router</strong> that classifies the user's intent and dynamically dispatches to specialized vector indices.
+        One of the biggest mistakes in enterprise RAG is creating a single massive vector database containing engineering specs, HR policies, fee structures, and legal terms. Queries get confused by cross-domain semantic collisions.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Hospital Emergency Room Triage Nurse</div>
-          <div class="callout-body">
-            When a patient walks into a hospital emergency room, they don't get thrown into a random room with all medical instruments. A Triage Nurse (Classifier Node) checks their symptoms: cardiac arrest goes straight to Cardiology (Academic Handbook retriever), a broken bone goes to Orthopedics (Fee Structure retriever), and general flu symptoms go to General Practice (General LLM).
-          </div>
-        </div>
+      <p>
+        A far more reliable architecture is <strong>Conditional Dynamic Routing</strong>:
+        <br>
+        1. An initial <strong>Classifier Node</strong> analyzes the user's intent.
+        <br>
+        2. A <strong>Conditional Edge</strong> inspects the classification and routes the query directly to the specialized domain retriever (e.g. Academics vs. Fees vs. General Knowledge).
+        <br>
+        3. A final <strong>Synthesizer Node</strong> grounds the response in the retrieved evidence.
+      </p>
 
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ Multi-Index RAG vs Monolithic Vector Database</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Strategy</th>
-                <th>Retrieval Precision</th>
-                <th>Index Maintenance</th>
-                <th>Access Control</th>
-                <th>Query Latency</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>One Giant Monolithic Index</strong></td>
-                <td>Poor (Semantic collisions across departments)</td>
-                <td>High risk (One corrupt doc impacts all)</td>
-                <td>Difficult to enforce per-doc permissions</td>
-                <td>Slower as collection scales to millions</td>
-              </tr>
-              <tr>
-                <td><strong>Conditional Routed Indices</strong></td>
-                <td><strong>High (Grounded strictly in domain index)</strong></td>
-                <td><strong>Modular (Update fees without touching academics)</strong></td>
-                <td><strong>Granular ACLs per department collection</strong></td>
-                <td><strong>Fast sub-collection targeted searches</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+      <h3 class="sub-heading">Production Source Code: conditional_RAG.py</h3>
+      
       <div class="code-container">
         <div class="code-header">
-          <div class="file-name">conditional_RAG.py — Dynamic Intent Routing Pipeline</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <div class="file-name">conditional_RAG.py — Multi-Retriever Intent Router</div>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 from typing import TypedDict, Annotated
@@ -1058,54 +1070,47 @@ if __name__ == "__main__":
     print(rag_app.invoke({"user_query": q})["final_response"])
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- 6. PROJECT 4: ITERATIVE REVIEWER -->
     <section id="p4-iterative">
-      <div class="section-header">
-        <div class="section-tag">Project 4</div>
-        <h2 class="section-title">Iterative Workflow with Tools &amp; Strict Reviewer Loop</h2>
-      </div>
+      <div class="section-tag">Project 4</div>
+      <h2 class="section-heading">6. Iterative Workflow &amp; Strict Reviewer Loop: Self-Correction</h2>
 
       <p>
-        Single-shot LLM outputs frequently fall short of publication standards. <strong>Project 4</strong> implements a cyclical feedback loop where a Research Writer generates content and a ruthless Reviewer audits it against <strong>7 Strict Editorial Criteria</strong>, looping back until quality thresholds are satisfied.
+        High-stakes production outputs rarely succeed on the first attempt. In this project, we implement an iterative feedback loop: a <strong>Writer Node</strong> drafts technical content, and a <strong>Reviewer Node</strong> audits it against <strong>7 Strict Editorial Criteria</strong>.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Investigative Reporter &amp; The Senior Editor</div>
-          <div class="callout-body">
-            A rookie journalist (Writer Node) writes a breaking story. They don't immediately publish it to the front page! They slide the draft across the desk to the Pulitzer-winning Senior Editor (Reviewer Node). The Editor marks red ink all over it: <em>"Where are the citations? Cut the fluff. Fix paragraph 2."</em> The journalist revises and resubmits. Only when the editor gives an 85+ score does the printing press start rolling.
-          </div>
+      <details class="deep-dive">
+        <summary>View the 7 Strict Editorial Criteria Evaluated by the Reviewer</summary>
+        <div class="details-content">
+          <ol style="margin-left: 1.25rem; line-height: 1.8;">
+            <li><strong>Direct technical accuracy:</strong> Zero hallucinated APIs or nonexistent syntax.</li>
+            <li><strong>Complete absence of generic fluff:</strong> Eliminate filler phrases ("In today's fast-paced digital world...").</li>
+            <li><strong>Clear architectural breakdown:</strong> Explicit state flow and node boundaries.</li>
+            <li><strong>Inclusion of failure modes:</strong> Highlight where systems break in real-world use.</li>
+            <li><strong>Actionable implementation advice:</strong> Steps an engineer can execute immediately.</li>
+            <li><strong>Concise formatting:</strong> Clean typography, bullets, and tables.</li>
+            <li><strong>Concrete code or formulas:</strong> Verifiable syntax and calculations.</li>
+          </ol>
         </div>
+      </details>
 
-        <div class="deep-dive-box">
-          <div class="callout-header">🔬 The 7 Strict Editorial Criteria Evaluated by the Reviewer</div>
-          <div class="callout-body">
-            <ol style="margin-left:1.5rem; color:#cbd5e1; line-height:1.8;">
-              <li><strong>Direct Technical Accuracy:</strong> Zero factual hallucinations or invented APIs.</li>
-              <li><strong>Complete Absence of Generic Fluff:</strong> No filler words ("In conclusion", "As an AI model").</li>
-              <li><strong>Clear Architectural Breakdown:</strong> Explicit node and edge relationships.</li>
-              <li><strong>Inclusion of Failure Modes:</strong> Explaining where systems break in production.</li>
-              <li><strong>Actionable Implementation Advice:</strong> Real, practical engineering steps.</li>
-              <li><strong>Concise Formatting:</strong> Clean bullet points, headers, and code callouts.</li>
-              <li><strong>Concrete Code or Formulas:</strong> Verified syntax and mathematical precision.</li>
-            </ol>
-          </div>
-        </div>
-
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: The Infinite Loop Money Drain!</div>
-          <div class="callout-body">
-            If your reviewer's criteria are too strict or the model gets stuck in a loop, the graph will execute 1,000 times, consuming hundreds of dollars in API credits within minutes!
-            <br><br>
-            <strong>Mandatory Safeguard:</strong> Always implement a hard attempt counter (e.g. <code>if attempts >= 3: return "publish"</code>) in your conditional exit router.
-          </div>
-        </div>
+      <div class="mentor-note caution">
+        <div class="mentor-header">💡 Guarding Your Wallet: Cycle Cutoffs</div>
+        Whenever an agent graph loops back on itself, you <strong>must</strong> include a hard attempt counter (e.g. <code>attempt_count &gt;= 3</code>). Otherwise, if the reviewer refuses to approve a draft, the graph could loop 100 times, consuming hundreds of dollars in API credits within minutes.
       </div>
 
+      <h3 class="sub-heading">Production Source Code: iterative_tools.py</h3>
+      
       <div class="code-container">
         <div class="code-header">
-          <div class="file-name">iterative_tools.py — Cyclical Reviewer & Quality Gate</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <div class="file-name">iterative_tools.py — Writer-Reviewer Quality Loop</div>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 from typing import TypedDict, Annotated
@@ -1189,68 +1194,65 @@ if __name__ == "__main__":
     print(result["current_draft"][:300] + "...")
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- 7. PROJECT 5: HUMAN IN THE LOOP -->
     <section id="p5-hitl">
-      <div class="section-header">
-        <div class="section-tag">Project 5</div>
-        <h2 class="section-title">Human-in-the-Loop (HITL) &amp; Checkpoint Interrupts</h2>
-      </div>
+      <div class="section-tag">Project 5</div>
+      <h2 class="section-heading">7. Human-in-the-Loop (HITL) &amp; Checkpoint Interrupts</h2>
 
       <p>
-        Autonomous agents must never perform high-stakes, irreversible operations (such as wiring $25,000, deleting customer tables, or sending bulk emails) without explicit human oversight. LangGraph provides native <strong>Human-in-the-Loop</strong> capabilities via <code>interrupt()</code> backed by durable checkpointers.
+        Certain actions must never be left entirely to autonomous AI: wiring funds, deleting tables, or deploying production code.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Dual-Key Nuclear Launch Escrow</div>
-          <div class="callout-body">
-            A missile launch computer can calculate target coordinates, align satellite guidance, and pressurize fuel tanks autonomously. But the final launch sequence physically halts at a dual-key lock box. Two human officers must physically insert keys and turn them simultaneously. In LangGraph, <code>interrupt()</code> pauses execution, saves state to disk, and freezes until a human turns the cryptographic key via <code>Command(resume=...)</code>.
-          </div>
-        </div>
+      <p>
+        LangGraph solves this with first-class <strong>Interrupts and Checkpointers</strong>. When a node calls <code>interrupt(...)</code>, execution freezes completely. The current state is serialized into durable storage (such as SQLite or Postgres). The graph returns control to your application, waits for human approval, and resumes cleanly via <code>Command(resume=...)</code> using the same <code>thread_id</code>.
+      </p>
 
-        <div class="comparison-card">
-          <div class="comparison-title">⚖️ LangGraph Checkpointers: MemorySaver vs SqliteSaver vs PostgresSaver</div>
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Checkpointer</th>
-                <th>Storage Medium</th>
-                <th>Multi-Process Support</th>
-                <th>Durability</th>
-                <th>Production Suitability</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>MemorySaver</strong></td>
-                <td>Python In-Memory Dict</td>
-                <td>No (Single process)</td>
-                <td>Volatile (Lost on restart)</td>
-                <td>Local unit testing and prototyping only</td>
-              </tr>
-              <tr>
-                <td><strong>SqliteSaver</strong></td>
-                <td>Local SQLite Database File</td>
-                <td>Yes (Single server)</td>
-                <td>Persistent across server reboots</td>
-                <td>Single-server apps, internal tools, edge runtimes</td>
-              </tr>
-              <tr>
-                <td><strong>PostgresSaver</strong></td>
-                <td>Distributed PostgreSQL</td>
-                <td>Yes (Horizontal cluster)</td>
-                <td>ACID compliant, clustered durability</td>
-                <td><strong>Enterprise production multi-tenant deployments</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-wrapper">
+        <div class="table-header-title">⚖️ Checkpointer Storage Engines</div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Checkpointer</th>
+              <th>Durability</th>
+              <th>Horizontal Scale</th>
+              <th>Ideal Scenario</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MemorySaver</strong></td>
+              <td>In-memory (lost on restart)</td>
+              <td>Single-process only</td>
+              <td>Local unit testing, development prototypes</td>
+            </tr>
+            <tr>
+              <td><strong>SqliteSaver</strong></td>
+              <td>Persistent on local disk</td>
+              <td>Single server instance</td>
+              <td>Lightweight production apps, CLI tools, embedded systems</td>
+            </tr>
+            <tr>
+              <td><strong>PostgresSaver</strong></td>
+              <td>ACID transactional database</td>
+              <td>Clustered, multi-instance web servers</td>
+              <td>Enterprise multi-tenant applications with high concurrency</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
+      <h3 class="sub-heading">Production Source Code: humanintheloop.py</h3>
+      
       <div class="code-container">
         <div class="code-header">
-          <div class="file-name">humanintheloop.py — Interrupt & Escrow State Machine</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <div class="file-name">humanintheloop.py — Escrow Approval with interrupt()</div>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 from typing import TypedDict, Annotated
@@ -1319,39 +1321,34 @@ if __name__ == "__main__":
     print(f"Final Status: {resumed_state['status']}")
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- 8. PROJECT 6: STREAMLIT WEB APP -->
     <section id="p6-streamlit">
-      <div class="section-header">
-        <div class="section-tag">Project 6</div>
-        <h2 class="section-title">Full Production Streamlit Web Application</h2>
-      </div>
+      <div class="section-tag">Project 6</div>
+      <h2 class="section-heading">8. Full Production Streamlit Web Application</h2>
 
       <p>
-        Backend state graphs must ultimately be exposed to non-technical end users. In <strong>Project 6</strong>, we embed our LangGraph multi-RAG system into a reactive <strong>Streamlit Web Application</strong>, incorporating critical production caching patterns.
+        Finally, let's connect our LangGraph pipeline to an interactive user interface that anyone on your team can use.
       </p>
 
-      <div class="pedagogy-container">
-        <div class="analogy-box">
-          <div class="callout-header">🎯 Pedagogical Analogy: The Mission Control Flight Deck Cockpit</div>
-          <div class="callout-body">
-            Rocket engines, thruster solenoids, and navigation computers are complex backend machinery. The astronaut inside the capsule doesn't type raw telemetry code; they look at a streamlined Mission Control flight deck with illuminated status lights, altitude indicators, and responsive levers. Streamlit is that interactive cockpit for your LangGraph engine.
-          </div>
-        </div>
-
-        <div class="empathy-box">
-          <div class="callout-header">💡 Developer Empathy: The Streamlit Rerun Lifecycle!</div>
-          <div class="callout-body">
-            Every time a user clicks a button or types in an input box, Streamlit reruns your Python script from line 1 to the end! If you instantiate your vector store or recompile your LangGraph on line 10, your app will reload gigabytes of embeddings and recompile graphs on every single keystroke, causing horrific lag.
-            <br><br>
-            <strong>Mandatory Fix:</strong> Always wrap vectorstore loading and graph compilation in <code>@st.cache_resource</code> so they instantiate once and remain hot in RAM!
-          </div>
-        </div>
+      <div class="mentor-note gotcha">
+        <div class="mentor-header">⚠️ The Streamlit Rerun Pitfall</div>
+        Streamlit executes scripts top-to-bottom on <em>every user interaction</em> (like typing in a text field or clicking a button). If you build your vector stores or compile your LangGraph directly in the script body, your app will reload embeddings and recompile graphs on every keystroke!
+        <br><br>
+        <strong>Always use <code>@st.cache_resource</code></strong> on graph builders and database loaders so they initialize once and stay hot in memory.
       </div>
 
+      <h3 class="sub-heading">Production Source Code: app.py</h3>
+      
       <div class="code-container">
         <div class="code-header">
-          <div class="file-name">app.py — Complete Streamlit Production Web App</div>
-          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+          <div class="file-name">app.py — Streamlit Frontend with Cached LangGraph</div>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy Code</span>
+          </button>
         </div>
         <pre><code class="language-python">import os
 import streamlit as st
@@ -1443,48 +1440,44 @@ if st.button("Submit Question", type="primary") and query:
         st.markdown(f"### Answer:\n{res['response']}")
 </code></pre>
       </div>
-</section>
+
+    </section>
+
+    <!-- 9. INTERACTIVE QUIZ -->
     <section id="quiz">
-      <div class="section-header">
-        <div class="section-tag">Assessment</div>
-        <h2 class="section-title">Interactive Knowledge Check</h2>
+      <div class="section-tag">Self-Assessment</div>
+      <h2 class="section-heading">9. Test Your Intuition: Interactive Knowledge Check</h2>
+
+      <p>Take a moment to reinforce what you've learned. These three questions touch on the most common architectural decisions in LangGraph:</p>
+
+      <div class="quiz-wrapper">
+        <div class="quiz-q">1. Why is an `Annotated` reducer necessary when multiple nodes run in parallel?</div>
+        <div class="quiz-opts">
+          <button class="quiz-btn" onclick="answerQuiz(this, false)">A) To convert the state dictionary into a Pydantic model</button>
+          <button class="quiz-btn" onclick="answerQuiz(this, true)">B) To merge concurrent outputs into the state without the last node overwriting previous nodes</button>
+          <button class="quiz-btn" onclick="answerQuiz(this, false)">C) To force parallel nodes to execute sequentially</button>
+        </div>
+        <div class="quiz-explanation"></div>
       </div>
 
-      <p>
-        Validate your mastery of LangGraph state modeling, parallel reducers, conditional routing, and interrupts.
-      </p>
-
-      <div class="quiz-card">
-        <div class="quiz-question">1. Why must parallel branches writing to the same state key use an `Annotated` reducer?</div>
-        <div class="quiz-options">
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">A) To convert the state into a Pydantic model at runtime</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, true)">B) To merge concurrent branch outputs without the last branch overwriting the others</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">C) To force the parallel nodes to run in linear sequence</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">D) To compress the state into a .pkl file automatically</div>
+      <div class="quiz-wrapper">
+        <div class="quiz-q">2. What happens to graph execution when `interrupt(...)` is called inside a node?</div>
+        <div class="quiz-opts">
+          <button class="quiz-btn" onclick="answerQuiz(this, false)">A) The Python script raises an unhandled exception and exits</button>
+          <button class="quiz-btn" onclick="answerQuiz(this, true)">B) Execution halts, current state is saved to the checkpointer, and the graph waits for a resume Command</button>
+          <button class="quiz-btn" onclick="answerQuiz(this, false)">C) The graph automatically deletes state history to free memory</button>
         </div>
-        <div class="quiz-feedback"></div>
+        <div class="quiz-explanation"></div>
       </div>
 
-      <div class="quiz-card">
-        <div class="quiz-question">2. What happens inside LangGraph when a node calls `interrupt(...)`?</div>
-        <div class="quiz-options">
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">A) The Python process crashes and raises a FatalGraphException</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">B) The node restarts from START automatically</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, true)">C) Execution halts, current state is saved to the checkpointer, and the graph awaits Command(resume=...)</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">D) The state is deleted from the checkpointer to save disk space</div>
+      <div class="quiz-wrapper">
+        <div class="quiz-q">3. Why must LangGraph compilation in Streamlit apps be decorated with `@st.cache_resource`?</div>
+        <div class="quiz-opts">
+          <button class="quiz-btn" onclick="answerQuiz(this, true)">A) To avoid reloading vectorstores and recompiling the graph on every button click or text input</button>
+          <button class="quiz-btn" onclick="answerQuiz(this, false)">B) Streamlit requires caching on all Python functions by default</button>
+          <button class="quiz-btn" onclick="answerQuiz(this, false)">C) To enable multi-threading on CPU cores</button>
         </div>
-        <div class="quiz-feedback"></div>
-      </div>
-
-      <div class="quiz-card">
-        <div class="quiz-question">3. Why should Streamlit applications decorate LangGraph compilation with `@st.cache_resource`?</div>
-        <div class="quiz-options">
-          <div class="quiz-opt" onclick="checkAnswer(this, true)">A) To avoid recompiling the graph and re-ingesting vector stores on every UI button click</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">B) To allow the graph to run without any API keys</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">C) To convert the graph into a React component</div>
-          <div class="quiz-opt" onclick="checkAnswer(this, false)">D) Streamlit requires all functions to have cache decorators by default</div>
-        </div>
-        <div class="quiz-feedback"></div>
+        <div class="quiz-explanation"></div>
       </div>
     </section>
 
@@ -1492,56 +1485,67 @@ if st.button("Submit Question", type="primary") and query:
 </div>
 
 <script>
+// Scroll Progress Bar
+window.addEventListener('scroll', () => {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('reading-progress').style.width = scrolled + '%';
+});
+
+// Copy Code Button
 function copyCode(btn) {
-  const codeBlock = btn.closest('.code-container').querySelector('code');
-  navigator.clipboard.writeText(codeBlock.innerText).then(() => {
-    const originalText = btn.innerText;
-    btn.innerText = "✓ Copied!";
+  const code = btn.closest('.code-container').querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    const span = btn.querySelector('span');
+    const orig = span.innerText;
+    span.innerText = "Copied!";
     btn.style.borderColor = "var(--accent-emerald)";
     btn.style.color = "var(--accent-emerald)";
     setTimeout(() => {
-      btn.innerText = originalText;
+      span.innerText = orig;
       btn.style.borderColor = "";
       btn.style.color = "";
     }, 2000);
   });
 }
 
-function checkAnswer(opt, isCorrect) {
-  const parent = opt.closest('.quiz-card');
-  const allOpts = parent.querySelectorAll('.quiz-opt');
-  const feedback = parent.querySelector('.quiz-feedback');
-  
-  allOpts.forEach(o => {
-    o.classList.remove('correct', 'incorrect');
-    o.style.pointerEvents = 'none';
+// Interactive Quiz
+function answerQuiz(btn, isCorrect) {
+  const parent = btn.closest('.quiz-wrapper');
+  const btns = parent.querySelectorAll('.quiz-btn');
+  const exp = parent.querySelector('.quiz-explanation');
+
+  btns.forEach(b => {
+    b.classList.remove('correct', 'incorrect');
+    b.style.pointerEvents = 'none';
   });
 
   if (isCorrect) {
-    opt.classList.add('correct');
-    feedback.innerHTML = "<strong>✓ Correct!</strong> Exceptional understanding of LangGraph architecture.";
-    feedback.style.color = "var(--accent-emerald)";
+    btn.classList.add('correct');
+    exp.innerHTML = "<strong>✓ Correct!</strong> Exactly right. This is one of the most critical concepts for production reliability.";
+    exp.style.color = "var(--accent-emerald)";
   } else {
-    opt.classList.add('incorrect');
-    feedback.innerHTML = "<strong>✗ Incorrect.</strong> Review the pedagogical section above for details.";
-    feedback.style.color = "var(--accent-rose)";
+    btn.classList.add('incorrect');
+    exp.innerHTML = "<strong>✗ Not quite.</strong> Take a quick look back at the section above to review how this works under the hood.";
+    exp.style.color = "var(--accent-rose)";
   }
-  feedback.style.display = "block";
+  exp.style.display = 'block';
 }
 
+// TOC Active Link Spy
 window.addEventListener('DOMContentLoaded', () => {
   const sections = document.querySelectorAll('section');
   const navLinks = document.querySelectorAll('.toc-link');
 
   window.addEventListener('scroll', () => {
     let current = '';
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop - 120;
-      if (pageYOffset >= sectionTop) {
-        current = section.getAttribute('id');
+    sections.forEach(sec => {
+      const top = sec.offsetTop - 120;
+      if (pageYOffset >= top) {
+        current = sec.getAttribute('id');
       }
     });
-
     navLinks.forEach(link => {
       link.classList.remove('active');
       if (link.getAttribute('href') === '#' + current) {
