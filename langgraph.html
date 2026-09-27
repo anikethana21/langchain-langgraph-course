@@ -3,1657 +3,1553 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LangGraph &amp; Multi-Agent Orchestration — Complete Course Engineering Manual</title>
-<meta name="description" content="Authoritative engineering guide to LangGraph, Multi-Agent Systems, all 6 complete production projects with full source code, state modeling, and deployment patterns."/>
+<title>LangGraph Production Architecture — The Complete Pedagogical Guide</title>
+<meta name="description" content="Master guide to LangGraph state machines, parallel reducers, conditional RAG routing, iterative reviewer loops, human-in-the-loop interrupts, and Streamlit production apps."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg-primary: #07060f;
-  --bg-secondary: #0c0a1a;
-  --bg-card: #151229;
-  --bg-card-hover: #1c1836;
-  --border: #231f42;
+  --bg-primary: #07090e;
+  --bg-secondary: #0d111a;
+  --bg-card: #131826;
+  --bg-card-hover: #182032;
+  --border: #1f273d;
   --border-focus: #8b5cf6;
   --accent-purple: #8b5cf6;
-  --accent-violet: #6d28d9;
+  --accent-blue: #3b82f6;
   --accent-cyan: #06b6d4;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
-  --accent-blue: #3b82f6;
-  --text-primary: #f8fafc;
+  --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --code-bg: #090717;
-  --sidebar-w: 290px;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior: smooth; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  line-height: 1.65;
+  font-family: var(--font-sans);
+  line-height: 1.7;
   overflow-x: hidden;
-}
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-secondary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #3b356a; }
-
-/* Sidebar Navigation */
-#sidebar {
-  position: fixed;
-  top: 0; left: 0;
-  width: var(--sidebar-w);
-  height: 100vh;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow-y: auto;
-}
-.sidebar-header {
-  padding: 20px 18px 16px;
-  background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(6,182,212,0.05));
-  border-bottom: 1px solid var(--border);
-}
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  background: rgba(139,92,246,0.18);
-  color: #a78bfa;
-  border: 1px solid rgba(139,92,246,0.3);
-  margin-bottom: 10px;
-}
-.brand-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.3px;
-  line-height: 1.25;
-}
-.brand-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-.nav-group-title {
-  padding: 16px 18px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-}
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 18px;
-  margin: 1px 8px;
-  border-radius: 7px;
-  color: var(--text-secondary);
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-}
-.nav-link:hover {
-  background: rgba(255,255,255,0.04);
-  color: #ffffff;
-  transform: translateX(2px);
-}
-.nav-link.active {
-  background: rgba(139,92,246,0.16);
-  color: #c4b5fd;
-  font-weight: 600;
-  border: 1px solid rgba(139,92,246,0.28);
-}
-.nav-icon {
-  width: 18px;
-  text-align: center;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-.sidebar-footer {
-  margin-top: auto;
-  padding: 14px 18px;
-  border-top: 1px solid var(--border);
-  background: rgba(0,0,0,0.2);
-}
-.progress-container {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.progress-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.progress-bar-bg {
-  width: 100%;
-  height: 5px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.progress-bar-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
-  transition: width 0.3s ease;
+  font-size: 16px;
 }
 
-/* Main Content */
-#main {
-  margin-left: var(--sidebar-w);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Top Sticky Navigation Bar */
-.topbar {
+header {
   position: sticky;
   top: 0;
-  z-index: 500;
-  background: rgba(7,6,15,0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  z-index: 100;
+  background: rgba(7, 9, 14, 0.85);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
-  padding: 0 32px;
-  height: 56px;
+  padding: 1rem 2rem;
+}
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
 }
-.topbar-left {
+.brand-link {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--text-primary);
 }
-.page-title-badge {
-  font-size: 13.5px;
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+.brand-title {
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.nav-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 1rem;
 }
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.btn {
+.nav-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 14px;
-  border-radius: 7px;
-  font-size: 12px;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
   font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.18s ease;
   text-decoration: none;
-}
-.btn-secondary {
-  background: rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
   color: var(--text-secondary);
-  border-color: var(--border);
 }
-.btn-secondary:hover {
-  background: rgba(255,255,255,0.08);
-  color: #ffffff;
-}
-.btn-primary {
-  background: var(--accent-purple);
-  color: #ffffff;
-  box-shadow: 0 0 15px rgba(139,92,246,0.25);
-}
-.btn-primary:hover {
-  background: #7c3aed;
+.nav-btn:hover {
+  border-color: var(--accent-purple);
+  color: var(--text-primary);
   transform: translateY(-1px);
 }
-.btn-hub {
-  background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(6,182,212,0.18));
-  color: #60a5fa;
-  border-color: rgba(59,130,246,0.3);
-}
-.btn-hub:hover {
-  background: linear-gradient(135deg, rgba(59,130,246,0.28), rgba(6,182,212,0.28));
-  color: #93c5fd;
+.nav-btn.primary {
+  background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
 }
 
-/* Content Sections */
-.content-section {
-  display: none;
-  padding: 36px 40px 60px;
-  max-width: 1240px;
-  width: 100%;
+.layout {
+  display: flex;
+  max-width: 1440px;
   margin: 0 auto;
-}
-.content-section.active {
-  display: block;
-  animation: fadeIn 0.25s ease-out forwards;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  padding: 2rem;
+  gap: 2.5rem;
 }
 
-/* Hero Box */
-.hero-box {
-  background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(6,182,212,0.03));
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 32px 36px;
-  margin-bottom: 30px;
-  position: relative;
-  overflow: hidden;
+aside.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 5.5rem;
+  height: calc(100vh - 7rem);
+  overflow-y: auto;
+  padding-right: 1rem;
 }
-.hero-box::before {
-  content: '';
-  position: absolute;
-  top: -80px;
-  right: -80px;
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(circle, rgba(139,92,246,0.15), transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
+aside.sidebar::-webkit-scrollbar { width: 4px; }
+aside.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.toc-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  font-weight: 700;
 }
-.hero-tag {
+.toc-list { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+.toc-link {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border-left: 2px solid transparent;
+}
+.toc-link:hover, .toc-link.active {
+  background: var(--bg-card);
+  color: var(--accent-purple);
+  border-left-color: var(--accent-purple);
+}
+
+main.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero {
+  padding: 2.5rem 0 3rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3rem;
+}
+.badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-purple);
+  margin-bottom: 1.25rem;
   text-transform: uppercase;
-  background: rgba(139,92,246,0.15);
-  color: #a78bfa;
-  border: 1px solid rgba(139,92,246,0.3);
-  margin-bottom: 14px;
+  letter-spacing: 0.05em;
 }
-.hero-box h1 {
-  font-size: 28px;
+h1.hero-title {
+  font-size: 2.8rem;
   font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.5px;
-  line-height: 1.25;
-  margin-bottom: 10px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, #ffffff 40%, var(--accent-purple) 80%, var(--accent-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-.hero-box p {
-  font-size: 14.5px;
+p.hero-desc {
+  font-size: 1.15rem;
   color: var(--text-secondary);
-  max-width: 820px;
-  line-height: 1.7;
+  max-width: 900px;
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+.stat-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+.stat-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent-purple);
+  font-family: var(--font-mono);
+}
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Grids & Cards */
-.grid { display: grid; gap: 18px; }
-.g-2 { grid-template-columns: repeat(2, 1fr); }
-.g-3 { grid-template-columns: repeat(3, 1fr); }
+section {
+  margin-bottom: 4.5rem;
+  scroll-margin-top: 6rem;
+}
+.section-header { margin-bottom: 1.75rem; }
+.section-tag {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--accent-purple);
+  margin-bottom: 0.5rem;
+}
+h2.section-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+h3.subsection-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 2rem 0 1rem 0;
+  letter-spacing: -0.01em;
+}
 
-.card {
+.pedagogy-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 1.75rem 0;
+}
+
+.analogy-box {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.03));
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-left: 5px solid var(--accent-amber);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+}
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+.analogy-box .callout-header { color: var(--accent-amber); }
+.callout-body {
+  color: #cbd5e1;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.callout-body strong { color: #fff; }
+
+.deep-dive-box {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(124, 58, 237, 0.03));
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-left: 5px solid var(--accent-purple);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+}
+.deep-dive-box .callout-header { color: var(--accent-purple); }
+
+.empathy-box {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.08), rgba(190, 18, 60, 0.03));
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  border-left: 5px solid var(--accent-rose);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+}
+.empathy-box .callout-header { color: var(--accent-rose); }
+
+.comparison-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 22px;
-  transition: all 0.2s ease;
-}
-.card:hover {
-  border-color: #3b356a;
-  background: var(--bg-card-hover);
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.card-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-}
-.card-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #ffffff;
-}
-.card-subtitle {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.card p {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.65;
-}
-
-/* Formula & Math Card */
-.formula-card {
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent-purple);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin: 18px 0;
-  font-family: 'JetBrains Mono', monospace;
-  position: relative;
-  overflow-x: auto;
-}
-.formula-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--accent-purple);
-  margin-bottom: 12px;
-}
-.formula-latex {
-  font-size: 14px;
-  color: #e2e8f0;
-  line-height: 1.8;
-  margin-bottom: 12px;
-}
-.formula-expl {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding-top: 10px;
-  line-height: 1.6;
-}
-
-/* Code Blocks */
-.code-block {
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  margin: 18px 0;
   overflow: hidden;
+  margin: 1.5rem 0;
 }
-.code-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: rgba(255,255,255,0.02);
+.comparison-title {
+  padding: 1rem 1.5rem;
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-}
-.code-title-wrap {
+  font-size: 0.95rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
+  color: #e2e8f0;
 }
-.code-dots {
-  display: flex;
-  gap: 5px;
-}
-.code-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-.code-lang {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
-}
-.btn-copy {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  color: var(--text-secondary);
-  padding: 3px 9px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-copy:hover {
-  background: rgba(255,255,255,0.08);
-  color: #ffffff;
-}
-.code-body {
-  padding: 16px 20px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
-  line-height: 1.75;
-  color: #cbd5e1;
-  overflow-x: auto;
-  white-space: pre;
-}
-
-/* Syntax Highlighting */
-.kw { color: #c084fc; font-weight: 600; }
-.fn { color: #60a5fa; }
-.str { color: #86efac; }
-.num { color: #f59e0b; }
-.cm { color: #64748b; font-style: italic; }
-.cls { color: #fde047; font-weight: 600; }
-.op { color: #38bdf8; }
-.dec { color: #f472b6; }
-
-/* ASCII Architecture Containers */
-.ascii-box {
-  background: #06050e;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 22px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  line-height: 1.6;
-  color: #a78bfa;
-  overflow-x: auto;
-  white-space: pre;
-  margin: 16px 0;
-}
-
-/* Tables */
-.table-wrap {
-  width: 100%;
-  overflow-x: auto;
-  margin: 18px 0;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
-table {
+table.comparison-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  font-size: 0.92rem;
 }
-th {
-  background: rgba(255,255,255,0.03);
-  padding: 12px 18px;
-  font-size: 11.5px;
+table.comparison-table th {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.85rem 1.25rem;
+  color: var(--accent-purple);
   font-weight: 700;
-  color: #ffffff;
+  border-bottom: 1px solid var(--border);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
 }
-td {
-  padding: 12px 18px;
-  font-size: 12.5px;
+table.comparison-table td {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid rgba(31, 39, 61, 0.6);
   color: var(--text-secondary);
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  vertical-align: top;
 }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(255,255,255,0.015); }
+table.comparison-table tr:last-child td { border-bottom: none; }
+table.comparison-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+table.comparison-table td strong { color: #f1f5f9; }
 
-/* Badges */
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+.code-container {
+  background: #090d16;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1.75rem 0;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
 }
-.b-purple { background: rgba(139,92,246,0.18); color: #c4b5fd; }
-.b-cyan { background: rgba(6,182,212,0.18); color: #22d3ee; }
-.b-green { background: rgba(16,185,129,0.18); color: #34d399; }
-.b-amber { background: rgba(245,158,11,0.18); color: #fbbf24; }
-.b-rose { background: rgba(244,63,94,0.18); color: #fb7185; }
-.b-blue { background: rgba(59,130,246,0.18); color: #60a5fa; }
-
-/* Interactive Simulator */
-.sim-container {
-  background: linear-gradient(135deg, rgba(30,25,60,0.5), rgba(15,12,35,0.6));
-  border: 1px solid rgba(139,92,246,0.3);
-  border-radius: 14px;
-  padding: 24px;
-  margin: 22px 0;
-  box-shadow: 0 0 25px rgba(139,92,246,0.08);
-}
-.sim-header {
+.code-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: #0f1422;
   border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
 }
-.sim-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #ffffff;
+.file-name {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-.sim-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(139,92,246,0.2);
-  color: #a78bfa;
-}
-
-/* Stepper */
-.stepper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 16px 0;
-}
-.step-item {
-  display: flex;
-  gap: 14px;
-  padding: 14px 18px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  align-items: flex-start;
-}
-.step-number {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11.5px;
-  font-weight: 800;
-  color: #ffffff;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.step-content h4 {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 3px;
-}
-.step-content p {
-  font-size: 12.5px;
+  gap: 0.5rem;
   color: var(--text-secondary);
-  line-height: 1.6;
+}
+.file-name::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--accent-purple);
+  border-radius: 50%;
+}
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+}
+.copy-btn:hover {
+  background: var(--bg-card);
+  color: #fff;
+  border-color: var(--accent-purple);
+}
+pre {
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #e2e8f0;
+}
+pre::-webkit-scrollbar { height: 6px; }
+pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+code.inline {
+  background: rgba(30, 41, 59, 0.7);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  color: var(--accent-purple);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Quiz Styles */
-.quiz-box {
+/* Interactive Quiz */
+.quiz-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 26px;
-  margin: 20px 0;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
 }
-.quiz-q-title {
-  font-size: 15px;
+.quiz-question {
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 18px;
+  color: #fff;
+  margin-bottom: 1.25rem;
 }
 .quiz-options {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 0.75rem;
 }
 .quiz-opt {
-  padding: 12px 16px;
+  padding: 0.85rem 1.25rem;
+  border-radius: 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
 }
 .quiz-opt:hover {
-  background: rgba(139,92,246,0.06);
   border-color: var(--accent-purple);
-  color: #ffffff;
+  color: #fff;
 }
 .quiz-opt.correct {
-  background: rgba(16,185,129,0.15) !important;
-  border-color: var(--accent-emerald) !important;
-  color: #34d399 !important;
+  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
 }
-.quiz-opt.wrong {
-  background: rgba(244,63,94,0.15) !important;
-  border-color: var(--accent-rose) !important;
-  color: #fb7185 !important;
+.quiz-opt.incorrect {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: var(--accent-rose);
+  color: var(--accent-rose);
 }
 .quiz-feedback {
-  margin-top: 14px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 12.5px;
+  margin-top: 1rem;
+  font-size: 0.92rem;
   display: none;
   line-height: 1.6;
 }
-.quiz-feedback.show { display: block; }
-.quiz-feedback.fb-correct {
-  background: rgba(16,185,129,0.1);
-  border: 1px solid rgba(16,185,129,0.3);
-  color: #34d399;
-}
-.quiz-feedback.fb-wrong {
-  background: rgba(244,63,94,0.1);
-  border: 1px solid rgba(244,63,94,0.3);
-  color: #fb7185;
-}
 
-@media (max-width: 900px) {
-  #sidebar { transform: translateX(-100%); }
-  #sidebar.open { transform: translateX(0); }
-  #main { margin-left: 0; }
-  .content-section { padding: 20px 18px 40px; }
-  .g-2, .g-3 { grid-template-columns: 1fr; }
+@media (max-width: 1024px) {
+  aside.sidebar { display: none; }
+  .layout { padding: 1.5rem 1rem; }
+  h1.hero-title { font-size: 2.2rem; }
 }
 </style>
 </head>
 <body>
 
-<nav id="sidebar">
-  <div class="sidebar-header">
-    <div class="brand-badge">&#128375; Production Orchestration</div>
-    <div class="brand-title">LangGraph Engineering</div>
-    <div class="brand-sub">Master Course &amp; 6 Full Projects</div>
-  </div>
-
-  <div class="nav-group-title">Curriculum Index</div>
-  <div class="nav-link active" onclick="showSec('roadmap', this)"><span class="nav-icon">&#128506;</span>Course Roadmap &amp; Index</div>
-
-  <div class="nav-group-title">Foundations</div>
-  <div class="nav-link" onclick="showSec('states', this)"><span class="nav-icon">&#128230;</span>1. State Modeling (states.py)</div>
-
-  <div class="nav-group-title">Course Projects (Full Code)</div>
-  <div class="nav-link" onclick="showSec('p1-seq', this)"><span class="nav-icon">&#128640;</span>2. P1: Sequential Workflow</div>
-  <div class="nav-link" onclick="showSec('p2-par', this)"><span class="nav-icon">&#9889;</span>3. P2: Parallel Reducers</div>
-  <div class="nav-link" onclick="showSec('p3-rag', this)"><span class="nav-icon">&#128218;</span>4. P3: Conditional Multi-PDF</div>
-  <div class="nav-link" onclick="showSec('p4-iter', this)"><span class="nav-icon">&#128260;</span>5. P4: Iterative Tools &amp; Reviewer</div>
-  <div class="nav-link" onclick="showSec('p5-hitl', this)"><span class="nav-icon">&#129489;</span>6. P5: Human-in-the-Loop</div>
-  <div class="nav-link" onclick="showSec('p6-app', this)"><span class="nav-icon">&#128187;</span>7. P6: Streamlit Full App</div>
-
-  <div class="nav-group-title">Architecture &amp; Reference</div>
-  <div class="nav-link" onclick="showSec('topologies', this)"><span class="nav-icon">&#127916;</span>6 Multi-Agent Topologies</div>
-  <div class="nav-link" onclick="showSec('production', this)"><span class="nav-icon">&#128736;</span>Production &amp; LangSmith</div>
-  <div class="nav-link" onclick="showSec('quiz', this)"><span class="nav-icon">&#127881;</span>Mastery Quiz</div>
-
-  <div class="sidebar-footer">
-    <div class="progress-container">
-      <div class="progress-meta"><span>Course Progress</span><span id="prog-pct">0%</span></div>
-      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar"></div></div>
-    </div>
-  </div>
-</nav>
-
-<div id="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <button id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none; background:var(--bg-card); border:1px solid var(--border); color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer;">&#9776;</button>
-      <div class="page-title-badge" id="topbar-title">&#128506; Course Roadmap &amp; Project Index</div>
-    </div>
-    <div class="topbar-actions">
-      <a href="langchain.html" class="btn btn-hub">&#9883; Switch to LangChain Guide &rarr;</a>
-      <a href="index.html" class="btn btn-secondary">&#127968; Portal Hub</a>
-    </div>
-  </div>
-
-  <!-- SECTION: ROADMAP -->
-  <div class="content-section active" id="sec-roadmap">
-    <div class="hero-box">
-      <div class="hero-tag">Course Index</div>
-      <h1>Complete Agentic AI Course with LangGraph</h1>
-      <p>Authoritative course engineering notes, architectural breakdowns, and complete production source code for all 6 projects.</p>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Topic &amp; Project File</th>
-            <th>Core Concepts &amp; Architecture</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>00:01:51</strong></td>
-            <td><code>states.py</code></td>
-            <td>Generative AI vs. Agentic AI (t=321s), TypedDict vs Pydantic State schemas</td>
-            <td><button class="btn btn-secondary" onclick="showSec('states', null)">Open &rarr;</button></td>
-          </tr>
-          <tr>
-            <td><strong>00:28:39</strong></td>
-            <td><code>sequential_base.py</code></td>
-            <td><strong>Project 1: Video Content Pipeline</strong> (Editor &rarr; Scriptwriter &rarr; Hinglish Translator)</td>
-            <td><button class="btn btn-secondary" onclick="showSec('p1-seq', null)">Open &rarr;</button></td>
-          </tr>
-          <tr>
-            <td><strong>01:27:26</strong></td>
-            <td><code>parallel_reducers.py</code></td>
-            <td><strong>Project 2: Multi-Branch Content Safety Analyzer</strong> (Parallel execution + custom dictionary reducer)</td>
-            <td><button class="btn btn-secondary" onclick="showSec('p2-par', null)">Open &rarr;</button></td>
-          </tr>
-          <tr>
-            <td><strong>02:02:10</strong></td>
-            <td><code>conditional_RAG.py</code></td>
-            <td><strong>Project 3: College Assistant with Multi-PDF RAG</strong> (Classifier node + dynamic routing)</td>
-            <td><button class="btn btn-secondary" onclick="showSec('p3-rag', null)">Open &rarr;</button></td>
-          </tr>
-          <tr>
-            <td><strong>03:21:30</strong></td>
-            <td><code>iterative_tools.py</code></td>
-            <td><strong>Project 4: LinkedIn Post Generator</strong> (Writer &harr; Reviewer loop with Tavily search tool)</td>
-            <td><button class="btn btn-secondary" onclick="showSec('p4-iter', null)">Open &rarr;</button></td>
-          </tr>
-          <tr>
-            <td><strong>04:56:35</strong></td>
-            <td><code>humanintheloop.py</code></td>
-            <td><strong>Project 5: Human-in-the-Loop (HITL)</strong> (<code>interrupt</code>, <code>Command(resume=...)</code>, <code>MemorySaver</code>)</td>
-            <td><button class="btn btn-secondary" onclick="showSec('p5-hitl', null)">Open &rarr;</button></td>
-          </tr>
-          <tr>
-            <td><strong>Full UI</strong></td>
-            <td><code>app.py</code></td>
-            <td><strong>Interactive Streamlit Web Interface</strong> with badges, chat history &amp; program selection</td>
-            <td><button class="btn btn-secondary" onclick="showSec('p6-app', null)">Open &rarr;</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- SECTION: STATES.PY -->
-  <div class="content-section" id="sec-states">
-    <div class="hero-box">
-      <div class="hero-tag">Module 1</div>
-      <h1>1. State Modeling: <code>states.py</code></h1>
-      <p>State is the central blackboard of LangGraph. TypedDict provides lightweight execution, while Pydantic enforces strict runtime validation.</p>
-    </div>
-
-    <div class="grid g-2" style="margin-bottom:20px;">
-      <div class="card">
-        <div class="card-title" style="color:#a78bfa;">1. TypedDict Approach (Standard)</div>
-        <p style="margin-top:6px;">Standard in LangGraph for low overhead. Type hints are analyzed at graph compilation time, and nodes pass standard Python dictionaries.</p>
+<header>
+  <div class="header-container">
+    <a href="index.html" class="brand-link">
+      <div class="brand-icon">LG</div>
+      <div>
+        <div class="brand-title">LangGraph Architecture Handbook</div>
+        <div class="brand-subtitle">The Complete State Machine Guide</div>
       </div>
-      <div class="card">
-        <div class="card-title" style="color:#22d3ee;">2. Pydantic Approach (Runtime Validated)</div>
-        <p style="margin-top:6px;">Enforces runtime validation, custom field validators (e.g. <code>score &gt;= 0</code>), and strict serialization contracts. Ideal for production APIs.</p>
-      </div>
-    </div>
-
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-title-wrap"><span class="code-lang">Python &mdash; states.py</span></div>
-        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
-      </div>
-      <div class="code-body"><span class="kw">import</span> os
-<span class="kw">from</span> typing <span class="kw">import</span> TypedDict
-<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, field_validator
-
-<span class="cm"># 1) TypedDict Approach (Most Common in LangGraph)</span>
-<span class="kw">class</span> <span class="cls">State</span>(<span class="cls">TypedDict</span>):
-    topic: str
-    summary: str
-    score: int
-
-<span class="cm"># 2) Pydantic Approach (Data validation and type checking at runtime)</span>
-<span class="kw">class</span> <span class="cls">PydanticState</span>(<span class="cls">BaseModel</span>):
-    topic: str
-    score: int
-    summary: str = <span class="str">""</span>
-
-    @field_validator(<span class="str">"score"</span>)
-    <span class="kw">def</span> <span class="fn">score_positive</span>(cls, v):
-        <span class="kw">if</span> v &lt; <span class="num">0</span>:
-            <span class="kw">raise</span> ValueError(<span class="str">"Score must be positive"</span>)
-        <span class="kw">return</span> v</div>
+    </a>
+    <div class="nav-actions">
+      <a href="index.html" class="nav-btn">← Main Portal</a>
+      <a href="langchain.html" class="nav-btn primary">Go to LangChain Guide →</a>
     </div>
   </div>
+</header>
 
-  <!-- SECTION: PROJECT 1 -->
-  <div class="content-section" id="sec-p1-seq">
-    <div class="hero-box">
-      <div class="hero-tag">Project 1</div>
-      <h1>Project 1: Sequential Workflow (<code>sequential_base.py</code>)</h1>
-      <p>Linear hand-off where each node processes the previous node's output. Pipeline: Raw Text &rarr; Copyeditor &rarr; Video Scriptwriter Hook &rarr; Indian Hinglish Translator.</p>
-    </div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="toc-title">Course Projects</div>
+    <ul class="toc-list">
+      <li><a href="#paradigm" class="toc-link">Paradigm Shift</a></li>
+      <li><a href="#states" class="toc-link">State Modeling: states.py</a></li>
+      <li><a href="#p1-sequential" class="toc-link">Project 1: Sequential Base</a></li>
+      <li><a href="#p2-parallel" class="toc-link">Project 2: Parallel Reducers</a></li>
+      <li><a href="#p3-conditional" class="toc-link">Project 3: Conditional Multi-RAG</a></li>
+      <li><a href="#p4-iterative" class="toc-link">Project 4: Iterative Reviewer</a></li>
+      <li><a href="#p5-hitl" class="toc-link">Project 5: Human-in-the-Loop</a></li>
+      <li><a href="#p6-streamlit" class="toc-link">Project 6: Streamlit Web App</a></li>
+      <li><a href="#quiz" class="toc-link">Interactive Knowledge Check</a></li>
+    </ul>
+  </aside>
 
-    <div class="ascii-box">[START] ──> [Copyeditor Node] ──> [Scriptwriter Node] ──> [Hinglish Translator] ──> [END]</div>
+  <main class="content">
 
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-title-wrap"><span class="code-lang">Python &mdash; sequential_base.py (Complete Production Code)</span></div>
-        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+    <section class="hero">
+      <div class="badge">Advanced Cyclic StateGraph Engineering</div>
+      <h1 class="hero-title">LangGraph Production Architecture</h1>
+      <p class="hero-desc">
+        The ultimate pedagogical guide to orchestrating complex, resilient multi-agent state machines. Master parallel reducers, conditional dynamic routing, iterative editorial reviewer loops, checkpointed interrupts, and full Streamlit web applications.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-box">
+          <div class="stat-num">6</div>
+          <div class="stat-label">Full Projects</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">2</div>
+          <div class="stat-label">State Paradigms</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">7</div>
+          <div class="stat-label">Reviewer Criteria</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Production Code</div>
+        </div>
       </div>
-      <div class="code-body"><span class="kw">import</span> os
-<span class="kw">from</span> typing <span class="kw">import</span> TypedDict
-<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
-<span class="kw">from</span> langchain_groq <span class="kw">import</span> ChatGroq
-<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
+    </section>
 
-<span class="fn">load_dotenv</span>()
+    <section id="paradigm">
+      <div class="section-header">
+        <div class="section-tag">Core Concepts</div>
+        <h2 class="section-title">Generative AI vs. Agentic AI: The Fundamental Shift</h2>
+      </div>
 
-<span class="cm"># Step 1: Define Pipeline State</span>
-<span class="kw">class</span> <span class="cls">pipelinestate</span>(<span class="cls">TypedDict</span>):
-    raw_input: str
-    edited_text: str
-    script_text: str
+      <p>
+        Traditional Generative AI is a one-way street: you give a prompt, the model calculates logits, and it returns text. If it hallucinates or misses a step, you have no recourse. <strong>LangGraph</strong> transforms this into a stateful, cyclical graph where agents plan, execute, inspect their own work, branch concurrently, and loop until success.
+      </p>
+
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: The Rapid Typist vs The Operations Director</div>
+          <div class="callout-body">
+            A standalone LLM is like a world-class typist sitting in an isolated soundproof room: whatever prompt slides under the door, they type out a brilliant 500-word response in 3 seconds and slide it back. They cannot check if the server is down, cannot consult a colleague, and cannot correct a mistake.
+            <br><br>
+            LangGraph is appointing an <strong>Operations Director</strong> with a whiteboard (State). The Director dispatches tasks to specialists (Nodes), merges their findings (Reducers), routes based on conditions (Conditional Edges), and walks into the CEO's office for approval before wiring money (Interrupt).
+          </div>
+        </div>
+
+        <div class="comparison-card">
+          <div class="comparison-title">⚖️ Architectural Showdown: Chains vs Autonomous Agents vs LangGraph StateGraphs</div>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Linear Chains (LCEL)</th>
+                <th>Legacy AgentExecutor</th>
+                <th>LangGraph StateGraph</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Flow Control</strong></td>
+                <td>Strictly Directed Acyclic (DAG)</td>
+                <td>Black-box while loop</td>
+                <td><strong>Arbitrary Cyclic &amp; Parallel Graph</strong></td>
+              </tr>
+              <tr>
+                <td><strong>State Persistence</strong></td>
+                <td>Volatile (Lost after invoke)</td>
+                <td>Internal memory buffer</td>
+                <td><strong>First-class durable checkpointers (SQLite/Postgres)</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Branching &amp; Concurrency</strong></td>
+                <td>Manual async gathers</td>
+                <td>Sequential only</td>
+                <td><strong>Native Fan-Out &amp; Reducer Fan-In</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Human Intervention</strong></td>
+                <td>None (Must terminate chain)</td>
+                <td>Extremely brittle callbacks</td>
+                <td><strong>Native <code>interrupt()</code> and <code>Command(resume=...)</code></strong></td>
+              </tr>
+              <tr>
+                <td><strong>Production Readiness</strong></td>
+                <td>High (For simple ETL)</td>
+                <td>Deprecated by LangChain</td>
+                <td><strong>The Modern Industry Standard</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="states">
+      <div class="section-header">
+        <div class="section-tag">State Architecture</div>
+        <h2 class="section-title">State Modeling: TypedDict vs. Pydantic</h2>
+      </div>
+
+      <p>
+        In LangGraph, every graph is parameterized by a central <strong>State Schema</strong>. Nodes do not receive arbitrary parameters; they receive the current state dictionary and return updates (deltas) that are merged back into the state.
+      </p>
+
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: The Operating Room Whiteboard</div>
+          <div class="callout-body">
+            Think of the LangGraph State as a large magnetic whiteboard hanging in a surgical operating room. The Surgeon, the Anesthesiologist, and the Head Nurse all look at the exact same board. When the Anesthesiologist administers a drug, they write the dosage on the board. The Surgeon reads the board before making an incision. Nobody whispers in secret corridors—all communication happens through the central, synchronized board.
+          </div>
+        </div>
+
+        <div class="comparison-card">
+          <div class="comparison-title">⚖️ State Modeling Trade-Offs: TypedDict vs Pydantic BaseModel</div>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Dimension</th>
+                <th>TypedDict (Standard)</th>
+                <th>Pydantic BaseModel</th>
+                <th>When to Choose Which?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Runtime Validation</strong></td>
+                <td>None (Type hints only at edit/compile time)</td>
+                <td>Strict (Validates types, lengths, regex on instantiation)</td>
+                <td>Use Pydantic when accepting raw, untrusted user/API payloads</td>
+              </tr>
+              <tr>
+                <td><strong>Performance Overhead</strong></td>
+                <td>Zero (Native Python dictionary)</td>
+                <td>Slight overhead (Instantiates validation objects)</td>
+                <td>Use TypedDict for high-throughput, latency-critical pipelines</td>
+              </tr>
+              <tr>
+                <td><strong>LangGraph Ecosystem</strong></td>
+                <td>Native default across documentation</td>
+                <td>Supported via <code>StateGraph(MyModel)</code></td>
+                <td>TypedDict is 90% of production LangGraph architectures</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empathy-box">
+          <div class="callout-header">💡 Developer Empathy: The "In-Place Mutation" Trap</div>
+          <div class="callout-body">
+            A catastrophic bug that causes silent graph bugs is writing <code>state["messages"].append(msg)</code> inside a node.
+            <br><br>
+            <strong>Why it fails:</strong> LangGraph relies on immutability and state snapshots for checkpointing and time-travel replay. Modifying state in-place corrupts history!
+            <br><br>
+            <strong>Golden Rule:</strong> Nodes must ALWAYS treat input state as read-only, and return a dictionary of state updates (e.g. <code>return {"messages": [msg]}</code>).
+          </div>
+        </div>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header">
+          <div class="file-name">states.py — TypedDict & Pydantic Implementations</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+        </div>
+        <pre><code class="language-python">import os
+from typing import TypedDict
+from pydantic import BaseModel, Field
+
+# =====================================================================
+# 1) TypedDict Approach (Most Common in LangGraph)
+# Lightweight, native Python dictionary with compile-time type hints.
+# Best for high-throughput, low-overhead pipelines.
+# =====================================================================
+class SimpleState(TypedDict):
+    query: str
+    intermediate_steps: list[str]
     final_output: str
 
-<span class="cm"># Central LLM</span>
-llm = <span class="cls">ChatGroq</span>(model=<span class="str">"llama-3.3-70b-versatile"</span>, temperature=<span class="num">0.7</span>)
-
-<span class="cm"># Step 2: Define Nodes</span>
-<span class="kw">def</span> <span class="fn">editor_node</span>(state: <span class="cls">pipelinestate</span>) -&gt; dict:
-    <span class="str">"""Stage 1: Cleans up grammar, removes typos, and refines the tone."""</span>
-    <span class="fn">print</span>(<span class="str">"\n--- [Stage 1] Executing Copyeditor Node ---"</span>)
-    prompt = (
-        <span class="str">"You are an expert copyeditor. Clean up the following raw text. "</span>
-        <span class="str">"Fix grammar, improve vocabulary, and structure it into clear thoughts.\n\n"</span>
-        <span class="str">f"Raw Input:\n{state['raw_input']}"</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"edited_text"</span>: res.content}
-
-<span class="kw">def</span> <span class="fn">scriptwriter_node</span>(state: <span class="cls">pipelinestate</span>) -&gt; dict:
-    <span class="str">"""Stage 2: Turns copyedited text into an engaging YouTube Shorts/Reels script with hook."""</span>
-    <span class="fn">print</span>(<span class="str">"\n--- [Stage 2] Executing Video Scriptwriter Node ---"</span>)
-    prompt = (
-        <span class="str">"You are a viral YouTube Shorts and Reels scriptwriter. "</span>
-        <span class="str">"Take this edited text and convert it into a 30-second video script.\n"</span>
-        <span class="str">"Format requirements:\n"</span>
-        <span class="str">"- High-retention 3-second HOOK\n"</span>
-        <span class="str">"- Rapid-fire BODY (bullet points with visual cues in brackets)\n"</span>
-        <span class="str">"- Clear CALL TO ACTION (CTA)\n\n"</span>
-        <span class="str">f"Content:\n{state['edited_text']}"</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"script_text"</span>: res.content}
-
-<span class="kw">def</span> <span class="fn">translator_node</span>(state: <span class="cls">pipelinestate</span>) -&gt; dict:
-    <span class="str">"""Stage 3: Converts the script into casual Indian Hinglish."""</span>
-    <span class="fn">print</span>(<span class="str">"\n--- [Stage 3] Executing Hinglish Translator Node ---"</span>)
-    prompt = (
-        <span class="str">"You are an expert content creator in India. "</span>
-        <span class="str">"Translate and adapt this video script into natural, energetic Hinglish "</span>
-        <span class="str">"(Hindi written in Roman English script like Gen-Z speaks).\n"</span>
-        <span class="str">"Keep technical terms in English.\n\n"</span>
-        <span class="str">f"Script:\n{state['script_text']}"</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"final_output"</span>: res.content}
-
-<span class="cm"># Step 3: Build Graph</span>
-builder = <span class="cls">StateGraph</span>(<span class="cls">pipelinestate</span>)
-builder.<span class="fn">add_node</span>(<span class="str">"editor"</span>, editor_node)
-builder.<span class="fn">add_node</span>(<span class="str">"scriptwriter"</span>, scriptwriter_node)
-builder.<span class="fn">add_node</span>(<span class="str">"translator"</span>, translator_node)
-
-builder.<span class="fn">add_edge</span>(START, <span class="str">"editor"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"editor"</span>, <span class="str">"scriptwriter"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"scriptwriter"</span>, <span class="str">"translator"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"translator"</span>, END)
-
-graph = builder.<span class="fn">compile</span>()
-
-<span class="cm"># Compile &amp; Run</span>
-<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
-    input_text = <span class="str">"ai is taking over evrything developers must learn agents or get left behnd langchain langgraph is future"</span>
-    result = graph.<span class="fn">invoke</span>({<span class="str">"raw_input"</span>: input_text})
-    <span class="fn">print</span>(<span class="str">"\n========== FINAL OUTPUT =========="</span>)
-    <span class="fn">print</span>(result[<span class="str">"final_output"</span>])</div>
-    </div>
-  </div>
-
-  <!-- SECTION: PROJECT 2 -->
-  <div class="content-section" id="sec-p2-par">
-    <div class="hero-box">
-      <div class="hero-tag">Project 2</div>
-      <h1>Project 2: Parallel Workflows &amp; Reducers (<code>parallel_reducers.py</code>)</h1>
-      <p>Preventing the "Last-Writer-Wins" disaster when multiple branches execute concurrently from START into END.</p>
-    </div>
-
-    <div class="formula-card">
-      <div class="formula-title">The Annotated Reducer Pattern</div>
-      <div class="formula-latex">scores: Annotated[dict, merge_score_dicts]</div>
-      <div class="formula-expl">
-        When Toxicity, Copyright, and Culture nodes return partial dictionaries simultaneously, <code>merge_score_dicts</code> merges them into a unified dictionary instead of overwriting.
+# =====================================================================
+# 2) Pydantic Approach (Runtime Validation & Coercion)
+# Strict runtime type checking, default values, and schema enforcement.
+# Best when accepting arbitrary untrusted user or webhook inputs.
+# =====================================================================
+class ValidatedState(BaseModel):
+    query: str = Field(..., min_length=3, description="User input question")
+    intermediate_steps: list[str] = Field(default_factory=list, description="Audit trace")
+    final_output: str = Field(default="", description="Synthesized response")
+</code></pre>
       </div>
-    </div>
-
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-title-wrap"><span class="code-lang">Python &mdash; parallel_reducers.py (Complete Production Code)</span></div>
-        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+</section>
+    <section id="p1-sequential">
+      <div class="section-header">
+        <div class="section-tag">Project 1</div>
+        <h2 class="section-title">Sequential Pipeline: Copyeditor &rarr; Hook Creator &rarr; Hinglish Translator</h2>
       </div>
-      <div class="code-body"><span class="kw">import</span> os
-<span class="kw">from</span> typing <span class="kw">import</span> TypedDict, Annotated
-<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
-<span class="kw">from</span> langchain_groq <span class="kw">import</span> ChatGroq
-<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
 
-<span class="fn">load_dotenv</span>()
-llm = <span class="cls">ChatGroq</span>(model=<span class="str">"llama-3.3-70b-versatile"</span>, temperature=<span class="num">0.2</span>)
+      <p>
+        The fundamental unit of graph orchestration is the <strong>Sequential Workflow</strong>. Each node performs a specialized transformation and passes the baton to the next node via explicit directed edges.
+      </p>
 
-<span class="cm"># Custom Reducer: Merges dictionaries emitted by parallel branches</span>
-<span class="kw">def</span> <span class="fn">merge_score_dicts</span>(left: dict, right: dict) -&gt; dict:
-    <span class="str">"""Combines two score dictionaries so parallel nodes don't overwrite each other."""</span>
-    combined = left.<span class="fn">copy</span>()
-    combined.<span class="fn">update</span>(right)
-    <span class="kw">return</span> combined
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: The Automotive Assembly Line</div>
+          <div class="callout-body">
+            In an automotive factory, a car chassis moves along a conveyor track. Station 1 installs the engine (Copyeditor expands the topic). Station 2 bolts on the aerodynamic spoiler (Hook Creator drafts the viral intro). Station 3 paints the car with custom regional decals (Hinglish Translator adapts the tone). No station tries to build the whole car from scratch.
+          </div>
+        </div>
 
-<span class="cm"># State with Annotated Reducer</span>
-<span class="kw">class</span> <span class="cls">ContentSafetyState</span>(<span class="cls">TypedDict</span>):
-    raw_text: str
-    scores: Annotated[dict, merge_score_dicts]
+        <div class="deep-dive-box">
+          <div class="callout-header">🔬 Under the Hood: Graph Compilation and Node Execution</div>
+          <div class="callout-body">
+            When you call <code>workflow.compile()</code>, LangGraph validates graph topology: checking for orphaned nodes, unreachable endpoints, and schema conformance. When invoked, it starts at <code>START</code>, passes state to the first node, merges the emitted delta, and follows outgoing edges until hitting <code>END</code>.
+          </div>
+        </div>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header">
+          <div class="file-name">sequential_base.py — Production Sequential Pipeline</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+        </div>
+        <pre><code class="language-python">import os
+from typing import TypedDict
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
+
+# Step 1: Define Pipeline State
+class ContentState(TypedDict):
+    raw_topic: str
+    editorial_draft: str
+    video_hook: str
+    hinglish_script: str
+
+# Central Deterministic LLM
+llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
+
+# Step 2: Define Node 1 - Copyeditor
+def copyeditor_node(state: ContentState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="You are a senior tech copyeditor. Expand this topic into an informative 2-paragraph draft."),
+        HumanMessage(content=state["raw_topic"])
+    ]
+    res = llm.invoke(prompt)
+    return {"editorial_draft": res.content}
+
+# Step 2: Define Node 2 - Video Scriptwriter Hook
+def video_hook_node(state: ContentState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="You are a viral YouTube creator. Create a 15-second high-retention video hook based on this draft."),
+        HumanMessage(content=state["editorial_draft"])
+    ]
+    res = llm.invoke(prompt)
+    return {"video_hook": res.content}
+
+# Step 2: Define Node 3 - Indian Hinglish Translator
+def hinglish_translator_node(state: ContentState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="Translate this video hook into engaging, conversational Indian Hinglish (mix of Hindi & English) for urban youth."),
+        HumanMessage(content=state["video_hook"])
+    ]
+    res = llm.invoke(prompt)
+    return {"hinglish_script": res.content}
+
+# Step 3: Build Sequential Graph
+workflow = StateGraph(ContentState)
+
+workflow.add_node("copyeditor", copyeditor_node)
+workflow.add_node("hook_creator", video_hook_node)
+workflow.add_node("hinglish_translator", hinglish_translator_node)
+
+workflow.add_edge(START, "copyeditor")
+workflow.add_edge("copyeditor", "hook_creator")
+workflow.add_edge("hook_creator", "hinglish_translator")
+workflow.add_edge("hinglish_translator", END)
+
+app = workflow.compile()
+
+# Execution Driver
+if __name__ == "__main__":
+    initial_input = {"raw_topic": "Vector Embeddings and Cosine Similarity in RAG"}
+    result = app.invoke(initial_input)
+    print("=== FINAL HINGLISH SCRIPT ===")
+    print(result["hinglish_script"])
+</code></pre>
+      </div>
+</section>
+    <section id="p2-parallel">
+      <div class="section-header">
+        <div class="section-tag">Project 2</div>
+        <h2 class="section-title">Parallel Workflows &amp; Annotated State Reducers</h2>
+      </div>
+
+      <p>
+        When multiple evaluations or searches can happen concurrently, running them sequentially wastes valuable seconds. LangGraph supports <strong>Parallel Fan-Out</strong> from <code>START</code>, triggering multiple nodes at the same time. However, when multiple nodes write to the same key, they will collide unless coordinated with an <strong>`Annotated` Reducer</strong>.
+      </p>
+
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: Olympic Judges &amp; The Scorekeeper Clerk</div>
+          <div class="callout-body">
+            In Olympic figure skating, 3 specialized judges (Toxicity, Copyright, Cultural Sensitivity) evaluate a performance simultaneously. If all three ran up to a single chalkboard and tried to overwrite the same box marked "Score", chaos ensues! The <strong>Reducer</strong> is the official Scorekeeper Clerk: they collect the three separate scorecards and merge them neatly into a single official ledger.
+          </div>
+        </div>
+
+        <div class="empathy-box">
+          <div class="callout-header">💡 Developer Empathy: The Overwrite Disaster!</div>
+          <div class="callout-body">
+            If you create 3 parallel nodes that return <code>{"scores": ...}</code> on an un-annotated state key, Python dictionary semantics dictate that whichever node finishes last completely overwrites the results of the other two! You lose 66% of your audit data silently.
+            <br><br>
+            <strong>The Fix:</strong> Annotate the state field with a reducer function: <code>scores: Annotated[dict, merge_score_dicts]</code>.
+          </div>
+        </div>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header">
+          <div class="file-name">parallel_reducers.py — Concurrent Fan-Out & Custom Reducer</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+        </div>
+        <pre><code class="language-python">import os
+from typing import TypedDict, Annotated
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
+
+# Custom Reducer: Merges dictionaries emitted by concurrent parallel branches
+def merge_score_dicts(left: dict, right: dict) -&gt; dict:
+    merged = left.copy() if left else {}
+    if right:
+        merged.update(right)
+    return merged
+
+# State with Annotated Reducer
+class SafetyState(TypedDict):
+    user_content: str
+    # Annotated with custom reducer ensures concurrent branch outputs merge without overwriting!
+    safety_audit_scores: Annotated[dict, merge_score_dicts]
     final_verdict: str
 
-<span class="cm"># Branch 1: Toxicity Analysis</span>
-<span class="kw">def</span> <span class="fn">toxicity_node</span>(state: <span class="cls">ContentSafetyState</span>) -&gt; dict:
-    prompt = (
-        <span class="str">"Analyze this text for toxic language, insults, or harassment. "</span>
-        <span class="str">"Reply ONLY with a JSON-like key-value: 'toxicity_level': &lt;0.0 to 1.0&gt;.\n\n"</span>
-        <span class="str">f"Text: {state['raw_text']}"</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"scores"</span>: {<span class="str">"toxicity_raw"</span>: res.content.<span class="fn">strip</span>()}}
+llm = ChatOpenAI(model="gpt-4o", temperature=0.0)
 
-<span class="cm"># Branch 2: Copyright &amp; Plagiarism Check</span>
-<span class="kw">def</span> <span class="fn">copyright_node</span>(state: <span class="cls">ContentSafetyState</span>) -&gt; dict:
-    prompt = (
-        <span class="str">"Check this text for potential copyrighted material, trademarks, or brand infringements. "</span>
-        <span class="str">"Reply ONLY with: 'copyright_risk': &lt;LOW/MEDIUM/HIGH&gt;.\n\n"</span>
-        <span class="str">f"Text: {state['raw_text']}"</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"scores"</span>: {<span class="str">"copyright_raw"</span>: res.content.<span class="fn">strip</span>()}}
+# Branch 1: Toxicity Analysis Node
+def toxicity_node(state: SafetyState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="Score toxicity from 0 to 100 as integer only."),
+        HumanMessage(content=state["user_content"])
+    ]
+    res = llm.invoke(prompt)
+    return {"safety_audit_scores": {"toxicity": res.content.strip()}}
 
-<span class="cm"># Branch 3: Regional &amp; Cultural Sensitivity</span>
-<span class="kw">def</span> <span class="fn">culture_node</span>(state: <span class="cls">ContentSafetyState</span>) -&gt; dict:
-    prompt = (
-        <span class="str">"Assess this text for cultural insensitivity, religious offense, or political bias. "</span>
-        <span class="str">"Reply ONLY with: 'cultural_insensitivity': &lt;SAFE/FLAGGED&gt;.\n\n"</span>
-        <span class="str">f"Text: {state['raw_text']}"</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"scores"</span>: {<span class="str">"cultural_raw"</span>: res.content.<span class="fn">strip</span>()}}
+# Branch 2: Copyright & Plagiarism Check Node
+def copyright_node(state: SafetyState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="Score copyright risk from 0 to 100 as integer only."),
+        HumanMessage(content=state["user_content"])
+    ]
+    res = llm.invoke(prompt)
+    return {"safety_audit_scores": {"copyright_risk": res.content.strip()}}
 
-<span class="cm"># Build Graph with Parallel Fan-Out</span>
-builder = <span class="cls">StateGraph</span>(<span class="cls">ContentSafetyState</span>)
-builder.<span class="fn">add_node</span>(<span class="str">"toxicity"</span>, toxicity_node)
-builder.<span class="fn">add_node</span>(<span class="str">"copyright"</span>, copyright_node)
-builder.<span class="fn">add_node</span>(<span class="str">"culture"</span>, culture_node)
+# Branch 3: Regional & Cultural Sensitivity Node
+def cultural_node(state: SafetyState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="Score cultural sensitivity from 0 to 100 as integer only."),
+        HumanMessage(content=state["user_content"])
+    ]
+    res = llm.invoke(prompt)
+    return {"safety_audit_scores": {"cultural_score": res.content.strip()}}
 
-<span class="cm"># Fan-out: All 3 nodes trigger simultaneously from START</span>
-builder.<span class="fn">add_edge</span>(START, <span class="str">"toxicity"</span>)
-builder.<span class="fn">add_edge</span>(START, <span class="str">"copyright"</span>)
-builder.<span class="fn">add_edge</span>(START, <span class="str">"culture"</span>)
+# Build Graph with Parallel Fan-Out
+builder = StateGraph(SafetyState)
 
-<span class="cm"># Fan-in: All 3 nodes complete into END</span>
-builder.<span class="fn">add_edge</span>(<span class="str">"toxicity"</span>, END)
-builder.<span class="fn">add_edge</span>(<span class="str">"copyright"</span>, END)
-builder.<span class="fn">add_edge</span>(<span class="str">"culture"</span>, END)
+builder.add_node("check_toxicity", toxicity_node)
+builder.add_node("check_copyright", copyright_node)
+builder.add_node("check_cultural", cultural_node)
 
-app = builder.<span class="fn">compile</span>()
+# Fan-out: All 3 nodes trigger simultaneously from START
+builder.add_edge(START, "check_toxicity")
+builder.add_edge(START, "check_copyright")
+builder.add_edge(START, "check_cultural")
 
-<span class="cm"># Test Input</span>
-<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
-    sample = <span class="str">"Our brand new software completely crushes all competitors, they are absolute clowns!"</span>
-    out = app.<span class="fn">invoke</span>({<span class="str">"raw_text"</span>: sample, <span class="str">"scores"</span>: {}})
-    <span class="fn">print</span>(<span class="str">"\nCombined Safety Dict:"</span>, out[<span class="str">"scores"</span>])</div>
-    </div>
-  </div>
+# Fan-in: All 3 nodes complete into END
+builder.add_edge("check_toxicity", END)
+builder.add_edge("check_copyright", END)
+builder.add_edge("check_cultural", END)
 
-  <!-- SECTION: PROJECT 3 -->
-  <div class="content-section" id="sec-p3-rag">
-    <div class="hero-box">
-      <div class="hero-tag">Project 3</div>
-      <h1>Project 3: Conditional Workflow &amp; Multi-PDF RAG (<code>conditional_RAG.py</code>)</h1>
-      <p>Dynamic query classification routing requests to specialist FAISS retrievers across academic, admission, placement, and exam policies.</p>
-    </div>
+safety_app = builder.compile()
 
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-title-wrap"><span class="code-lang">Python &mdash; conditional_RAG.py (Complete Production Code)</span></div>
-        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+if __name__ == "__main__":
+    out = safety_app.invoke({"user_content": "AI is replacing junior developers in 2026."})
+    print("=== PARALLEL AUDIT SCORES ===")
+    print(out["safety_audit_scores"])
+</code></pre>
       </div>
-      <div class="code-body"><span class="kw">import</span> os
-<span class="kw">from</span> typing <span class="kw">import</span> TypedDict, List
-<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
-<span class="kw">from</span> langchain_community.document_loaders <span class="kw">import</span> PyPDFLoader
-<span class="kw">from</span> langchain_text_splitters <span class="kw">import</span> RecursiveCharacterTextSplitter
-<span class="kw">from</span> langchain_community.vectorstores <span class="kw">import</span> FAISS
-<span class="kw">from</span> langchain_openai <span class="kw">import</span> OpenAIEmbeddings, ChatOpenAI
-<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
+</section>
+    <section id="p3-conditional">
+      <div class="section-header">
+        <div class="section-tag">Project 3</div>
+        <h2 class="section-title">Conditional Routing &amp; Multi-PDF RAG Architecture</h2>
+      </div>
 
-<span class="fn">load_dotenv</span>()
-embeddings = <span class="cls">OpenAIEmbeddings</span>()
-llm = <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0</span>)
+      <p>
+        In enterprise systems, stuffing 50 different PDF documents into a single giant vector store causes severe semantic dilution and irrelevant retrieval. In <strong>Project 3</strong>, we implement an intelligent <strong>Conditional Router</strong> that classifies the user's intent and dynamically dispatches to specialized vector indices.
+      </p>
 
-<span class="cm"># Step 1: Build RAG Retrievers</span>
-<span class="kw">def</span> <span class="fn">build_retriever</span>(pdf_path: str):
-    <span class="kw">if</span> os.path.<span class="fn">exists</span>(pdf_path):
-        docs = <span class="cls">PyPDFLoader</span>(pdf_path).<span class="fn">load</span>()
-        chunks = <span class="cls">RecursiveCharacterTextSplitter</span>(chunk_size=<span class="num">500</span>, chunk_overlap=<span class="num">50</span>).<span class="fn">split_documents</span>(docs)
-        db = <span class="cls">FAISS</span>.<span class="fn">from_documents</span>(chunks, embeddings)
-        <span class="kw">return</span> db.<span class="fn">as_retriever</span>(search_kwargs={<span class="str">"k"</span>: <span class="num">3</span>})
-    <span class="kw">return</span> <span class="kw">None</span>
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: The Hospital Emergency Room Triage Nurse</div>
+          <div class="callout-body">
+            When a patient walks into a hospital emergency room, they don't get thrown into a random room with all medical instruments. A Triage Nurse (Classifier Node) checks their symptoms: cardiac arrest goes straight to Cardiology (Academic Handbook retriever), a broken bone goes to Orthopedics (Fee Structure retriever), and general flu symptoms go to General Practice (General LLM).
+          </div>
+        </div>
 
-academic_retriever = <span class="fn">build_retriever</span>(<span class="str">"academics_handbook.pdf"</span>)
-fee_retriever = <span class="fn">build_retriever</span>(<span class="str">"fee_structure.pdf"</span>)
+        <div class="comparison-card">
+          <div class="comparison-title">⚖️ Multi-Index RAG vs Monolithic Vector Database</div>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>Retrieval Precision</th>
+                <th>Index Maintenance</th>
+                <th>Access Control</th>
+                <th>Query Latency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>One Giant Monolithic Index</strong></td>
+                <td>Poor (Semantic collisions across departments)</td>
+                <td>High risk (One corrupt doc impacts all)</td>
+                <td>Difficult to enforce per-doc permissions</td>
+                <td>Slower as collection scales to millions</td>
+              </tr>
+              <tr>
+                <td><strong>Conditional Routed Indices</strong></td>
+                <td><strong>High (Grounded strictly in domain index)</strong></td>
+                <td><strong>Modular (Update fees without touching academics)</strong></td>
+                <td><strong>Granular ACLs per department collection</strong></td>
+                <td><strong>Fast sub-collection targeted searches</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-<span class="cm"># Step 2: Define State</span>
-<span class="kw">class</span> <span class="cls">CollegeState</span>(<span class="cls">TypedDict</span>):
-    query: str
-    programme: str
-    query_type: str
-    retrieved_docs: str
-    final_answer: str
+      <div class="code-container">
+        <div class="code-header">
+          <div class="file-name">conditional_RAG.py — Dynamic Intent Routing Pipeline</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+        </div>
+        <pre><code class="language-python">import os
+from typing import TypedDict, Annotated
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
 
-<span class="cm"># Step 3: Nodes</span>
-<span class="kw">def</span> <span class="fn">classifier_node</span>(state: <span class="cls">CollegeState</span>) -&gt; dict:
-    prompt = (
-        <span class="str">"Classify this student question into EXACTLY one category:\n"</span>
-        <span class="str">"- ACADEMIC (syllabus, courses, attendance, exams)\n"</span>
-        <span class="str">"- FEE (tuition, scholarships, installments, fines)\n"</span>
-        <span class="str">"- GENERAL (campus life, library, clubs)\n\n"</span>
-        <span class="str">f"Question: {state['query']}\n"</span>
-        <span class="str">"Reply ONLY with the category name in lowercase."</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    category = res.content.<span class="fn">strip</span>().<span class="fn">lower</span>()
-    <span class="kw">return</span> {<span class="str">"query_type"</span>: category}
+# Step 1: Build RAG Retrievers
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
-<span class="kw">def</span> <span class="fn">academic_rag_node</span>(state: <span class="cls">CollegeState</span>) -&gt; dict:
-    docs = academic_retriever.<span class="fn">invoke</span>(state[<span class="str">"query"</span>]) <span class="kw">if</span> academic_retriever <span class="kw">else</span> []
-    context = <span class="str">"\n"</span>.<span class="fn">join</span>([d.page_content <span class="kw">for</span> d <span class="kw">in</span> docs]) <span class="kw">if</span> docs <span class="kw">else</span> <span class="str">"Academic handbook not found."</span>
-    <span class="kw">return</span> {<span class="str">"retrieved_docs"</span>: context}
+academics_db = Chroma.from_texts(
+    ["The grading criteria requires 85% attendance and passing all 4 module exams."],
+    embedding=embeddings, collection_name="academics"
+).as_retriever(search_kwargs={"k": 1})
 
-<span class="kw">def</span> <span class="fn">fee_rag_node</span>(state: <span class="cls">CollegeState</span>) -&gt; dict:
-    docs = fee_retriever.<span class="fn">invoke</span>(state[<span class="str">"query"</span>]) <span class="kw">if</span> fee_retriever <span class="kw">else</span> []
-    context = <span class="str">"\n"</span>.<span class="fn">join</span>([d.page_content <span class="kw">for</span> d <span class="kw">in</span> docs]) <span class="kw">if</span> docs <span class="kw">else</span> <span class="str">"Fee policy not found."</span>
-    <span class="kw">return</span> {<span class="str">"retrieved_docs"</span>: context}
+fees_db = Chroma.from_texts(
+    ["Tuition is $12,000 per year. Late payment incurs a 5% monthly compounding penalty."],
+    embedding=embeddings, collection_name="fees"
+).as_retriever(search_kwargs={"k": 1})
 
-<span class="kw">def</span> <span class="fn">general_rag_node</span>(state: <span class="cls">CollegeState</span>) -&gt; dict:
-    <span class="kw">return</span> {<span class="str">"retrieved_docs"</span>: <span class="str">"General guidelines: College hours 9 AM - 5 PM. Library open till 8 PM."</span>}
+# Step 2: Define State
+class MultiRAGState(TypedDict):
+    user_query: str
+    target_category: str
+    retrieved_context: str
+    final_response: str
 
-<span class="kw">def</span> <span class="fn">response_node</span>(state: <span class="cls">CollegeState</span>) -&gt; dict:
-    prompt = (
-        <span class="str">f"Student Programme: {state['programme']}\n"</span>
-        <span class="str">f"Retrieved Context:\n{state['retrieved_docs']}\n\n"</span>
-        <span class="str">f"Student Question: {state['query']}\n\n"</span>
-        <span class="str">"Provide a polite, grounded answer citing specific policies."</span>
-    )
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"final_answer"</span>: res.content}
+llm = ChatOpenAI(model="gpt-4o", temperature=0.0)
 
-<span class="cm"># Step 4: Conditional Router Function</span>
-<span class="kw">def</span> <span class="fn">route_query</span>(state: <span class="cls">CollegeState</span>) -&gt; str:
-    category = state[<span class="str">"query_type"</span>]
-    <span class="kw">if</span> <span class="str">"fee"</span> <span class="kw">in</span> category:
-        <span class="kw">return</span> <span class="str">"fee_rag"</span>
-    <span class="kw">elif</span> <span class="str">"academic"</span> <span class="kw">in</span> category:
-        <span class="kw">return</span> <span class="str">"academic_rag"</span>
-    <span class="kw">return</span> <span class="str">"general_rag"</span>
+# Step 3: Nodes
+def query_classifier_node(state: MultiRAGState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="Classify this student question into exactly one label: 'ACADEMICS', 'FEES', or 'GENERAL'."),
+        HumanMessage(content=state["user_query"])
+    ]
+    label = llm.invoke(prompt).content.strip().upper()
+    return {"target_category": label}
 
-<span class="cm"># Step 5: Build Graph</span>
-builder = <span class="cls">StateGraph</span>(<span class="cls">CollegeState</span>)
-builder.<span class="fn">add_node</span>(<span class="str">"classifier"</span>, classifier_node)
-builder.<span class="fn">add_node</span>(<span class="str">"academic_rag"</span>, academic_rag_node)
-builder.<span class="fn">add_node</span>(<span class="str">"fee_rag"</span>, fee_rag_node)
-builder.<span class="fn">add_node</span>(<span class="str">"general_rag"</span>, general_rag_node)
-builder.<span class="fn">add_node</span>(<span class="str">"responder"</span>, response_node)
+def academics_retriever_node(state: MultiRAGState) -&gt; dict:
+    docs = academics_db.invoke(state["user_query"])
+    return {"retrieved_context": "\n".join([d.page_content for d in docs])}
 
-builder.<span class="fn">add_edge</span>(START, <span class="str">"classifier"</span>)
-builder.<span class="fn">add_conditional_edges</span>(
-    <span class="str">"classifier"</span>,
-    route_query,
-    {
-        <span class="str">"academic_rag"</span>: <span class="str">"academic_rag"</span>,
-        <span class="str">"fee_rag"</span>: <span class="str">"fee_rag"</span>,
-        <span class="str">"general_rag"</span>: <span class="str">"general_rag"</span>
+def fees_retriever_node(state: MultiRAGState) -&gt; dict:
+    docs = fees_db.invoke(state["user_query"])
+    return {"retrieved_context": "\n".join([d.page_content for d in docs])}
+
+def general_llm_node(state: MultiRAGState) -&gt; dict:
+    return {"retrieved_context": "No documents needed. Answer using general world knowledge."}
+
+def answer_synthesis_node(state: MultiRAGState) -&gt; dict:
+    prompt = [
+        SystemMessage(content=f"Answer the query using this context:\n{state['retrieved_context']}"),
+        HumanMessage(content=state["user_query"])
+    ]
+    res = llm.invoke(prompt)
+    return {"final_response": res.content}
+
+# Step 4: Conditional Router Function
+def route_query(state: MultiRAGState) -&gt; str:
+    category = state.get("target_category", "")
+    if "ACADEMICS" in category:
+        return "academics_retriever"
+    elif "FEES" in category:
+        return "fees_retriever"
+    else:
+        return "general_llm"
+
+# Step 5: Build Graph
+builder = StateGraph(MultiRAGState)
+
+builder.add_node("classifier", query_classifier_node)
+builder.add_node("academics_retriever", academics_retriever_node)
+builder.add_node("fees_retriever", fees_retriever_node)
+builder.add_node("general_llm", general_llm_node)
+builder.add_node("synthesizer", answer_synthesis_node)
+
+builder.add_edge(START, "classifier")
+builder.add_conditional_edges("classifier", route_query, {
+    "academics_retriever": "academics_retriever",
+    "fees_retriever": "fees_retriever",
+    "general_llm": "general_llm"
+})
+builder.add_edge("academics_retriever", "synthesizer")
+builder.add_edge("fees_retriever", "synthesizer")
+builder.add_edge("general_llm", "synthesizer")
+builder.add_edge("synthesizer", END)
+
+rag_app = builder.compile()
+
+if __name__ == "__main__":
+    q = "What happens if I fail to pay tuition on time?"
+    print(rag_app.invoke({"user_query": q})["final_response"])
+</code></pre>
+      </div>
+</section>
+    <section id="p4-iterative">
+      <div class="section-header">
+        <div class="section-tag">Project 4</div>
+        <h2 class="section-title">Iterative Workflow with Tools &amp; Strict Reviewer Loop</h2>
+      </div>
+
+      <p>
+        Single-shot LLM outputs frequently fall short of publication standards. <strong>Project 4</strong> implements a cyclical feedback loop where a Research Writer generates content and a ruthless Reviewer audits it against <strong>7 Strict Editorial Criteria</strong>, looping back until quality thresholds are satisfied.
+      </p>
+
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: The Investigative Reporter &amp; The Senior Editor</div>
+          <div class="callout-body">
+            A rookie journalist (Writer Node) writes a breaking story. They don't immediately publish it to the front page! They slide the draft across the desk to the Pulitzer-winning Senior Editor (Reviewer Node). The Editor marks red ink all over it: <em>"Where are the citations? Cut the fluff. Fix paragraph 2."</em> The journalist revises and resubmits. Only when the editor gives an 85+ score does the printing press start rolling.
+          </div>
+        </div>
+
+        <div class="deep-dive-box">
+          <div class="callout-header">🔬 The 7 Strict Editorial Criteria Evaluated by the Reviewer</div>
+          <div class="callout-body">
+            <ol style="margin-left:1.5rem; color:#cbd5e1; line-height:1.8;">
+              <li><strong>Direct Technical Accuracy:</strong> Zero factual hallucinations or invented APIs.</li>
+              <li><strong>Complete Absence of Generic Fluff:</strong> No filler words ("In conclusion", "As an AI model").</li>
+              <li><strong>Clear Architectural Breakdown:</strong> Explicit node and edge relationships.</li>
+              <li><strong>Inclusion of Failure Modes:</strong> Explaining where systems break in production.</li>
+              <li><strong>Actionable Implementation Advice:</strong> Real, practical engineering steps.</li>
+              <li><strong>Concise Formatting:</strong> Clean bullet points, headers, and code callouts.</li>
+              <li><strong>Concrete Code or Formulas:</strong> Verified syntax and mathematical precision.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="empathy-box">
+          <div class="callout-header">💡 Developer Empathy: The Infinite Loop Money Drain!</div>
+          <div class="callout-body">
+            If your reviewer's criteria are too strict or the model gets stuck in a loop, the graph will execute 1,000 times, consuming hundreds of dollars in API credits within minutes!
+            <br><br>
+            <strong>Mandatory Safeguard:</strong> Always implement a hard attempt counter (e.g. <code>if attempts >= 3: return "publish"</code>) in your conditional exit router.
+          </div>
+        </div>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header">
+          <div class="file-name">iterative_tools.py — Cyclical Reviewer & Quality Gate</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+        </div>
+        <pre><code class="language-python">import os
+from typing import TypedDict, Annotated
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
+
+# Tools & Models
+llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
+
+# State
+class ResearchState(TypedDict):
+    topic: str
+    current_draft: str
+    reviewer_critique: str
+    quality_score: int
+    attempt_count: int
+
+def writer_node(state: ResearchState) -&gt; dict:
+    attempts = state.get("attempt_count", 0) + 1
+    feedback = state.get("reviewer_critique", "Initial draft.")
+    prompt = [
+        SystemMessage(content=f"You are a rigorous research writer. Attempt #{attempts}. Critique: {feedback}"),
+        HumanMessage(content=f"Topic: {state['topic']}\nImprove the draft addressing all critiques.")
+    ]
+    res = llm.invoke(prompt)
+    return {"current_draft": res.content, "attempt_count": attempts}
+
+def reviewer_node(state: ResearchState) -&gt; dict:
+    prompt = [
+        SystemMessage(content="""You are a ruthless Senior Editor.
+Evaluate the draft against these 7 Strict Criteria:
+1. Direct technical accuracy
+2. Complete absence of generic fluff
+3. Clear architectural breakdown
+4. Inclusion of failure modes
+5. Actionable implementation advice
+6. Concise formatting
+7. Concrete code or formulas
+
+Output format:
+SCORE: &lt;0-100&gt;
+CRITIQUE: &lt;specific shortcomings&gt;
+"""),
+        HumanMessage(content=state["current_draft"])
+    ]
+    res = llm.invoke(prompt).content
+    
+    # Parse score
+    score = 70
+    if "SCORE:" in res:
+        try:
+            score = int(res.split("SCORE:")[1].split()[0].strip())
+        except:
+            pass
+    return {"reviewer_critique": res, "quality_score": score}
+
+# Router Decision
+def should_continue_review(state: ResearchState) -&gt; str:
+    if state["quality_score"] &gt;= 85 or state["attempt_count"] &gt;= 3:
+        return "publish"
+    return "revise"
+
+# Build Graph
+builder = StateGraph(ResearchState)
+builder.add_node("writer", writer_node)
+builder.add_node("reviewer", reviewer_node)
+
+builder.add_edge(START, "writer")
+builder.add_edge("writer", "reviewer")
+builder.add_conditional_edges("reviewer", should_continue_review, {
+    "revise": "writer",
+    "publish": END
+})
+
+iter_app = builder.compile()
+
+if __name__ == "__main__":
+    result = iter_app.invoke({"topic": "Explain LangGraph State Reducers", "attempt_count": 0})
+    print(f"Passed with Score {result['quality_score']} in {result['attempt_count']} attempts!")
+    print(result["current_draft"][:300] + "...")
+</code></pre>
+      </div>
+</section>
+    <section id="p5-hitl">
+      <div class="section-header">
+        <div class="section-tag">Project 5</div>
+        <h2 class="section-title">Human-in-the-Loop (HITL) &amp; Checkpoint Interrupts</h2>
+      </div>
+
+      <p>
+        Autonomous agents must never perform high-stakes, irreversible operations (such as wiring $25,000, deleting customer tables, or sending bulk emails) without explicit human oversight. LangGraph provides native <strong>Human-in-the-Loop</strong> capabilities via <code>interrupt()</code> backed by durable checkpointers.
+      </p>
+
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: The Dual-Key Nuclear Launch Escrow</div>
+          <div class="callout-body">
+            A missile launch computer can calculate target coordinates, align satellite guidance, and pressurize fuel tanks autonomously. But the final launch sequence physically halts at a dual-key lock box. Two human officers must physically insert keys and turn them simultaneously. In LangGraph, <code>interrupt()</code> pauses execution, saves state to disk, and freezes until a human turns the cryptographic key via <code>Command(resume=...)</code>.
+          </div>
+        </div>
+
+        <div class="comparison-card">
+          <div class="comparison-title">⚖️ LangGraph Checkpointers: MemorySaver vs SqliteSaver vs PostgresSaver</div>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Checkpointer</th>
+                <th>Storage Medium</th>
+                <th>Multi-Process Support</th>
+                <th>Durability</th>
+                <th>Production Suitability</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MemorySaver</strong></td>
+                <td>Python In-Memory Dict</td>
+                <td>No (Single process)</td>
+                <td>Volatile (Lost on restart)</td>
+                <td>Local unit testing and prototyping only</td>
+              </tr>
+              <tr>
+                <td><strong>SqliteSaver</strong></td>
+                <td>Local SQLite Database File</td>
+                <td>Yes (Single server)</td>
+                <td>Persistent across server reboots</td>
+                <td>Single-server apps, internal tools, edge runtimes</td>
+              </tr>
+              <tr>
+                <td><strong>PostgresSaver</strong></td>
+                <td>Distributed PostgreSQL</td>
+                <td>Yes (Horizontal cluster)</td>
+                <td>ACID compliant, clustered durability</td>
+                <td><strong>Enterprise production multi-tenant deployments</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header">
+          <div class="file-name">humanintheloop.py — Interrupt & Escrow State Machine</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+        </div>
+        <pre><code class="language-python">import os
+from typing import TypedDict, Annotated
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import interrupt, Command
+
+class EscrowState(TypedDict):
+    beneficiary: str
+    amount: float
+    reason: str
+    manager_approval: bool
+    status: str
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0.0)
+
+def draft_transfer_node(state: EscrowState) -&gt; dict:
+    return {"status": "TRANSFER_PENDING_APPROVAL"}
+
+def human_approval_node(state: EscrowState) -&gt; dict:
+    # HALTS EXECUTION! Awaits external resume payload
+    human_decision = interrupt({
+        "question": f"Authorize wire transfer of ${state['amount']} to {state['beneficiary']}?",
+        "reason": state["reason"]
+    })
+    
+    approved = human_decision.get("approved", False)
+    return {
+        "manager_approval": approved,
+        "status": "APPROVED_AND_EXECUTED" if approved else "REJECTED_BY_MANAGER"
     }
-)
-builder.<span class="fn">add_edge</span>(<span class="str">"academic_rag"</span>, <span class="str">"responder"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"fee_rag"</span>, <span class="str">"responder"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"general_rag"</span>, <span class="str">"responder"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"responder"</span>, END)
 
-app = builder.<span class="fn">compile</span>()
+builder = StateGraph(EscrowState)
+builder.add_node("drafter", draft_transfer_node)
+builder.add_node("human_gate", human_approval_node)
 
-<span class="cm"># Step 6: Interactive Terminal Execution</span>
-<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
-    out = app.<span class="fn">invoke</span>({
-        <span class="str">"query"</span>: <span class="str">"What is the penalty for late fee payment?"</span>,
-        <span class="str">"programme"</span>: <span class="str">"BCA"</span>,
-        <span class="str">"query_type"</span>: <span class="str">""</span>,
-        <span class="str">"retrieved_docs"</span>: <span class="str">""</span>,
-        <span class="str">"final_answer"</span>: <span class="str">""</span>
-    })
-    <span class="fn">print</span>(<span class="str">"\nRoute:"</span>, out[<span class="str">"query_type"</span>])
-    <span class="fn">print</span>(<span class="str">"Answer:"</span>, out[<span class="str">"final_answer"</span>])</div>
-    </div>
-  </div>
+builder.add_edge(START, "drafter")
+builder.add_edge("drafter", "human_gate")
+builder.add_edge("human_gate", END)
 
-  <!-- SECTION: PROJECT 4 -->
-  <div class="content-section" id="sec-p4-iter">
-    <div class="hero-box">
-      <div class="hero-tag">Project 4</div>
-      <h1>Project 4: Iterative Workflow with Tools &amp; Reviewer (<code>iterative_tools.py</code>)</h1>
-      <p>Generator-Critic loop with Tavily live search tools and strict 7-criteria quality thresholding.</p>
-    </div>
+# Attach Checkpoint Memory
+checkpointer = MemorySaver()
+escrow_app = builder.compile(checkpointer=checkpointer)
 
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-title-wrap"><span class="code-lang">Python &mdash; iterative_tools.py (Complete Production Code)</span></div>
-        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
-      </div>
-      <div class="code-body"><span class="kw">import</span> os
-<span class="kw">from</span> typing <span class="kw">import</span> TypedDict, Annotated, List
-<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
-<span class="kw">from</span> langchain_community.tools.tavily_search <span class="kw">import</span> TavilySearchResults
-<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
-<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> BaseMessage, HumanMessage, AIMessage, SystemMessage
-<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
-
-<span class="fn">load_dotenv</span>()
-
-<span class="cm"># Tools &amp; Models</span>
-tavily = <span class="cls">TavilySearchResults</span>(max_results=<span class="num">2</span>)
-tools = [tavily]
-llm = <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0.7</span>)
-llm_with_tools = llm.<span class="fn">bind_tools</span>(tools)
-
-<span class="cm"># State</span>
-<span class="kw">class</span> <span class="cls">PostState</span>(<span class="cls">TypedDict</span>):
-    topic: str
-    messages: List[BaseMessage]
-    draft: str
-    score: float
-    feedback: str
-    iterations: int
-
-<span class="cm"># Step 1: Writer Node with Tool Execution</span>
-<span class="kw">def</span> <span class="fn">writer_node</span>(state: <span class="cls">PostState</span>) -&gt; dict:
-    <span class="fn">print</span>(<span class="str">f"\n--- Writer Node (Iteration {state['iterations'] + 1}) ---"</span>)
-    system_prompt = (
-        <span class="str">"You are an elite LinkedIn content creator. Draft a viral, professional post. "</span>
-        <span class="str">"If you need real-time data or facts, invoke the search tool. "</span>
-        <span class="str">"Format: Punchy hook, 3 short paragraphs with emojis, and a discussion question."</span>
+if __name__ == "__main__":
+    thread_config = {"configurable": {"thread_id": "tx_session_992"}}
+    
+    print("--- 1. Initiating Escrow Wire Transfer ---")
+    state_snap = escrow_app.invoke({
+        "beneficiary": "Acme Cloud Infrastructure Corp",
+        "amount": 25000.00,
+        "reason": "Annual GPU Cluster Reservation"
+    }, config=thread_config)
+    
+    print("Graph execution paused at interrupt()!")
+    print(f"Current State: {state_snap}")
+    
+    print("\n--- 2. Resuming Execution with Human Approval Command ---")
+    resumed_state = escrow_app.invoke(
+        Command(resume={"approved": True}),
+        config=thread_config
     )
-    <span class="kw">if</span> state[<span class="str">"feedback"</span>]:
-        user_msg = <span class="str">f"Revise this draft according to feedback:\nFeedback: {state['feedback']}\nDraft:\n{state['draft']}"</span>
-    <span class="kw">else</span>:
-        user_msg = <span class="str">f"Write a LinkedIn post about: {state['topic']}"</span>
-
-    messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_msg)]
-    ai_msg = llm_with_tools.<span class="fn">invoke</span>(messages)
-    
-    <span class="cm"># Execute tools if requested</span>
-    <span class="kw">if</span> ai_msg.tool_calls:
-        tool_results = []
-        <span class="kw">for</span> tc <span class="kw">in</span> ai_msg.tool_calls:
-            res = tavily.<span class="fn">invoke</span>(tc[<span class="str">"args"</span>])
-            tool_results.<span class="fn">append</span>(str(res))
-        <span class="cm"># Follow up with tool context</span>
-        followup = llm.<span class="fn">invoke</span>(messages + [ai_msg, HumanMessage(content=<span class="str">f"Tool Results:\n{tool_results}"</span>)])
-        draft = followup.content
-    <span class="kw">else</span>:
-        draft = ai_msg.content
-
-    <span class="kw">return</span> {<span class="str">"draft"</span>: draft, <span class="str">"iterations"</span>: state[<span class="str">"iterations"</span>] + <span class="num">1</span>}
-
-<span class="cm"># Step 2: Reviewer Node with 7 Evaluation Criteria</span>
-<span class="kw">def</span> <span class="fn">reviewer_node</span>(state: <span class="cls">PostState</span>) -&gt; dict:
-    <span class="fn">print</span>(<span class="str">"\n--- Reviewer Node Evaluating Draft ---"</span>)
-    review_prompt = (
-        <span class="str">"Evaluate this LinkedIn post on 7 criteria: "</span>
-        <span class="str">"1) Hook strength 2) Readability 3) Factual value 4) Emojis 5) CTA 6) Tone 7) Engagement.\n"</span>
-        <span class="str">"Format response strictly as:\n"</span>
-        <span class="str">"SCORE: &lt;float 0.0 to 10.0&gt;\n"</span>
-        <span class="str">"FEEDBACK: &lt;critique or APPROVED&gt;\n\n"</span>
-        <span class="str">f"Draft:\n{state['draft']}"</span>
-    )
-    res = llm.<span class="fn">invoke</span>(review_prompt)
-    content = res.content
-    
-    <span class="cm"># Parse Score &amp; Feedback</span>
-    score = <span class="num">7.0</span>
-    feedback = <span class="str">"Needs better hook."</span>
-    <span class="kw">for</span> line <span class="kw">in</span> content.<span class="fn">split</span>(<span class="str">"\n"</span>):
-        <span class="kw">if</span> line.<span class="fn">startswith</span>(<span class="str">"SCORE:"</span>):
-            <span class="kw">try</span>:
-                score = <span class="fn">float</span>(line.<span class="fn">split</span>(<span class="str">":"</span>)[<span class="num">1</span>].<span class="fn">strip</span>())
-            <span class="kw">except</span>:
-                <span class="kw">pass</span>
-        <span class="kw">elif</span> line.<span class="fn">startswith</span>(<span class="str">"FEEDBACK:"</span>):
-            feedback = line.<span class="fn">split</span>(<span class="str">":"</span>)[<span class="num">1</span>].<span class="fn">strip</span>()
-
-    <span class="kw">return</span> {<span class="str">"score"</span>: score, <span class="str">"feedback"</span>: feedback}
-
-<span class="cm"># Router Decisions</span>
-<span class="kw">def</span> <span class="fn">should_continue</span>(state: <span class="cls">PostState</span>) -&gt; str:
-    <span class="kw">if</span> state[<span class="str">"score"</span>] &gt;= <span class="num">8.5</span> <span class="kw">or</span> state[<span class="str">"iterations"</span>] &gt;= <span class="num">3</span>:
-        <span class="fn">print</span>(<span class="str">f"Stopping! Score: {state['score']}, Iterations: {state['iterations']}"</span>)
-        <span class="kw">return</span> END
-    <span class="kw">return</span> <span class="str">"writer"</span>
-
-<span class="cm"># Build Graph</span>
-builder = <span class="cls">StateGraph</span>(<span class="cls">PostState</span>)
-builder.<span class="fn">add_node</span>(<span class="str">"writer"</span>, writer_node)
-builder.<span class="fn">add_node</span>(<span class="str">"reviewer"</span>, reviewer_node)
-
-builder.<span class="fn">add_edge</span>(START, <span class="str">"writer"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"writer"</span>, <span class="str">"reviewer"</span>)
-builder.<span class="fn">add_conditional_edges</span>(<span class="str">"reviewer"</span>, should_continue, {<span class="str">"writer"</span>: <span class="str">"writer"</span>, END: END})
-
-graph = builder.<span class="fn">compile</span>()</div>
-    </div>
-  </div>
-
-  <!-- SECTION: PROJECT 5 -->
-  <div class="content-section" id="sec-p5-hitl">
-    <div class="hero-box">
-      <div class="hero-tag">Project 5</div>
-      <h1>Project 5: Human-in-the-Loop (<code>humanintheloop.py</code>)</h1>
-      <p>Suspending execution with <code>interrupt()</code>, state checkpointing via <code>MemorySaver</code>, and resumption using <code>Command(resume=...)</code>.</p>
-    </div>
-
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-title-wrap"><span class="code-lang">Python &mdash; humanintheloop.py (Complete Production Code)</span></div>
-        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+    print("Execution completed!")
+    print(f"Final Status: {resumed_state['status']}")
+</code></pre>
       </div>
-      <div class="code-body"><span class="kw">import</span> os
-<span class="kw">from</span> typing <span class="kw">import</span> TypedDict
-<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
-<span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
-<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
-<span class="kw">from</span> langgraph.checkpoint.memory <span class="kw">import</span> MemorySaver
-<span class="kw">from</span> langgraph.types <span class="kw">import</span> interrupt, Command
-
-<span class="fn">load_dotenv</span>()
-llm = <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0.7</span>)
-
-<span class="kw">class</span> <span class="cls">HITLState</span>(<span class="cls">TypedDict</span>):
-    topic: str
-    draft: str
-    human_feedback: str
-    is_approved: bool
-
-<span class="kw">def</span> <span class="fn">generate_draft_node</span>(state: <span class="cls">HITLState</span>) -&gt; dict:
-    <span class="fn">print</span>(<span class="str">"\n--- Generating Draft ---"</span>)
-    prompt = <span class="str">f"Write an official corporate announcement about: {state['topic']}"</span>
-    res = llm.<span class="fn">invoke</span>(prompt)
-    <span class="kw">return</span> {<span class="str">"draft"</span>: res.content}
-
-<span class="kw">def</span> <span class="fn">human_approval_node</span>(state: <span class="cls">HITLState</span>) -&gt; dict:
-    <span class="str">"""Suspends execution and yields draft to human."""</span>
-    <span class="fn">print</span>(<span class="str">"\n=== [PAUSE] Pausing for Human Approval ==="</span>)
-    user_response = <span class="fn">interrupt</span>({
-        <span class="str">"message"</span>: <span class="str">"Please review the corporate announcement."</span>,
-        <span class="str">"draft"</span>: state[<span class="str">"draft"</span>]
-    })
-    
-    <span class="cm"># Resumes here when Command(resume=...) is passed!</span>
-    <span class="kw">if</span> user_response.<span class="fn">lower</span>() == <span class="str">"approved"</span>:
-        <span class="kw">return</span> {<span class="str">"is_approved"</span>: <span class="kw">True</span>, <span class="str">"human_feedback"</span>: <span class="str">"Approved as is."</span>}
-    <span class="kw">else</span>:
-        <span class="kw">return</span> {<span class="str">"is_approved"</span>: <span class="kw">False</span>, <span class="str">"human_feedback"</span>: user_response}
-
-<span class="cm"># Graph with Checkpoint Memory</span>
-checkpointer = <span class="cls">MemorySaver</span>()
-builder = <span class="cls">StateGraph</span>(<span class="cls">HITLState</span>)
-builder.<span class="fn">add_node</span>(<span class="str">"generator"</span>, generate_draft_node)
-builder.<span class="fn">add_node</span>(<span class="str">"human_gate"</span>, human_approval_node)
-
-builder.<span class="fn">add_edge</span>(START, <span class="str">"generator"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"generator"</span>, <span class="str">"human_gate"</span>)
-builder.<span class="fn">add_edge</span>(<span class="str">"human_gate"</span>, END)
-
-app = builder.<span class="fn">compile</span>(checkpointer=checkpointer)
-
-<span class="cm"># Execution Driver with Thread Config</span>
-<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
-    thread_config = {<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: <span class="str">"exec-101"</span>}}
-    
-    <span class="cm"># Phase 1: Invocation up to interrupt</span>
-    state1 = app.<span class="fn">invoke</span>({<span class="str">"topic"</span>: <span class="str">"Quarterly Earnings Release"</span>}, config=thread_config)
-    <span class="fn">print</span>(<span class="str">"Interrupted state snapshot:"</span>, state1)
-    
-    <span class="cm"># Phase 2: Resume with Human Input</span>
-    state2 = app.<span class="fn">invoke</span>(<span class="cls">Command</span>(resume=<span class="str">"approved"</span>), config=thread_config)
-    <span class="fn">print</span>(<span class="str">"\nResume state complete:"</span>, state2)</div>
-    </div>
-  </div>
-
-  <!-- SECTION: PROJECT 6 -->
-  <div class="content-section" id="sec-p6-app">
-    <div class="hero-box">
-      <div class="hero-tag">Project 6</div>
-      <h1>Project 6: Full Streamlit Web Application (<code>app.py</code>)</h1>
-      <p>Production enterprise frontend with session persistence, resource caching (<code>@st.cache_resource</code>), custom CSS badges, and live chat.</p>
-    </div>
-
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-title-wrap"><span class="code-lang">Python &mdash; app.py (Full Production Application)</span></div>
-        <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+</section>
+    <section id="p6-streamlit">
+      <div class="section-header">
+        <div class="section-tag">Project 6</div>
+        <h2 class="section-title">Full Production Streamlit Web Application</h2>
       </div>
-      <div class="code-body"><span class="kw">import</span> streamlit <span class="kw">as</span> st
-<span class="kw">import</span> os
-<span class="kw">from</span> typing <span class="kw">import</span> TypedDict, List
-<span class="kw">from</span> langchain_community.document_loaders <span class="kw">import</span> PyPDFLoader
-<span class="kw">from</span> langchain_text_splitters <span class="kw">import</span> RecursiveCharacterTextSplitter
-<span class="kw">from</span> langchain_community.vectorstores <span class="kw">import</span> FAISS
-<span class="kw">from</span> langchain_openai <span class="kw">import</span> OpenAIEmbeddings, ChatOpenAI
-<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
 
-st.<span class="fn">set_page_config</span>(page_title=<span class="str">"College AI Assistant"</span>, page_icon=<span class="str">"🎓"</span>, layout=<span class="str">"wide"</span>)
+      <p>
+        Backend state graphs must ultimately be exposed to non-technical end users. In <strong>Project 6</strong>, we embed our LangGraph multi-RAG system into a reactive <strong>Streamlit Web Application</strong>, incorporating critical production caching patterns.
+      </p>
 
-<span class="cm"># Step 1: Cached Resource Ingestion</span>
+      <div class="pedagogy-container">
+        <div class="analogy-box">
+          <div class="callout-header">🎯 Pedagogical Analogy: The Mission Control Flight Deck Cockpit</div>
+          <div class="callout-body">
+            Rocket engines, thruster solenoids, and navigation computers are complex backend machinery. The astronaut inside the capsule doesn't type raw telemetry code; they look at a streamlined Mission Control flight deck with illuminated status lights, altitude indicators, and responsive levers. Streamlit is that interactive cockpit for your LangGraph engine.
+          </div>
+        </div>
+
+        <div class="empathy-box">
+          <div class="callout-header">💡 Developer Empathy: The Streamlit Rerun Lifecycle!</div>
+          <div class="callout-body">
+            Every time a user clicks a button or types in an input box, Streamlit reruns your Python script from line 1 to the end! If you instantiate your vector store or recompile your LangGraph on line 10, your app will reload gigabytes of embeddings and recompile graphs on every single keystroke, causing horrific lag.
+            <br><br>
+            <strong>Mandatory Fix:</strong> Always wrap vectorstore loading and graph compilation in <code>@st.cache_resource</code> so they instantiate once and remain hot in RAM!
+          </div>
+        </div>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header">
+          <div class="file-name">app.py — Complete Streamlit Production Web App</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
+        </div>
+        <pre><code class="language-python">import os
+import streamlit as st
+from typing import TypedDict
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
+
+st.set_page_config(page_title="AI University Academic & Fees Portal", layout="wide")
+st.title("🎓 Multi-PDF University Assistant with LangGraph")
+
+# Step 1: Cached Resource Ingestion
 @st.cache_resource
-<span class="kw">def</span> <span class="fn">get_rag_app</span>():
-    embeddings = <span class="cls">OpenAIEmbeddings</span>()
-    llm = <span class="cls">ChatOpenAI</span>(model=<span class="str">"gpt-4o"</span>, temperature=<span class="num">0</span>)
+def load_vectorstores():
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    academics = Chroma.from_texts(
+        ["Academic Policy: Minimum 85% attendance required. Final exam carries 60% weight."],
+        embedding=embeddings, collection_name="acad_st"
+    ).as_retriever()
     
-    <span class="kw">class</span> <span class="cls">UIState</span>(<span class="cls">TypedDict</span>):
-        programme: str
-        messages: List[tuple]
-        query_type: str
+    fees = Chroma.from_texts(
+        ["Fee Policy: Tuition is $15,000/year. Installment plans available with 2% processing fee."],
+        embedding=embeddings, collection_name="fees_st"
+    ).as_retriever()
+    return academics, fees
 
-    builder = <span class="cls">StateGraph</span>(<span class="cls">UIState</span>)
-    <span class="cm"># Add nodes &amp; compile...</span>
-    <span class="kw">return</span> builder.<span class="fn">compile</span>()
+acad_retriever, fees_retriever = load_vectorstores()
 
-app = <span class="fn">get_rag_app</span>()
+# Step 2: State
+class AppState(TypedDict):
+    user_query: str
+    target_category: str
+    context: str
+    response: str
 
-<span class="cm"># Step 2: Custom Badges CSS</span>
-st.<span class="fn">markdown</span>(<span class="str">"""
-&lt;style&gt;
-.query-badge {
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 700;
-}
-.badge-academic { background: #3b82f6; color: white; }
-.badge-fee { background: #10b981; color: white; }
-.badge-general { background: #8b5cf6; color: white; }
-&lt;/style&gt;
-"""</span>, unsafe_allow_html=<span class="kw">True</span>)
+llm = ChatOpenAI(model="gpt-4o", temperature=0.0)
 
-<span class="cm"># Sidebar</span>
-st.sidebar.<span class="fn">title</span>(<span class="str">"Student Profile"</span>)
-student_programme = st.sidebar.<span class="fn">selectbox</span>(<span class="str">"Select Programme:"</span>, [<span class="str">"BCA"</span>, <span class="str">"BBA"</span>, <span class="str">"B.Com"</span>, <span class="str">"MCA"</span>])
+# Step 3: Nodes
+def classify(state: AppState) -&gt; dict:
+    cat = llm.invoke([
+        SystemMessage(content="Classify into: ACADEMICS or FEES."),
+        HumanMessage(content=state["user_query"])
+    ]).content.strip().upper()
+    return {"target_category": cat}
 
-<span class="cm"># Chat Input</span>
-<span class="kw">if</span> <span class="str">"messages"</span> <span class="kw">not</span> <span class="kw">in</span> st.session_state:
-    st.session_state.messages = []
+def fetch_acad(state: AppState) -&gt; dict:
+    docs = acad_retriever.invoke(state["user_query"])
+    return {"context": docs[0].page_content}
 
-<span class="kw">for</span> msg <span class="kw">in</span> st.session_state.messages:
-    <span class="kw">with</span> st.<span class="fn">chat_message</span>(msg[<span class="str">"role"</span>]):
-        st.<span class="fn">write</span>(msg[<span class="str">"content"</span>])
+def fetch_fees(state: AppState) -&gt; dict:
+    docs = fees_retriever.invoke(state["user_query"])
+    return {"context": docs[0].page_content}
 
-user_query = st.<span class="fn">chat_input</span>(<span class="str">"Ask about syllabus, fees, exams..."</span>)
-<span class="kw">if</span> user_query:
-    st.session_state.messages.<span class="fn">append</span>({<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: user_query})
-    <span class="kw">with</span> st.<span class="fn">chat_message</span>(<span class="str">"user"</span>):
-        st.<span class="fn">write</span>(user_query)
-        
-    <span class="kw">with</span> st.<span class="fn">chat_message</span>(<span class="str">"assistant"</span>):
-        result = app.<span class="fn">invoke</span>({<span class="str">"programme"</span>: student_programme, <span class="str">"messages"</span>: [(<span class="str">"human"</span>, user_query)]})
-        ans = result[<span class="str">"messages"</span>][-<span class="num">1</span>][<span class="num">1</span>]
-        st.<span class="fn">write</span>(ans)
-        st.session_state.messages.<span class="fn">append</span>({<span class="str">"role"</span>: <span class="str">"assistant"</span>, <span class="str">"content"</span>: ans})</div>
-    </div>
-  </div>
+def synthesize(state: AppState) -&gt; dict:
+    ans = llm.invoke([
+        SystemMessage(content=f"Context: {state['context']}"),
+        HumanMessage(content=state["user_query"])
+    ]).content
+    return {"response": ans}
 
-  <!-- SECTION: TOPOLOGIES -->
-  <div class="content-section" id="sec-topologies">
-    <div class="hero-box">
-      <div class="hero-tag">Reference</div>
-      <h1>The 6 Foundational Multi-Agent Topologies</h1>
-      <p>Architectural blueprints for structuring collaborative LLM systems in production.</p>
-    </div>
+# Step 4: Build & Cache Graph
+@st.cache_resource
+def get_graph():
+    b = StateGraph(AppState)
+    b.add_node("classify", classify)
+    b.add_node("acad", fetch_acad)
+    b.add_node("fees", fetch_fees)
+    b.add_node("synth", synthesize)
+    
+    b.add_edge(START, "classify")
+    b.add_conditional_edges("classify", lambda s: "acad" if "ACADEMICS" in s["target_category"] else "fees", {
+        "acad": "acad", "fees": "fees"
+    })
+    b.add_edge("acad", "synth")
+    b.add_edge("fees", "synth")
+    b.add_edge("synth", END)
+    return b.compile()
 
-    <div class="grid g-3">
-      <div class="card">
-        <div class="card-title" style="color:#a78bfa;">1. Sequential Pipeline</div>
-        <p style="margin-top:6px;">Linear hand-off (A &rarr; B &rarr; C). Predictable, deterministic, and easy to trace. Used in Project 1.</p>
+graph = get_graph()
+
+# User Interface
+query = st.text_input("Ask a question regarding University Academics or Fees:")
+if st.button("Submit Question", type="primary") and query:
+    with st.spinner("Classifying and routing through LangGraph..."):
+        res = graph.invoke({"user_query": query})
+        st.success(f"**Routed Category:** {res['target_category']}")
+        st.info(f"**Retrieved Context:** {res['context']}")
+        st.markdown(f"### Answer:\n{res['response']}")
+</code></pre>
       </div>
-      <div class="card">
-        <div class="card-title" style="color:#60a5fa;">2. Hierarchical Supervisor</div>
-        <p style="margin-top:6px;">A central orchestrator routes subtasks to specialist subagents and evaluates their outputs.</p>
+</section>
+    <section id="quiz">
+      <div class="section-header">
+        <div class="section-tag">Assessment</div>
+        <h2 class="section-title">Interactive Knowledge Check</h2>
       </div>
-      <div class="card">
-        <div class="card-title" style="color:#34d399;">3. Generator-Critic Loop</div>
-        <p style="margin-top:6px;">Writer generates, Critic reviews against score thresholds. Loops back until approved. Used in Project 4.</p>
+
+      <p>
+        Validate your mastery of LangGraph state modeling, parallel reducers, conditional routing, and interrupts.
+      </p>
+
+      <div class="quiz-card">
+        <div class="quiz-question">1. Why must parallel branches writing to the same state key use an `Annotated` reducer?</div>
+        <div class="quiz-options">
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">A) To convert the state into a Pydantic model at runtime</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, true)">B) To merge concurrent branch outputs without the last branch overwriting the others</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">C) To force the parallel nodes to run in linear sequence</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">D) To compress the state into a .pkl file automatically</div>
+        </div>
+        <div class="quiz-feedback"></div>
       </div>
-      <div class="card">
-        <div class="card-title" style="color:#fbbf24;">4. Parallel Fan-out</div>
-        <p style="margin-top:6px;">Simultaneous execution from START with Annotated Reducers merging branch state. Used in Project 2.</p>
+
+      <div class="quiz-card">
+        <div class="quiz-question">2. What happens inside LangGraph when a node calls `interrupt(...)`?</div>
+        <div class="quiz-options">
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">A) The Python process crashes and raises a FatalGraphException</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">B) The node restarts from START automatically</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, true)">C) Execution halts, current state is saved to the checkpointer, and the graph awaits Command(resume=...)</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">D) The state is deleted from the checkpointer to save disk space</div>
+        </div>
+        <div class="quiz-feedback"></div>
       </div>
-      <div class="card">
-        <div class="card-title" style="color:#22d3ee;">5. Conditional RAG Router</div>
-        <p style="margin-top:6px;">Query classification dynamically routes requests to specialist vector databases. Used in Project 3 &amp; 6.</p>
+
+      <div class="quiz-card">
+        <div class="quiz-question">3. Why should Streamlit applications decorate LangGraph compilation with `@st.cache_resource`?</div>
+        <div class="quiz-options">
+          <div class="quiz-opt" onclick="checkAnswer(this, true)">A) To avoid recompiling the graph and re-ingesting vector stores on every UI button click</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">B) To allow the graph to run without any API keys</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">C) To convert the graph into a React component</div>
+          <div class="quiz-opt" onclick="checkAnswer(this, false)">D) Streamlit requires all functions to have cache decorators by default</div>
+        </div>
+        <div class="quiz-feedback"></div>
       </div>
-      <div class="card">
-        <div class="card-title" style="color:#fb7185;">6. Human-in-the-Loop</div>
-        <p style="margin-top:6px;">Pausing execution with <code>interrupt()</code> and resuming with human review. Used in Project 5.</p>
-      </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- SECTION: PRODUCTION -->
-  <div class="content-section" id="sec-production">
-    <div class="hero-box">
-      <div class="hero-tag">Production</div>
-      <h1>Production Deployment &amp; Observability</h1>
-      <p>Hardening LangGraph graphs for enterprise production with streaming, recursion limits, and LangSmith tracing.</p>
-    </div>
-
-    <div class="code-block">
-      <div class="code-header"><span class="code-lang">Python &mdash; LangSmith Tracing &amp; Production Config</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
-      <div class="code-body"><span class="kw">import</span> os
-
-<span class="cm"># Enable LangSmith Tracing</span>
-os.environ[<span class="str">"LANGCHAIN_TRACING_V2"</span>] = <span class="str">"true"</span>
-os.environ[<span class="str">"LANGCHAIN_API_KEY"</span>] = <span class="str">"lsv2_pt_..."</span>
-os.environ[<span class="str">"LANGCHAIN_PROJECT"</span>] = <span class="str">"production-agents"</span>
-
-<span class="cm"># Thread Configuration for Multi-User Isolation</span>
-config = {<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: <span class="str">"user-session-42"</span>}}
-
-<span class="cm"># Token-by-Token Streaming</span>
-<span class="kw">for</span> chunk <span class="kw">in</span> app.<span class="fn">stream</span>(input_state, config, stream_mode=<span class="str">"values"</span>):
-    <span class="fn">print</span>(chunk)</div>
-    </div>
-  </div>
-
-  <!-- SECTION: QUIZ -->
-  <div class="content-section" id="sec-quiz">
-    <div class="hero-box">
-      <div class="hero-tag">Knowledge Check</div>
-      <h1>LangGraph Mastery Quiz</h1>
-      <p>Test your understanding of state modeling, parallel reducers, interrupt mechanics, and graph execution.</p>
-    </div>
-
-    <div class="quiz-box" id="quiz-container"></div>
-  </div>
+  </main>
 </div>
 
 <script>
-const visitedSecs = new Set(['roadmap']);
-const totalSecs = 10;
-
-function showSec(id, linkEl) {
-  document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-  const target = document.getElementById('sec-' + id);
-  if (target) {
-    target.classList.add('active');
-  }
-
-  document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-  if (linkEl) {
-    linkEl.classList.add('active');
-  }
-
-  visitedSecs.add(id);
-  const pct = Math.round((visitedSecs.size / totalSecs) * 100);
-  document.getElementById('prog-pct').textContent = pct + '%';
-  document.getElementById('prog-bar').style.width = pct + '%';
-
-  if (linkEl) {
-    document.getElementById('topbar-title').innerHTML = linkEl.innerHTML;
-  }
-
-  document.getElementById('sidebar').classList.remove('open');
-  window.scrollTo(0, 0);
-
-  if (id === 'quiz') initQuiz();
-}
-
 function copyCode(btn) {
-  const block = btn.closest('.code-block').querySelector('.code-body');
-  navigator.clipboard.writeText(block.innerText).then(() => {
-    const orig = btn.innerText;
-    btn.innerText = 'Copied!';
-    setTimeout(() => btn.innerText = orig, 1800);
+  const codeBlock = btn.closest('.code-container').querySelector('code');
+  navigator.clipboard.writeText(codeBlock.innerText).then(() => {
+    const originalText = btn.innerText;
+    btn.innerText = "✓ Copied!";
+    btn.style.borderColor = "var(--accent-emerald)";
+    btn.style.color = "var(--accent-emerald)";
+    setTimeout(() => {
+      btn.innerText = originalText;
+      btn.style.borderColor = "";
+      btn.style.color = "";
+    }, 2000);
   });
 }
 
-const quizQuestions = [
-  {
-    q: "In LangGraph, what is 'State'?",
-    options: [
-      "A global variable holding only the LLM's final response",
-      "A TypedDict or Pydantic schema shared across all nodes that acts as the single source of truth for the graph",
-      "The GPU temperature setting for local inference",
-      "A database table containing user passwords"
-    ],
-    ans: 1,
-    expl: "State is the central blackboard data structure. Every node receives the current State and returns partial dictionary updates that LangGraph applies to the state."
-  },
-  {
-    q: "Why is an Annotated Reducer required when multiple parallel branches fan out from START?",
-    options: [
-      "To speed up python multithreading",
-      "To prevent the 'last-writer-wins' bug where parallel branches silently overwrite each other's dictionary outputs",
-      "To compress images before sending to OpenAI",
-      "To convert text from Hindi to English"
-    ],
-    ans: 1,
-    expl: "Without an Annotated reducer function (like merge_score_dicts), LangGraph's default behavior is simple dictionary key replacement, meaning only the last completing branch's update survives."
-  },
-  {
-    q: "What does the 'interrupt()' function do inside a LangGraph node?",
-    options: [
-      "It raises a FatalError and crashes the Python runtime",
-      "It pauses graph execution, yields a payload to the caller, and checkpoints state via MemorySaver until resumed with Command(resume=...)",
-      "It cancels all external API requests",
-      "It resets the graph state to empty"
-    ],
-    ans: 1,
-    expl: "interrupt() halts execution immediately at that node. The checkpointer persists the state in memory or SQLite. The graph remains paused until invoked again with a Command(resume=...) payload."
-  },
-  {
-    q: "In Project 4 (LinkedIn Post Generator), what stops the Generator-Critic reflection loop?",
-    options: [
-      "A conditional edge router that returns END when score >= 8.5 OR iterations >= 3",
-      "An out-of-memory exception",
-      "A timer that expires after 60 seconds",
-      "The Tavily search tool returning zero results"
-    ],
-    ans: 0,
-    expl: "The router function should_continue checks both the quality score threshold (>= 8.5) and a hard recursion cap (iterations >= 3) to prevent runaway API billing."
-  },
-  {
-    q: "What is the purpose of passing config with thread_id to app.invoke()?",
-    options: [
-      "It determines how many CPU threads the machine allocates",
-      "It acts as a session identifier, isolating checkpointer state history between different users or concurrent conversations",
-      "It forces the LLM to write multithreaded Python code",
-      "It sets the TCP port for Streamlit"
-    ],
-    ans: 1,
-    expl: "thread_id partitions checkpoints in the MemorySaver or SQLiteSaver, ensuring User A cannot see or mutate the execution state of User B."
-  }
-];
+function checkAnswer(opt, isCorrect) {
+  const parent = opt.closest('.quiz-card');
+  const allOpts = parent.querySelectorAll('.quiz-opt');
+  const feedback = parent.querySelector('.quiz-feedback');
+  
+  allOpts.forEach(o => {
+    o.classList.remove('correct', 'incorrect');
+    o.style.pointerEvents = 'none';
+  });
 
-function initQuiz() {
-  const container = document.getElementById('quiz-container');
-  if (!container) return;
-  container.innerHTML = quizQuestions.map((q, qIdx) => `
-    <div style="margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--border);">
-      <div class="quiz-q-title">${qIdx + 1}. ${q.q}</div>
-      <div class="quiz-options">
-        ${q.options.map((opt, oIdx) => `
-          <div class="quiz-opt" onclick="checkQuiz(${qIdx}, ${oIdx}, this)">
-            <span style="font-weight:700; color:var(--text-muted); min-width:20px;">${['A','B','C','D'][oIdx]}.</span>
-            <span>${opt}</span>
-          </div>
-        `).join('')}
-      </div>
-      <div class="quiz-feedback" id="quiz-fb-${qIdx}"></div>
-    </div>
-  `).join('');
-}
-
-function checkQuiz(qIdx, oIdx, el) {
-  const parent = el.closest('.quiz-options');
-  if (parent.dataset.answered) return;
-  parent.dataset.answered = 'true';
-
-  const q = quizQuestions[qIdx];
-  const fb = document.getElementById('quiz-fb-' + qIdx);
-  const opts = parent.querySelectorAll('.quiz-opt');
-
-  if (oIdx === q.ans) {
-    el.classList.add('correct');
-    fb.className = 'quiz-feedback show fb-correct';
-    fb.innerHTML = '<strong>&check; Correct!</strong> ' + q.expl;
+  if (isCorrect) {
+    opt.classList.add('correct');
+    feedback.innerHTML = "<strong>✓ Correct!</strong> Exceptional understanding of LangGraph architecture.";
+    feedback.style.color = "var(--accent-emerald)";
   } else {
-    el.classList.add('wrong');
-    opts[q.ans].classList.add('correct');
-    fb.className = 'quiz-feedback show fb-wrong';
-    fb.innerHTML = '<strong>&cross; Incorrect.</strong> ' + q.expl;
+    opt.classList.add('incorrect');
+    feedback.innerHTML = "<strong>✗ Incorrect.</strong> Review the pedagogical section above for details.";
+    feedback.style.color = "var(--accent-rose)";
   }
+  feedback.style.display = "block";
 }
 
-window.onload = function() {
-  initQuiz();
-};
+window.addEventListener('DOMContentLoaded', () => {
+  const sections = document.querySelectorAll('section');
+  const navLinks = document.querySelectorAll('.toc-link');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 120;
+      if (pageYOffset >= sectionTop) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  });
+});
 </script>
 </body>
 </html>
